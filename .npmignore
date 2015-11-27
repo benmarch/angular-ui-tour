@@ -1,0 +1,16 @@
+node_modules/
+npm-debug.log
+bower_components/
+coverage/
+.idea/
+.DS_Store
+.DS_Store?
+._*
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+.tmp
+tmp
+
+app/tour-templates.js

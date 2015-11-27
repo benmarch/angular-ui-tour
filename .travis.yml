@@ -1,0 +1,34 @@
+language: node_js
+
+node_js:
+  - '0.10'
+
+before_script:
+  #- npm install -g codeclimate-test-reporter
+
+after_script:
+  #TODO: enable publishing code coverage reports
+  #- codeclimate < test/coverage/**/lcov.info
+
+notifications:
+  # publish build status to IRC channel: #angular-bootstrap-tour
+  irc:
+    channels:
+    - chat.freenode.net#angular-ui-tour
+    on_success: always
+    on_failure: always
+    template:
+    - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}'
+    - 'Change view : %{compare_url}'
+    - 'Build details : %{build_url}'
+  #TODO: enable publishing build status to gitter.im
+  # publish build status to gitter chat room: https://gitter.im/benmarch/angular-bootstrap-tour
+  #webhooks:
+  #  urls:
+  #  - [REPLACE WITH YOUR WEBHOOK URL; https://webhooks.gitter.im/e/XXXXXXXXXXXXXXXX]
+  #  on_success: always
+  #  on_failure: always
+  #  on_start: false
+
+env:
+  #- CODECLIMATE_REPO_TOKEN=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

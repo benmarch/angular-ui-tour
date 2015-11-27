@@ -1,0 +1,16 @@
+(function (window, factory) {
+  'use strict';
+  if (typeof define === 'function' && define.amd) {
+    // AMD
+    define([], factory);
+  } else if (typeof exports === 'object') {
+    // Node.js
+    module.exports = factory();
+  } else {
+    // Browser
+    window.angularBootstrapTour = factory();
+  }
+}(this, function factory() {
+  // public API
+  return $1;
+}));
