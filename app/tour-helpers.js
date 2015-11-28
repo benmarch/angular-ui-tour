@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', 'TourConfig', '$q', function ($templateCache, $http, $compile, TourConfig, $q) {
+    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', function ($templateCache, $http, $compile, $location, TourConfig, $q) {
 
         var helpers = {},
             safeApply;
@@ -27,41 +27,6 @@
         };
 
         /**
-         * Compiles and links a template to the provided scope
-         *
-         * @param {String} template
-         * @param {$rootScope.Scope} scope
-         * @returns {Function}
-         */
-        function compileTemplate(template, scope) {
-            return function (/*index, step*/) {
-                var $template = angular.element(template); //requires jQuery
-                return $compile($template)(scope);
-            };
-
-        }
-
-        /**
-         * Looks up a template by URL and passes it to {@link helpers.compile}
-         *
-         * @param {String} templateUrl
-         * @param {$rootScope.Scope} scope
-         * @returns {Promise}
-         */
-        function lookupTemplate(templateUrl, scope) {
-
-            return $http.get(templateUrl, {
-                cache: $templateCache
-            }).success(function (template) {
-                if (template) {
-                    return compileTemplate(template, scope);
-                }
-                return '';
-            });
-
-        }
-
-        /**
          * Converts a stringified boolean to a JS boolean
          *
          * @param string
@@ -76,37 +41,6 @@
 
             return string;
         }
-
-        /**
-         * Helper function that attaches proper compiled template to options
-         *
-         * @param {$rootScope.Scope} scope
-         * @param {Attributes} attrs
-         * @param {Object} options represents the tour or step object
-         */
-        helpers.attachTemplate = function (scope, attrs, options) {
-
-            var deferred = $q.defer(),
-                template;
-
-            if (attrs[helpers.getAttrName('template')]) {
-                template = compileTemplate(scope.$eval(attrs[helpers.getAttrName('template')]), scope);
-                options.template = template;
-                deferred.resolve(template);
-            } else if (attrs[helpers.getAttrName('templateUrl')]) {
-                lookupTemplate(attrs[helpers.getAttrName('templateUrl')], scope).then(function (template) {
-                    if (template) {
-                        options.template = template.data;
-                        deferred.resolve(template);
-                    }
-                });
-            } else {
-                deferred.resolve();
-            }
-
-            return deferred.promise;
-
-        };
 
         /**
          * Helper function that attaches event handlers to options
@@ -148,6 +82,29 @@
                 }
             });
 
+        };
+
+        /**
+         * sets up a redirect when the next or previous step is in a different view
+         *
+         * @param step - the current step (not the next or prev one)
+         * @param ctrl - the tour controller
+         * @param direction - enum (onPrev, onNext)
+         * @param path - the url that the next step is on (will use $location.path())
+         * @param targetName - the ID of the next or previous step
+         */
+        helpers.setRedirect = function (step, ctrl, direction, path, targetName) {
+            var oldHandler = step[direction];
+            step[direction] = function (tour) {
+                return $q(function (resolve) {
+                    if (oldHandler) {
+                        oldHandler(tour);
+                    }
+                    ctrl.waitFor(targetName);
+                    $location.path(path);
+                    resolve();
+                });
+            };
         };
 
         /**

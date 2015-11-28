@@ -18,10 +18,13 @@ module.exports = function(config) {
             //bower:js
             'bower_components/angular/angular.js',
             'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
+            'bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js',
             'bower_components/angular-mocks/angular-mocks.js',
+            'bower_components/angular-route/angular-route.js',
             //endbower
             'app/angular-ui-tour.js',
             'app/**/*.js',
+            'lib/**/*.js',
             'test/spec/**/*.js',
             'tmp/test-templates.js'
         ],

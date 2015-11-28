@@ -3,10 +3,10 @@
 (function angularUITour(app) {
     'use strict';
 
-    app.config(['$tooltipProvider', function ($tooltipProvider) {
-        $tooltipProvider.setTriggers({
+    app.config(['$uibTooltipProvider', function ($uibTooltipProvider) {
+        $uibTooltipProvider.setTriggers({
             'uiTourShow': 'uiTourHide'
         });
     }]);
 
-}(angular.module('bm.uiTour', ['ui.bootstrap', 'smoothScroll'])));
+}(angular.module('bm.uiTour', ['ngSanitize', 'ui.bootstrap', 'smoothScroll'])));

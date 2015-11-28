@@ -20,8 +20,8 @@
             });
 
         //These are defaults
-        TourConfigProvider.set('prefixOptions', false);
-        TourConfigProvider.set('prefix', 'uiTour');
+        TourConfigProvider.set('prefixOptions', true);
+        TourConfigProvider.set('prefix', 'tourStep');
 
     }]);
 

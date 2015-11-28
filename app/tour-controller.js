@@ -3,14 +3,12 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$q', '$injector', 'LinkedList', function ($q, $injector, LinkedList) {
-
-        window.ij = $injector;
+    app.controller('TourController', ['$q', 'LinkedList', function ($q, LinkedList) {
 
         var self = this,
             stepList = LinkedList.create(true),
             currentStep = null,
-            newStepFound = angular.noop,
+            resumeWhenFound,
             statuses = {
                 OFF: 0,
                 ON: 1,
@@ -45,7 +43,9 @@
                 }
             });
             stepList.insertAt(insertBeforeIndex + 1, step);
-            newStepFound(step);
+            if (resumeWhenFound) {
+                resumeWhenFound(step);
+            }
         };
 
         /**
@@ -55,6 +55,15 @@
          */
         self.removeStep = function (step) {
             stepList.remove(step);
+        };
+
+        /**
+         * if a step's order was changed, replace it in the list
+         * @param step
+         */
+        self.reorderStep = function (step) {
+            self.removeStep(step);
+            self.addStep(step);
         };
 
         /**
@@ -102,10 +111,10 @@
             return serial([
                 step.onNext || options.onNext || $q.resolve,
                 function () {
-                    return self.hideStep(self.getCurrentStep());
+                    return self.hideStep(step);
                 },
                 function () {
-                    currentStep = currentStep.next;
+                    currentStep = self.getNextStepElement();
                     if (self.getCurrentStep()) {
                         return self.showStep(self.getCurrentStep());
                     } else {
@@ -124,11 +133,13 @@
             return serial([
                 step.onPrev || options.onPrev || $q.resolve,
                 function () {
-                    return self.hideStep(self.getCurrentStep());
+                    return self.hideStep(step);
                 },
                 function () {
-                    currentStep = currentStep.prev;
-                    if (self.getCurrentStep()) {
+                    currentStep = self.getPrevStepElement();
+                    if (resumeWhenFound) {
+                        return $q.resolve();
+                    } else if (self.getCurrentStep()) {
                         return self.showStep(self.getCurrentStep());
                     } else {
                         self.end();
@@ -178,22 +189,22 @@
          * return next step or null
          * @returns {step}
          */
-        self.getNextStep = function () {
+        self.getNextStepElement = function () {
             if (!currentStep) {
                 return null;
             }
-            return currentStep.next ? currentStep.next.data : null;
+            return stepList.get(currentStep.data).next;
         };
 
         /**
          * return previous step or null
          * @returns {step}
          */
-        self.getPrevStep = function () {
+        self.getPrevStepElement = function () {
             if (!currentStep) {
                 return null;
             }
-            return currentStep.prev ? currentStep.prev.data : null;
+            return stepList.get(currentStep.data).prev;
         };
 
         /**
@@ -202,10 +213,12 @@
          * @param waitForStep
          */
         self.waitFor = function (waitForStep) {
-            newStepFound = function (step) {
+            self.pause();
+            resumeWhenFound = function (step) {
                 if (step.stepId === waitForStep) {
                     currentStep = stepList.get(step);
-                    self.showStep(step);
+                    self.resume();
+                    resumeWhenFound = null;
                 }
             };
         };

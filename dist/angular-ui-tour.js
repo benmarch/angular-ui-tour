@@ -3,13 +3,13 @@
 (function angularUITour(app) {
     'use strict';
 
-    app.config(['$tooltipProvider', function ($tooltipProvider) {
-        $tooltipProvider.setTriggers({
+    app.config(['$uibTooltipProvider', function ($uibTooltipProvider) {
+        $uibTooltipProvider.setTriggers({
             'uiTourShow': 'uiTourHide'
         });
     }]);
 
-}(angular.module('bm.uiTour', ['ui.bootstrap', 'smoothScroll'])));
+}(angular.module('bm.uiTour', ['ngSanitize', 'ui.bootstrap', 'smoothScroll'])));
 
 /* global angular: false */
 
@@ -19,8 +19,8 @@
     app.provider('TourConfig', [function () {
 
         var config = {
-            prefixOptions: false,
-            prefix: 'uiTour'
+            prefixOptions: true,
+            prefix: 'tourStep'
         };
 
         this.set = function (option, value) {
@@ -48,14 +48,12 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$q', '$injector', 'LinkedList', function ($q, $injector, LinkedList) {
-
-        window.ij = $injector;
+    app.controller('TourController', ['$q', 'LinkedList', function ($q, LinkedList) {
 
         var self = this,
             stepList = LinkedList.create(true),
             currentStep = null,
-            newStepFound = angular.noop,
+            resumeWhenFound,
             statuses = {
                 OFF: 0,
                 ON: 1,
@@ -90,7 +88,9 @@
                 }
             });
             stepList.insertAt(insertBeforeIndex + 1, step);
-            newStepFound(step);
+            if (resumeWhenFound) {
+                resumeWhenFound(step);
+            }
         };
 
         /**
@@ -100,6 +100,15 @@
          */
         self.removeStep = function (step) {
             stepList.remove(step);
+        };
+
+        /**
+         * if a step's order was changed, replace it in the list
+         * @param step
+         */
+        self.reorderStep = function (step) {
+            self.removeStep(step);
+            self.addStep(step);
         };
 
         /**
@@ -147,10 +156,10 @@
             return serial([
                 step.onNext || options.onNext || $q.resolve,
                 function () {
-                    return self.hideStep(self.getCurrentStep());
+                    return self.hideStep(step);
                 },
                 function () {
-                    currentStep = currentStep.next;
+                    currentStep = self.getNextStepElement();
                     if (self.getCurrentStep()) {
                         return self.showStep(self.getCurrentStep());
                     } else {
@@ -169,11 +178,13 @@
             return serial([
                 step.onPrev || options.onPrev || $q.resolve,
                 function () {
-                    return self.hideStep(self.getCurrentStep());
+                    return self.hideStep(step);
                 },
                 function () {
-                    currentStep = currentStep.prev;
-                    if (self.getCurrentStep()) {
+                    currentStep = self.getPrevStepElement();
+                    if (resumeWhenFound) {
+                        return $q.resolve();
+                    } else if (self.getCurrentStep()) {
                         return self.showStep(self.getCurrentStep());
                     } else {
                         self.end();
@@ -223,22 +234,22 @@
          * return next step or null
          * @returns {step}
          */
-        self.getNextStep = function () {
+        self.getNextStepElement = function () {
             if (!currentStep) {
                 return null;
             }
-            return currentStep.next ? currentStep.next.data : null;
+            return stepList.get(currentStep.data).next;
         };
 
         /**
          * return previous step or null
          * @returns {step}
          */
-        self.getPrevStep = function () {
+        self.getPrevStepElement = function () {
             if (!currentStep) {
                 return null;
             }
-            return currentStep.prev ? currentStep.prev.data : null;
+            return stepList.get(currentStep.data).prev;
         };
 
         /**
@@ -247,10 +258,12 @@
          * @param waitForStep
          */
         self.waitFor = function (waitForStep) {
-            newStepFound = function (step) {
+            self.pause();
+            resumeWhenFound = function (step) {
                 if (step.stepId === waitForStep) {
                     currentStep = stepList.get(step);
-                    self.showStep(step);
+                    self.resume();
+                    resumeWhenFound = null;
                 }
             };
         };
@@ -285,7 +298,6 @@
 
                     //Pass static options through or use defaults
                     var tour = {},
-                        templateReady,
                         events = 'onStart onEnd afterGetState afterSetState afterRemoveState onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
                         options = 'name container keyboard storage debug redirect duration basePath backdrop orphan'.split(' ');
 
@@ -294,9 +306,6 @@
 
                     //Attach event handlers
                     TourHelpers.attachEventHandlers(scope, attrs, tour, events);
-
-                    //Compile template
-                    templateReady = TourHelpers.attachTemplate(scope, attrs, tour);
 
                     //Monitor number of steps
                     scope.$watchCollection(ctrl.getSteps, function (steps) {
@@ -310,10 +319,7 @@
                     }
 
                     //Initialize tour
-                    templateReady.then(function () {
-                        scope.tour = ctrl.init(tour);
-                    });
-
+                    scope.tour = ctrl.init(tour);
                 }
             };
 
@@ -330,7 +336,7 @@
 (function (app) {
     'use strict';
 
-    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', 'TourConfig', '$q', function ($templateCache, $http, $compile, TourConfig, $q) {
+    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', function ($templateCache, $http, $compile, $location, TourConfig, $q) {
 
         var helpers = {},
             safeApply;
@@ -354,41 +360,6 @@
         };
 
         /**
-         * Compiles and links a template to the provided scope
-         *
-         * @param {String} template
-         * @param {$rootScope.Scope} scope
-         * @returns {Function}
-         */
-        function compileTemplate(template, scope) {
-            return function (/*index, step*/) {
-                var $template = angular.element(template); //requires jQuery
-                return $compile($template)(scope);
-            };
-
-        }
-
-        /**
-         * Looks up a template by URL and passes it to {@link helpers.compile}
-         *
-         * @param {String} templateUrl
-         * @param {$rootScope.Scope} scope
-         * @returns {Promise}
-         */
-        function lookupTemplate(templateUrl, scope) {
-
-            return $http.get(templateUrl, {
-                cache: $templateCache
-            }).success(function (template) {
-                if (template) {
-                    return compileTemplate(template, scope);
-                }
-                return '';
-            });
-
-        }
-
-        /**
          * Converts a stringified boolean to a JS boolean
          *
          * @param string
@@ -403,37 +374,6 @@
 
             return string;
         }
-
-        /**
-         * Helper function that attaches proper compiled template to options
-         *
-         * @param {$rootScope.Scope} scope
-         * @param {Attributes} attrs
-         * @param {Object} options represents the tour or step object
-         */
-        helpers.attachTemplate = function (scope, attrs, options) {
-
-            var deferred = $q.defer(),
-                template;
-
-            if (attrs[helpers.getAttrName('template')]) {
-                template = compileTemplate(scope.$eval(attrs[helpers.getAttrName('template')]), scope);
-                options.template = template;
-                deferred.resolve(template);
-            } else if (attrs[helpers.getAttrName('templateUrl')]) {
-                lookupTemplate(attrs[helpers.getAttrName('templateUrl')], scope).then(function (template) {
-                    if (template) {
-                        options.template = template.data;
-                        deferred.resolve(template);
-                    }
-                });
-            } else {
-                deferred.resolve();
-            }
-
-            return deferred.promise;
-
-        };
 
         /**
          * Helper function that attaches event handlers to options
@@ -478,6 +418,29 @@
         };
 
         /**
+         * sets up a redirect when the next or previous step is in a different view
+         *
+         * @param step - the current step (not the next or prev one)
+         * @param ctrl - the tour controller
+         * @param direction - enum (onPrev, onNext)
+         * @param path - the url that the next step is on (will use $location.path())
+         * @param targetName - the ID of the next or previous step
+         */
+        helpers.setRedirect = function (step, ctrl, direction, path, targetName) {
+            var oldHandler = step[direction];
+            step[direction] = function (tour) {
+                return $q(function (resolve) {
+                    if (oldHandler) {
+                        oldHandler(tour);
+                    }
+                    ctrl.waitFor(targetName);
+                    $location.path(path);
+                    resolve();
+                });
+            };
+        };
+
+        /**
          * Returns the attribute name for an option depending on the prefix
          *
          * @param {string} option - name of option
@@ -502,68 +465,48 @@
 (function (app) {
     'use strict';
 
-    function directive() {
-        return ['TourHelpers', '$location', 'uibPopoverTemplateDirective', '$q', '$timeout', 'smoothScroll', function (TourHelpers, $location, uibPopoverDirective, $q, $timeout, smoothScroll) {
+    app.directive('tourStep', ['TourHelpers', '$uibTooltip', '$q', '$sce', function (TourHelpers, $uibTooltip, $q, $sce) {
 
-            var uibPopover = uibPopoverDirective[0];
-            function isHidden(elem) {
-                return !( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length );
-            }
+        var tourStepDef = $uibTooltip('tourStep', 'tourStep', 'uiTourShow', {
+            popupDelay: 1 //needs to be non-zero for popping up after navigation
+        });
 
-            return {
-                restrict: 'EA',
-                scope: true,
-                require: '^tour',
-                link: function (scope, element, attrs, ctrl) {
+        return {
+            restrict: 'EA',
+            scope: true,
+            require: '^tour',
+            compile: function (tElement, tAttrs) {
+
+                if (!tAttrs.tourStep) {
+                    tAttrs.$set('tourStep', '\'PH\''); //a placeholder so popup will show
+                }
+
+                var tourStepLinker = tourStepDef.compile(tElement, tAttrs);
+
+                return function (scope, element, attrs, ctrl) {
 
                     //Assign required options
                     var step = {
                             element: element,
                             stepId: attrs.tourStep
                         },
-                        events = 'onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
+                        events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
                         options = 'content title path animation container placement backdrop redirect orphan reflex duration nextStep prevStep nextPath prevPath'.split(' '),
-                        orderWatch,
-                        skipWatch,
-                        templateReady;
+                        orderWatch;
 
                     //Pass interpolated values through
                     TourHelpers.attachInterpolatedValues(attrs, step, options);
                     orderWatch = attrs.$observe(TourHelpers.getAttrName('order'), function (order) {
                         step.order = !isNaN(order*1) ? order*1 : 0;
-                        //ctrl.refreshTour();
+                        ctrl.reorderStep(step);
                     });
 
                     //Attach event handlers
                     TourHelpers.attachEventHandlers(scope, attrs, step, events);
 
-                    //Compile templates
-                    templateReady = TourHelpers.attachTemplate(scope, attrs, step);
-
-                    //Check whether or not the step should be skipped
-                    function stepIsSkipped() {
-                        var skipped;
-                        if (attrs[TourHelpers.getAttrName('skip')]) {
-                            skipped = scope.$eval(attrs[TourHelpers.getAttrName('skip')]);
-                        }
-                        if (!skipped) {
-                            skipped = !!step.path || (isHidden(element[0]) && !attrs.availableWhenHidden);
-                        }
-                        return skipped;
+                    if (attrs[TourHelpers.getAttrName('templateUrl')]) {
+                        step.templateUrl = scope.$eval(attrs[TourHelpers.getAttrName('templateUrl')]);
                     }
-                    skipWatch = scope.$watch(stepIsSkipped, function (skip) {
-                        if (skip) {
-                            ctrl.removeStep(step);
-                        } else {
-                            ctrl.addStep(step);
-                        }
-                    });
-
-                    scope.$on('$destroy', function () {
-                        ctrl.removeStep(step);
-                        orderWatch();
-                        skipWatch();
-                    });
 
                     //If there is an options argument passed, just use that instead
                     if (attrs[TourHelpers.getAttrName('options')]) {
@@ -571,69 +514,20 @@
                     }
 
                     //set up redirects
-                    function setRedirect(direction, path, targetName) {
-                        var oldHandler = step[direction];
-                        step[direction] = function (tour) {
-                            if (oldHandler) {
-                                oldHandler(tour);
-                            }
-                            ctrl.waitFor(targetName);
-
-                            TourHelpers.safeApply(scope, function () {
-                                $location.path(path);
-                            });
-                            return $q.resolve();
-                        };
-                    }
                     if (step.nextPath) {
                         step.redirectNext = true;
-                        setRedirect('onNext', step.nextPath, step.nextStep);
+                        TourHelpers.setRedirect(step, ctrl, 'onNext', step.nextPath, step.nextStep);
                     }
                     if (step.prevPath) {
                         step.redirectPrev = true;
-                        setRedirect('onPrev', step.prevPath, step.prevStep);
+                        TourHelpers.setRedirect(step, ctrl, 'onPrev', step.prevPath, step.prevStep);
                     }
 
-                    //set Popover attributes
-                    function setPopoverAttributeIfExists(tourStepAttr, popoverAttr, alternative) {
-                        if (angular.isDefined(attrs[TourHelpers.getAttrName(tourStepAttr)])) {
-                            attrs.$set(popoverAttr, attrs[TourHelpers.getAttrName(tourStepAttr)]);
-                        } else if (alternative) {
-                            attrs.$set(popoverAttr, alternative)
-                        }
-                    }
-                    setPopoverAttributeIfExists('title', 'popoverTitle');
-                    setPopoverAttributeIfExists('placement', 'popoverPlacement');
-                    //setPopoverAttributeIfExists('animation', 'popoverAnimation');
-                    setPopoverAttributeIfExists('templateUrl', 'uibPopoverTemplate', '\'tour-step-template.html\'');
-
-                    var tooltipName = 'tour-step-' + Math.floor(Math.random() * 10000);
-
-                    attrs.$set('popoverIsOpen', 'isOpen');
-                    attrs.$set('popoverAnimation', 'false');
-                    attrs.$set('popoverTrigger', 'uiTourShow');
-                    attrs.$set('popoverClass', tooltipName);
-                    attrs.$set('popoverAppendToBody', 'true');
-
-                    var isOpenResolver;
-                    scope.$watch('isOpen', function (isOpen) {
-                        if (isOpen) {
-                            var tooltip = document.getElementsByClassName(tooltipName)[0];
-                            tooltip.style.visibility = 'hidden';
-                            smoothScroll(tooltip, {
-                                offset: 100,
-                                callbackAfter: function () {
-                                    tooltip.style.visibility = 'visible';
-                                    isOpenResolver();
-                                }
-                            });
-                        }
-                    });
-
+                    //on show and on hide
                     step.show = function () {
                         return $q(function (resolve) {
-                            isOpenResolver = resolve;
                             element[0].dispatchEvent(new Event('uiTourShow'));
+                            resolve();
                         });
                     };
                     step.hide = function () {
@@ -643,30 +537,67 @@
                         });
                     };
 
+                    //a couple mods
+                    attrs.$set('tourStepAppendToBody', 'true');
+                    step.trustedContent = $sce.trustAsHtml(step.content);
+
                     //Add step to tour
-                    templateReady.then(function () {
-                        ctrl.addStep(step);
-                        scope.tourStep = step;
-                        scope.tour = scope.tour || ctrl;
-                        uibPopover.compile()(scope, element, attrs);
+                    ctrl.addStep(step);
+                    scope.tourStep = step;
+                    scope.tour = scope.tour || ctrl;
+                    tourStepLinker(scope, element, attrs);
+
+                    //clean up when element is destroyed
+                    scope.$on('$destroy', function () {
+                        ctrl.removeStep(step);
+                        orderWatch();
                     });
-
                 }
-            };
+            }
+        };
 
-        }];
-    }
+    }]);
 
-    app.directive('tourStep', directive());
-    app.directive('uiTourStep', directive());
+    app.directive('tourStepPopup', ['TourConfig', 'smoothScroll', function (TourConfig, smoothScroll) {
+        return {
+            restrict: 'EA',
+            replace: true,
+            scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
+            templateUrl: TourConfig.get('templateUrl') || 'tour-step-popup.html',
+            link: function (scope, element) {
+                scope.$watch('isOpen', function (isOpen) {
+                    if (isOpen()) {
+                        smoothScroll(element[0], {
+                            offset: 100
+                        });
+                    }
+                })
+            }
+        };
+    }]);
 
 }(angular.module('bm.uiTour')));
 
 angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
+  $templateCache.put("tour-step-popup.html",
+    "<div class=\"popover tour-step\"\n" +
+    "     tooltip-animation-class=\"fade\"\n" +
+    "     uib-tooltip-classes\n" +
+    "     ng-class=\"{ in: isOpen() }\">\n" +
+    "    <div class=\"arrow\"></div>\n" +
+    "\n" +
+    "    <div class=\"popover-inner tour-step-inner\">\n" +
+    "        <h3 class=\"popover-title tour-step-title\" ng-bind=\"title\" ng-if=\"title\"></h3>\n" +
+    "        <div class=\"popover-content tour-step-content\"\n" +
+    "             uib-tooltip-template-transclude=\"'tour-step-template.html'\"\n" +
+    "             tooltip-template-transclude-scope=\"originScope()\"></div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("tour-step-template.html",
     "<div>\n" +
-    "    <div class=\"popover-content\">{{tourStep.content}}</div>\n" +
-    "    <div class=\"popover-navigation\">\n" +
+    "    <div class=\"popover-content tour-step-content\" ng-bind-html=\"tourStep.trustedContent\"></div>\n" +
+    "    <div class=\"popover-navigation tour-step-navigation\">\n" +
     "        <div class=\"btn-group\">\n" +
     "            <button class=\"btn btn-sm btn-default\" data-role=\"prev\" ng-click=\"tour.prev()\">&laquo; Prev</button>\n" +
     "            <button class=\"btn btn-sm btn-default\" data-role=\"next\" ng-click=\"tour.next()\">Next &raquo;</button>\n" +
@@ -738,6 +669,7 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
                         head = tail = newNode;
                     }
                     length += 1;
+                    return true;
                 },
                 pop: function () {
                     if (!head) return;
@@ -759,7 +691,7 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
                             current.next = null;
                             tail = current;
 
-                            length -=1;
+                            length -= 1;
                             return true;
                         }
                     } while (current.next);
@@ -776,6 +708,7 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
                         head = tail = newNode;
                     }
                     length += 1;
+                    return true;
                 },
                 shift: function () {
                     if (!head) return;
@@ -790,6 +723,7 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
                     }
 
                     length -= 1;
+                    return true;
                 },
                 insertAt: function (index, data) {
                     if (index === 0 || length === 0) {
@@ -814,6 +748,7 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
                     nodeBefore.next = newNode;
 
                     length += 1;
+                    return true;
                 },
                 forEach: function (iterator) {
                     var index = 0,
@@ -875,8 +810,18 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
                         }
                     });
                     return match;
-                }
+                },
+                toArray: function () {
+                    var arr = [],
+                        current = head;
 
+                    while (current) {
+                        arr.push(current.data);
+                        current = current.next;
+                    }
+
+                    return arr;
+                }
             }
         };
 

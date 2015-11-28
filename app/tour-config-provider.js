@@ -6,8 +6,8 @@
     app.provider('TourConfig', [function () {
 
         var config = {
-            prefixOptions: false,
-            prefix: 'uiTour'
+            prefixOptions: true,
+            prefix: 'tourStep'
         };
 
         this.set = function (option, value) {

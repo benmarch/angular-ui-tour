@@ -3,68 +3,48 @@
 (function (app) {
     'use strict';
 
-    function directive() {
-        return ['TourHelpers', '$location', 'uibPopoverTemplateDirective', '$q', '$timeout', 'smoothScroll', function (TourHelpers, $location, uibPopoverDirective, $q, $timeout, smoothScroll) {
+    app.directive('tourStep', ['TourHelpers', '$uibTooltip', '$q', '$sce', function (TourHelpers, $uibTooltip, $q, $sce) {
 
-            var uibPopover = uibPopoverDirective[0];
-            function isHidden(elem) {
-                return !( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length );
-            }
+        var tourStepDef = $uibTooltip('tourStep', 'tourStep', 'uiTourShow', {
+            popupDelay: 1 //needs to be non-zero for popping up after navigation
+        });
 
-            return {
-                restrict: 'EA',
-                scope: true,
-                require: '^tour',
-                link: function (scope, element, attrs, ctrl) {
+        return {
+            restrict: 'EA',
+            scope: true,
+            require: '^tour',
+            compile: function (tElement, tAttrs) {
+
+                if (!tAttrs.tourStep) {
+                    tAttrs.$set('tourStep', '\'PH\''); //a placeholder so popup will show
+                }
+
+                var tourStepLinker = tourStepDef.compile(tElement, tAttrs);
+
+                return function (scope, element, attrs, ctrl) {
 
                     //Assign required options
                     var step = {
                             element: element,
                             stepId: attrs.tourStep
                         },
-                        events = 'onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
+                        events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
                         options = 'content title path animation container placement backdrop redirect orphan reflex duration nextStep prevStep nextPath prevPath'.split(' '),
-                        orderWatch,
-                        skipWatch,
-                        templateReady;
+                        orderWatch;
 
                     //Pass interpolated values through
                     TourHelpers.attachInterpolatedValues(attrs, step, options);
                     orderWatch = attrs.$observe(TourHelpers.getAttrName('order'), function (order) {
                         step.order = !isNaN(order*1) ? order*1 : 0;
-                        //ctrl.refreshTour();
+                        ctrl.reorderStep(step);
                     });
 
                     //Attach event handlers
                     TourHelpers.attachEventHandlers(scope, attrs, step, events);
 
-                    //Compile templates
-                    templateReady = TourHelpers.attachTemplate(scope, attrs, step);
-
-                    //Check whether or not the step should be skipped
-                    function stepIsSkipped() {
-                        var skipped;
-                        if (attrs[TourHelpers.getAttrName('skip')]) {
-                            skipped = scope.$eval(attrs[TourHelpers.getAttrName('skip')]);
-                        }
-                        if (!skipped) {
-                            skipped = !!step.path || (isHidden(element[0]) && !attrs.availableWhenHidden);
-                        }
-                        return skipped;
+                    if (attrs[TourHelpers.getAttrName('templateUrl')]) {
+                        step.templateUrl = scope.$eval(attrs[TourHelpers.getAttrName('templateUrl')]);
                     }
-                    skipWatch = scope.$watch(stepIsSkipped, function (skip) {
-                        if (skip) {
-                            ctrl.removeStep(step);
-                        } else {
-                            ctrl.addStep(step);
-                        }
-                    });
-
-                    scope.$on('$destroy', function () {
-                        ctrl.removeStep(step);
-                        orderWatch();
-                        skipWatch();
-                    });
 
                     //If there is an options argument passed, just use that instead
                     if (attrs[TourHelpers.getAttrName('options')]) {
@@ -72,69 +52,20 @@
                     }
 
                     //set up redirects
-                    function setRedirect(direction, path, targetName) {
-                        var oldHandler = step[direction];
-                        step[direction] = function (tour) {
-                            if (oldHandler) {
-                                oldHandler(tour);
-                            }
-                            ctrl.waitFor(targetName);
-
-                            TourHelpers.safeApply(scope, function () {
-                                $location.path(path);
-                            });
-                            return $q.resolve();
-                        };
-                    }
                     if (step.nextPath) {
                         step.redirectNext = true;
-                        setRedirect('onNext', step.nextPath, step.nextStep);
+                        TourHelpers.setRedirect(step, ctrl, 'onNext', step.nextPath, step.nextStep);
                     }
                     if (step.prevPath) {
                         step.redirectPrev = true;
-                        setRedirect('onPrev', step.prevPath, step.prevStep);
+                        TourHelpers.setRedirect(step, ctrl, 'onPrev', step.prevPath, step.prevStep);
                     }
 
-                    //set Popover attributes
-                    function setPopoverAttributeIfExists(tourStepAttr, popoverAttr, alternative) {
-                        if (angular.isDefined(attrs[TourHelpers.getAttrName(tourStepAttr)])) {
-                            attrs.$set(popoverAttr, attrs[TourHelpers.getAttrName(tourStepAttr)]);
-                        } else if (alternative) {
-                            attrs.$set(popoverAttr, alternative)
-                        }
-                    }
-                    setPopoverAttributeIfExists('title', 'popoverTitle');
-                    setPopoverAttributeIfExists('placement', 'popoverPlacement');
-                    //setPopoverAttributeIfExists('animation', 'popoverAnimation');
-                    setPopoverAttributeIfExists('templateUrl', 'uibPopoverTemplate', '\'tour-step-template.html\'');
-
-                    var tooltipName = 'tour-step-' + Math.floor(Math.random() * 10000);
-
-                    attrs.$set('popoverIsOpen', 'isOpen');
-                    attrs.$set('popoverAnimation', 'false');
-                    attrs.$set('popoverTrigger', 'uiTourShow');
-                    attrs.$set('popoverClass', tooltipName);
-                    attrs.$set('popoverAppendToBody', 'true');
-
-                    var isOpenResolver;
-                    scope.$watch('isOpen', function (isOpen) {
-                        if (isOpen) {
-                            var tooltip = document.getElementsByClassName(tooltipName)[0];
-                            tooltip.style.visibility = 'hidden';
-                            smoothScroll(tooltip, {
-                                offset: 100,
-                                callbackAfter: function () {
-                                    tooltip.style.visibility = 'visible';
-                                    isOpenResolver();
-                                }
-                            });
-                        }
-                    });
-
+                    //on show and on hide
                     step.show = function () {
                         return $q(function (resolve) {
-                            isOpenResolver = resolve;
                             element[0].dispatchEvent(new Event('uiTourShow'));
+                            resolve();
                         });
                     };
                     step.hide = function () {
@@ -144,21 +75,43 @@
                         });
                     };
 
+                    //a couple mods
+                    attrs.$set('tourStepAppendToBody', 'true');
+                    step.trustedContent = $sce.trustAsHtml(step.content);
+
                     //Add step to tour
-                    templateReady.then(function () {
-                        ctrl.addStep(step);
-                        scope.tourStep = step;
-                        scope.tour = scope.tour || ctrl;
-                        uibPopover.compile()(scope, element, attrs);
+                    ctrl.addStep(step);
+                    scope.tourStep = step;
+                    scope.tour = scope.tour || ctrl;
+                    tourStepLinker(scope, element, attrs);
+
+                    //clean up when element is destroyed
+                    scope.$on('$destroy', function () {
+                        ctrl.removeStep(step);
+                        orderWatch();
                     });
-
                 }
-            };
+            }
+        };
 
-        }];
-    }
+    }]);
 
-    app.directive('tourStep', directive());
-    app.directive('uiTourStep', directive());
+    app.directive('tourStepPopup', ['TourConfig', 'smoothScroll', function (TourConfig, smoothScroll) {
+        return {
+            restrict: 'EA',
+            replace: true,
+            scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
+            templateUrl: TourConfig.get('templateUrl') || 'tour-step-popup.html',
+            link: function (scope, element) {
+                scope.$watch('isOpen', function (isOpen) {
+                    if (isOpen()) {
+                        smoothScroll(element[0], {
+                            offset: 100
+                        });
+                    }
+                })
+            }
+        };
+    }]);
 
 }(angular.module('bm.uiTour')));
