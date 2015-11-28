@@ -51,7 +51,7 @@
     app.controller('TourController', ['$q', 'LinkedList', function ($q, LinkedList) {
 
         var self = this,
-            stepList = LinkedList.create(true),
+            stepList = [],
             currentStep = null,
             resumeWhenFound,
             statuses = {
@@ -84,7 +84,7 @@
             var current = self.getCurrentStep(),
                 next = self.getNextStepElement();
 
-            return !!((next && next.data.enabled) || current.nextPath);
+            return !!((next && next.enabled) || current.nextPath);
         }
 
         /**
@@ -96,7 +96,7 @@
             var current = self.getCurrentStep(),
                 prev = self.getPrevStepElement();
 
-            return !!((prev && prev.data.enabled) || current.prevPath);
+            return !!((prev && prev.enabled) || current.prevPath);
         }
 
         /**
@@ -105,18 +105,16 @@
          * @param {object} step
          */
         self.addStep = function (step) {
-            if (stepList.contains(step)) {
+            if (~stepList.indexOf(step)) {
                 return;
             }
             var insertBeforeIndex = 0;
-            stepList.forEach(function (stepElement, index, stop) {
-                if (step.order >= stepElement.data.order) {
+            stepList.forEach(function (stepElement, index) {
+                if (step.order >= stepElement.order) {
                     insertBeforeIndex = index;
-                } else {
-                    stop();
                 }
             });
-            stepList.insertAt(insertBeforeIndex + 1, step);
+            stepList.splice(insertBeforeIndex + 1, 0, step);
             if (resumeWhenFound) {
                 resumeWhenFound(step);
             }
@@ -128,7 +126,7 @@
          * @param step
          */
         self.removeStep = function (step) {
-            stepList.remove(step);
+            stepList.splice(stepList.indexOf(step), 1);
         };
 
         /**
@@ -144,7 +142,7 @@
          * starts the tour
          */
         self.start = function () {
-            currentStep = stepList.getHead();
+            currentStep = stepList[0];
             tourStatus = statuses.ON;
             self.showStep(self.getCurrentStep());
         };
@@ -258,10 +256,7 @@
          * @returns {step}
          */
         self.getCurrentStep = function () {
-            if (!currentStep) {
-                return null;
-            }
-            return currentStep.data;
+            return currentStep;
         };
 
         /**
@@ -272,7 +267,7 @@
             if (!currentStep) {
                 return null;
             }
-            return stepList.get(currentStep.data).next;
+            return stepList[stepList.indexOf(currentStep) + 1];
         };
 
         /**
@@ -283,7 +278,7 @@
             if (!currentStep) {
                 return null;
             }
-            return stepList.get(currentStep.data).prev;
+            return stepList[stepList.indexOf(currentStep) - 1];
         };
 
         /**
@@ -295,7 +290,7 @@
             self.pause();
             resumeWhenFound = function (step) {
                 if (step.stepId === waitForStep) {
-                    currentStep = stepList.get(step);
+                    currentStep = stepList[stepList.indexOf(step)];
                     self.resume();
                     resumeWhenFound = null;
                 }
@@ -572,8 +567,7 @@
                         });
                     };
 
-                    //a couple mods
-                    //attrs.$set('tourStepAppendToBody', 'true');
+                    //for HTML content
                     step.trustedContent = $sce.trustAsHtml(step.content);
 
                     //Add step to tour
