@@ -26,10 +26,11 @@
                     //Assign required options
                     var step = {
                             element: element,
-                            stepId: attrs.tourStep
+                            stepId: attrs.tourStep,
+                            enabled: true
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title path animation container placement backdrop redirect orphan reflex duration nextStep prevStep nextPath prevPath'.split(' '),
+                        options = 'content title enabled path animation container placement backdrop redirect orphan reflex duration nextStep prevStep nextPath prevPath'.split(' '),
                         orderWatch;
 
                     //Pass interpolated values through
@@ -75,8 +76,7 @@
                         });
                     };
 
-                    //a couple mods
-                    attrs.$set('tourStepAppendToBody', 'true');
+                    //for HTML content
                     step.trustedContent = $sce.trustAsHtml(step.content);
 
                     //Add step to tour
@@ -101,7 +101,7 @@
             restrict: 'EA',
             replace: true,
             scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
-            templateUrl: TourConfig.get('templateUrl') || 'tour-step-popup.html',
+            templateUrl: 'tour-step-popup.html',
             link: function (scope, element) {
                 scope.$watch('isOpen', function (isOpen) {
                     if (isOpen()) {
@@ -109,7 +109,7 @@
                             offset: 100
                         });
                     }
-                })
+                });
             }
         };
     }]);

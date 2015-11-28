@@ -62,12 +62,41 @@
             tourStatus = statuses.OFF,
             options = {};
 
+        /**
+         * just some promise sugar
+         * @param funcs - array of functions that return promises
+         * @returns {promise}
+         */
         function serial(funcs) {
             var promise = funcs.shift()();
             funcs.forEach(function (func) {
                 promise = promise.then(func);
             });
             return promise;
+        }
+
+        /**
+         * is there a next step
+         *
+         * @returns {boolean}
+         */
+        function isNext() {
+            var current = self.getCurrentStep(),
+                next = self.getNextStepElement();
+
+            return !!((next && next.data.enabled) || current.nextPath);
+        }
+
+        /**
+         * is there a previous step
+         *
+         * @returns {boolean}
+         */
+        function isPrev() {
+            var current = self.getCurrentStep(),
+                prev = self.getPrevStepElement();
+
+            return !!((prev && prev.data.enabled) || current.prevPath);
         }
 
         /**
@@ -195,20 +224,25 @@
 
         /**
          * show supplied step or step index
-         * @param stepElement
+         * @param step
          * @returns {promise}
          */
         self.showStep = function (step) {
             return serial([
                 step.onShow || options.onShow || $q.resolve,
                 step.show,
-                step.onShown || options.onShown || $q.resolve
+                step.onShown || options.onShown || $q.resolve,
+                function () {
+                    step.isNext = isNext();
+                    step.isPrev = isPrev();
+                    return $q.resolve();
+                }
             ]);
         };
 
         /**
          * hides the supplied step or step index
-         * @param stepElement
+         * @param step
          * @returns {promise}
          */
         self.hideStep = function (step) {
@@ -271,13 +305,13 @@
         /**
          * pass options from directive
          * @param opts
-         * @returns {tourController}
+         * @returns {self}
          */
         self.init = function (opts) {
             options = opts;
             self.options = options;
             return self;
-        }
+        };
     }]);
 
 }(angular.module('bm.uiTour')));
@@ -488,10 +522,11 @@
                     //Assign required options
                     var step = {
                             element: element,
-                            stepId: attrs.tourStep
+                            stepId: attrs.tourStep,
+                            enabled: true
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title path animation container placement backdrop redirect orphan reflex duration nextStep prevStep nextPath prevPath'.split(' '),
+                        options = 'content title enabled path animation container placement backdrop redirect orphan reflex duration nextStep prevStep nextPath prevPath'.split(' '),
                         orderWatch;
 
                     //Pass interpolated values through
@@ -538,7 +573,7 @@
                     };
 
                     //a couple mods
-                    attrs.$set('tourStepAppendToBody', 'true');
+                    //attrs.$set('tourStepAppendToBody', 'true');
                     step.trustedContent = $sce.trustAsHtml(step.content);
 
                     //Add step to tour
@@ -563,7 +598,7 @@
             restrict: 'EA',
             replace: true,
             scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
-            templateUrl: TourConfig.get('templateUrl') || 'tour-step-popup.html',
+            templateUrl: 'tour-step-popup.html',
             link: function (scope, element) {
                 scope.$watch('isOpen', function (isOpen) {
                     if (isOpen()) {
@@ -571,7 +606,7 @@
                             offset: 100
                         });
                     }
-                })
+                });
             }
         };
     }]);
@@ -599,8 +634,8 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
     "    <div class=\"popover-content tour-step-content\" ng-bind-html=\"tourStep.trustedContent\"></div>\n" +
     "    <div class=\"popover-navigation tour-step-navigation\">\n" +
     "        <div class=\"btn-group\">\n" +
-    "            <button class=\"btn btn-sm btn-default\" data-role=\"prev\" ng-click=\"tour.prev()\">&laquo; Prev</button>\n" +
-    "            <button class=\"btn btn-sm btn-default\" data-role=\"next\" ng-click=\"tour.next()\">Next &raquo;</button>\n" +
+    "            <button class=\"btn btn-sm btn-default\" ng-if=\"tourStep.isPrev\" ng-click=\"tour.prev()\">&laquo; Prev</button>\n" +
+    "            <button class=\"btn btn-sm btn-default\" ng-if=\"tourStep.isNext\" ng-click=\"tour.next()\">Next &raquo;</button>\n" +
     "            <button class=\"btn btn-sm btn-default\" data-role=\"pause-resume\" data-pause-text=\"Pause\"\n" +
     "                    data-resume-text=\"Resume\" ng-click=\"tour.pause()\">Pause\n" +
     "            </button>\n" +
