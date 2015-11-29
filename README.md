@@ -145,6 +145,7 @@ Examples:
 - Implement currently missing features:
   - Orphan steps
   - TemplateUrl
+  - Scroll offset
   - Trusted content
   - Auto promise wrap for config events
   - Configurable triggers
