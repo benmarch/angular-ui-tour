@@ -21,7 +21,7 @@
             if(!style.sheet && !style.sheet.insertRule) {
                 (style.styleSheet || style.sheet).addRule(name, rules);
             } else {
-                style.sheet.insertRule(name + "{" + rules + "}", 0);
+                style.sheet.insertRule(name + '{' + rules + '}', 0);
             }
         }());
 

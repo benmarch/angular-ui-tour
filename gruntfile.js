@@ -18,11 +18,20 @@ module.exports = function (grunt) {
             options: {
                 jshintrc: '.jshintrc'
             },
-            all: [
-                'Gruntfile.js',
-                '<%= config.app %>/**/*.js',
-                'test/spec/**/*.js'
-            ]
+            all: {
+                options: {
+                    ignores: [
+                        '<%= config.app %>/tour-templates.js'
+                    ]
+                },
+                files: {
+                    src: [
+                        'Gruntfile.js',
+                        '<%= config.app %>/**/*.js',
+                        'test/spec/**/*.js'
+                    ]
+                }
+            }
         },
 
         karma: {
@@ -150,7 +159,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('default', [
         'jshint',
-        'test',
-        'build'
+        'build',
+        'test'
     ]);
 };

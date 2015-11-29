@@ -1,3 +1,5 @@
+/* global jasmine: false, inject: false, angular: false*/
+
 'use strict';
 
 describe('Tour Config', function () {

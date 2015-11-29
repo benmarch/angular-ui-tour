@@ -61,7 +61,7 @@
                             safeApply(scope, function () {
                                 resolve(scope.$eval(attrs[attrName]));
                             });
-                        })
+                        });
                     };
                 }
             });

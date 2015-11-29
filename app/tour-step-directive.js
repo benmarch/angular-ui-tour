@@ -91,7 +91,7 @@
                         ctrl.removeStep(step);
                         orderWatch();
                     });
-                }
+                };
             }
         };
 
