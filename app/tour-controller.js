@@ -37,7 +37,7 @@
          */
         function isNext() {
             var current = self.getCurrentStep(),
-                next = self.getNextStepElement();
+                next = self.getNextStep();
 
             return !!((next && next.enabled) || current.nextPath);
         }
@@ -49,7 +49,7 @@
          */
         function isPrev() {
             var current = self.getCurrentStep(),
-                prev = self.getPrevStepElement();
+                prev = self.getPrevStep();
 
             return !!((prev && prev.enabled) || current.prevPath);
         }
@@ -112,6 +112,9 @@
             if (self.getCurrentStep()) {
                 self.hideStep(self.getCurrentStep());
             }
+            if (options.onEnd) {
+                options.onEnd();
+            }
             currentStep = null;
             tourStatus = statuses.OFF;
         };
@@ -120,6 +123,9 @@
          * pauses the tour
          */
         self.pause = function () {
+            if (options.onPause) {
+                options.onPause();
+            }
             tourStatus = statuses.PAUSED;
             self.hideStep(self.getCurrentStep());
         };
@@ -128,6 +134,9 @@
          * resumes a paused tour or starts it
          */
         self.resume = function () {
+            if (options.onResume) {
+                options.onResume();
+            }
             tourStatus = statuses.ON;
             self.showStep(self.getCurrentStep());
         };
@@ -144,7 +153,7 @@
                     return self.hideStep(step);
                 },
                 function () {
-                    currentStep = self.getNextStepElement();
+                    currentStep = self.getNextStep();
                     if (self.getCurrentStep()) {
                         return self.showStep(self.getCurrentStep());
                     } else {
@@ -166,7 +175,7 @@
                     return self.hideStep(step);
                 },
                 function () {
-                    currentStep = self.getPrevStepElement();
+                    currentStep = self.getPrevStep();
                     if (resumeWhenFound) {
                         return $q.resolve();
                     } else if (self.getCurrentStep()) {
@@ -221,7 +230,7 @@
          * return next step or null
          * @returns {step}
          */
-        self.getNextStepElement = function () {
+        self.getNextStep = function () {
             if (!currentStep) {
                 return null;
             }
@@ -232,7 +241,7 @@
          * return previous step or null
          * @returns {step}
          */
-        self.getPrevStepElement = function () {
+        self.getPrevStep = function () {
             if (!currentStep) {
                 return null;
             }
