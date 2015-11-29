@@ -1,97 +1,154 @@
-# angular-bootstrap-tour
+# angular-ui-tour
 [![Bower Version][bower-image]][bower-url]
-
-## No more jQuery!!
-
-This repo is a work in progress to replace [Angular Bootstrap Tour](http://github.com/benmarch/angular-bootstrap-tour).
-
-Stand by, full test suite to come, as well as implementing as many of Bootstrap Tour's features as possible.
-**Everything below was copied from other repo and needs to be reviewed**
 
 ## About
 
-This is a simple Angular wrapper around [Bootstrap Tour](http://www.bootstraptour.com).
-Simply add the "tour" directive anywhere, and add the "tour-step" directive to any element within "tour" that needs a tip.
-
-All [options](http://bootstraptour.com/api/) are available by adding the corresponding attributes to the directive element.
-
-There is also a "skip" option that if evaluates to true, will skip over the step.
-
-This repository was scaffolded with [generator-microjs](https://github.com/daniellmb/generator-microjs).
+This repo is a work in progress to replace [Angular Bootstrap Tour](http://github.com/benmarch/angular-bootstrap-tour).
+The main difference between this plugin and the previous is that this does not depend on jQuery. The previous plugin was
+simply an AngularJS wrapper around [Bootstrap Tour](http://www.bootstraptour.com) which was written for Twitter Bootstrap,
+which depends on jQuery. Instead, this plugin uses Angular UI Bootstrap and its fantastic Tooltip plugin. I have kept some
+of the API the same as Angular Bootstrap Tour, but because this uses Tooltips and does not use Bootstrap Tour, it made
+sense to change a few things. Please note that this is in the very early stages of development, and the API is subject to change.
 
 ## Getting Started
 Get the package:
 
-    bower install angular-bootstrap-tour
+    bower install angular-ui-tour
 
 Add the script tags:
 
-    <script src="bower_components/jquery/dist/jquery.js"></script>
     <script src="bower_components/angular/angular.js"></script>
-    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
-    <script src="bower_components/bootstrap-tour/build/js/bootstrap-tour.js"></script>
-    <script src="bower_components/angular-bootstrap-tour/dist/angular-bootstrap-tour.js"></script>
-
-And the Bootstrap Tour CSS (or create your own):
-
-    <link rel="stylesheet" href="bower_components/bootstrap-tour/build/css/bootstrap-tour.css" />
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
 
 Then add the module to your app:
 
     angular.module('myApp', ['bm.uiTour']);
     
-## Configuration
+## Tour Configuration
+
+Tours can be configured either programatically in a config block, or declaratively as part of the uiTour directive declaration.
+
+To configure in a config block, use TourConfigProvider.set(optionName, optionValue);
+
+To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
+
+### Options
+
+|      Name       |   Type   | Default Value             |                     Description                                                                                                                 |
+| --------------  | -------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| placement       | string   | "top"                     | Where the popup should display relative to the element.                                                                                         |
+| animation       | boolean  | true                      | Should the popup fade in/out.                                                                                                                   |
+| popupDelay      | number   | 1                         | Time to delay (in ms) between when the popup is requested to show and when it is shown. **Note** must be positive for multi-page tours to work. |
+| closePopupDelay | number   | 0                         | Time to delay (in ms) between when the popup is requested to hide and when it is hidden.                                                        |
+| trigger         | string   | "uiTourShow"              | The DOM event used to show popup (see Angular UI Tooltip docs). I don't recommend changing this.                                                |
+| enable          | boolean  | true                      | This will enable or disable the entire tour.                                                                                                    |
+| appendToBody    | boolean  | false                     | Should popups be appended to body (true) or the parent element (false).                                                                         |
+| tooltipClass    | string   | ""                        | Adds additional classes to the popup.                                                                                                           |
+| orphan          | boolean  | false                     | Should the popup display in the center of the viewport (true) or by the element (false).                                                        |
+| backdrop        | boolean  | false                     | Should there be a backdrop behind the element. **Note** this can be flaky.                                                                      |
+| backdropZIndex  | number   | 10000                     | Z-index of the backdrop. Popups will be positioned relative to this.                                                                            |
+| templateUrl     | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                               |
+|                 |          |                           |                                                                                                                                                 |    
+| onStart         | function | null                      | Called when tour is started, before first popup is shown                                                                                        |
+| onEnd           | function | null                      | Called when tour is ended, after last popup is hidden                                                                                           |
+| onPause         | function | null                      | Called when tour is paused, before current popup is hidden                                                                                      |
+| onResume        | function | null                      | Called when tour is resumed, before current popup is shown                                                                                      |
+| onNext          | function | null                      | Called when next step is requested, before current popup is hidden                                                                              |
+| onPrev          | function | null                      | Called when previous step is requested, before current popup is hidden                                                                          |
+| onShow          | function | null                      | Called just before popup is shown                                                                                                               |
+| onShown         | function | null                      | Called just after popup is shown                                                                                                                |
+| onHide          | function | null                      | Called just before popup is hidden                                                                                                              |
+| onHidden        | function | null                      | Called just after popup is hidden                                                                                                               |
+
+**Important:** If an event is overridden in a config block, the function **must** return a promise.
+ If it is overridden in the directive declaration, it will be wrapped in a promise automatically. If the function returns
+ a promise, it will wait until it is resolved before moving on.
+
+## Tour Steps
+
+Tour steps are extensions of [Angular UI's Tooltips](https://angular-ui.github.io/bootstrap/#/tooltip) and therefore all
+options are available. Although there are 3 types of Tooltips, there is only one type of Tour Step. In addition, almost
+all of the Tour options can be overridden by individual tour steps, as well as additional options that can be changed.
+
+### Additional Options
+
+|      Name        |   Type   | Default Value             |                     Description                                                                                                  |
+| --------------   | -------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| title            | string   | ""                        | The title of the popup                                                                                                           |
+| content          | string   | ""                        | The content of the popup. **Note:** can contain HTML for now, but this might change for security reasons.                        |
+| order            | number   | null                      | The order in which the step will be displayed. Although it is optional, the behavior is undefined if this is not explicitly set. |
+| fixed            | boolean  | false                     | Is the element fixed (does not discover automatically ATM).                                                                      |
+| preventScrolling | boolean  | false                     | Should page scrolling be prevented when popup is shown (I don't recommend using this, but there are times when it is useful).    |
+| nextStep         | string   | ""                        | If the next step is on a different page, set this to declare the name of the next step.                                          |
+| nextPath         | string   | ""                        | If the next step is on a different page, set this to the path of the next page.                                                  |
+| prevStep         | string   | ""                        | If the previous step is on a different page, set this to declare the name of the previous step.                                  |
+| prevPath         | string   | ""                        | If the previous step is on a different page, set this to the path of the previous page.                                          |
+| templateUrl      | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                |
+
+**Best practice:** always set the order so that the steps display in the expected order. Steps with the same order will 
+display consecutively, but the order among them is unpredictable.
+
+## Directives
+
+### uiTour
+
+uiTour is the container for the tour steps; all tour steps must be declared as decendents of uiTour. 
+The declaration can be as simple as adding ui-tour to an element, or can include one or more options (shown above).
+
+Examples:
+
+    <body ui-tour>
+        ... <!-- page content and tour steps -->
+    </body>
     
-The TourConfigProvider allows you to set a couple options:
-- `prefixOptions` {boolean, default: false} if set to true will require directive options to be prefixed to avoid conflicts
-- `prefix` {string, default: 'uiTour'} the prefix to use if `prefixOptions` is set to `true`
-
-Use `TourConfigProvider.set(<option>, <value>)` in your app's config block to change the settings
-
-You can use either `tour` and `tourStep` or `uiTour` and `uiTourStep` as directive names without changing config.
-
-## Examples
-
-    <div tour placement="top" on-end="onTourEnd(tour)" after-get-state="afterGetStateFunction" template-url="tour_template.html">
-        <div id="mainMenu" tour-step title="Main Menu" content="{{mainMenuDescription}}" order="0" skip="pageName !== 'home'">
-            ...
-        </div>
-
-        ...
-
+    
+    <div ui-tour ui-tour-on-start="onTourStart()" ui-tour-placement="bottom">
+        ... <!-- page content and tour steps -->
     </div>
+    
+### tourStep
+
+tourSteps declare which elements should have a popup during the tour. They can be declared on any element, but some consideration
+should be taken when deciding which element on which to declare them.
+
+Examples:
+
+    <body ui-tour>
+        <div id="mainMenu" tour-step tour-step-title="Main Menu" tour-step-content="Navigate the site using this menu." tour-step-order="0" tour-step-placement="right">...</div>
+        ...
+        <div id="settings" tour-step tour-step-title="Settings" tour-step-content="Click here to change your settings." tour-step-order="1">...</div>
+        <div id="finalTourMessage" tour-step tour-step-title="Welcome!" tour-step-content="Enjoy using the app!" tour-step-order="1000" tour-step-orphan="true" tour-step-backdrop="true">...</div>
+    </body>
 
 
-### Tour Directive
-
-The tour directive creates a wrapper that contains all tour steps, and adds the tour object to the scope. If no options are specified, they all default to Bootstrap Tour's defaults.
-Values of event handler options will be evaluated against the tour's scope. For the afterGetState, afterSetState, and afterRemoveState, the value should
-evaluate to a function that takes 2 arguments, key and value. The container option should be a CSS selector, and defaults to "body".
-You can also pass an object to the tour-options attribute that will override any other attribute options.
-
-### TourStep Directive
-
-The tour-step directive takes all the options available in Bootstrap Tour, with a few alterations. Instead of next and prev options, just use the "order" option.
-Order is used as a weighting (0 is first) and the plugin will dynamically determine which ones come before and after. If order is ommitted, it will default to 0.
-Multiple steps can have the same order, and those will display in the order that they are linked (usually the order in which they appear in the DOM.)
-If order is omitted from all tour-steps, the order will be whatever order in which they are linked. Steps can be skipped by passing the "skip" option an expression that evaluates to a boolean.
-The expression is evaluated before each step, so it can be a dynamic expression. This is useful if you have steps in a global layout, but only want to show them on the home page.
-Steps that are on hidden elements will not be shown. (Hidden means truly hidden, not obscured.)
-The title and contents options are watched, so an interpolated value can be passed.
-
-## Compatibility
-
-I have tested it and found it working in the following browsers:
-
-- IE8, 9, 10, 11
-- Firefox 32
-- Chrome 37
-- Safari 7
-
+    <!-- fixed element -->
+    <body ui-tour>
+        <header style="position: fixed;" tour-step tour-step-title="Header" tour-step-content="This header is fixed at the top." tour-step-order="0" tour-step-fixed="true">...</header>
+    </body>
+    
+    
+    <!-- multi-page tour -->
+    <!-- layout -->
+    <body ui-tour>
+        <!-- page 1: included using ngView (/page1) -->
+        <div tour-step="page1step1" ... tour-step-next-path="page2" tour-step-next-step="page2step1">...</div>
+        <!-- /page 1 -->
+        
+        <!-- page 2: ngView is populated when next step is requested after page1step1 -->
+        <div tour-step="page2step1" ... tour-step-prev-path="page1" tour-step-prev-step="page1step1">...</div>
+    </body>
 
 ## TODO's
 
-- Write some tests!! (Come on Ben, stop being lazy ;p)
+- Complete test suite. The config is tested, but the navigation and step coordination is not yet tested.
+- Implement currently missing features:
+  - Orphan steps
+  - TemplateUrl
+  - Trusted content
+  - Auto promise wrap for config events
+  - Configurable triggers
+  - More complete (and original) demo
 
 ## Build It Yourself
 
@@ -105,19 +162,11 @@ Assuming you have Node, grunt, and bower installed:
     
 ## Demo
     
-I have set up a simple demo using the Bootswatch Cerulean demo page (one of my favorite themes.) To run the demo run `grunt demo` and open demo/index.html in the browser.
+I have set up a simple demo using the Bootswatch Cerulean demo page (one of my favorite themes.) 
+To run the demo run `grunt demo connect:demo` and open http://localhost:8000 in the browser.
 
 
-## Notes
-
-I am using this in a personal project, but I haven't needed to use all the Bootstrap Tour options. This means that some of them might not be working
-due to the option values either not being passed correctly, or not being passed as interpolated values.
-If you run across any issues please report them with an example and I will fix them ASAP, or fork me and create a PR.
-You can now pass a template URL to either the tour or tour-step directives, and the template will be linked to whichever scope the template is specified on.
-(ie. if you add the template URL to the tour directive, it will always use the tour directive's scope, if you add it to a step, it will use the step's scope.)
-Alternatively, you can specify an expression that evaluates to a string that will be used as the template (using the "template" attribute.)
-
-Thanks and enjoy!
+**Thanks and enjoy!**
 
 ## License
 
@@ -146,35 +195,35 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 
-[build-url]: https://travis-ci.org/benmarch/angular-bootstrap-tour
-[build-image]: http://img.shields.io/travis/benmarch/angular-bootstrap-tour.png
+[build-url]: https://travis-ci.org/benmarch/angular-ui-tour
+[build-image]: http://img.shields.io/travis/benmarch/angular-ui-tour.png
 
-[gpa-url]: https://codeclimate.com/github/benmarch/angular-bootstrap-tour
-[gpa-image]: https://codeclimate.com/github/benmarch/angular-bootstrap-tour.png
+[gpa-url]: https://codeclimate.com/github/benmarch/angular-ui-tour
+[gpa-image]: https://codeclimate.com/github/benmarch/angular-ui-tour.png
 
-[coverage-url]: https://codeclimate.com/github/benmarch/angular-bootstrap-tour/code?sort=covered_percent&sort_direction=desc
-[coverage-image]: https://codeclimate.com/github/benmarch/angular-bootstrap-tour/coverage.png
+[coverage-url]: https://codeclimate.com/github/benmarch/angular-ui-tour/code?sort=covered_percent&sort_direction=desc
+[coverage-image]: https://codeclimate.com/github/benmarch/angular-ui-tour/coverage.png
 
-[depstat-url]: https://david-dm.org/benmarch/angular-bootstrap-tour
-[depstat-image]: https://david-dm.org/benmarch/angular-bootstrap-tour.png?theme=shields.io
+[depstat-url]: https://david-dm.org/benmarch/angular-ui-tour
+[depstat-image]: https://david-dm.org/benmarch/angular-ui-tour.png?theme=shields.io
 
-[issues-url]: https://github.com/benmarch/angular-bootstrap-tour/issues
-[issues-image]: http://img.shields.io/github/issues/benmarch/angular-bootstrap-tour.png
+[issues-url]: https://github.com/benmarch/angular-ui-tour/issues
+[issues-image]: http://img.shields.io/github/issues/benmarch/angular-ui-tour.png
 
-[bower-url]: http://bower.io/search/?q=angular-bootstrap-tour
-[bower-image]: https://badge.fury.io/bo/angular-bootstrap-tour.png
+[bower-url]: http://bower.io/search/?q=angular-ui-tour
+[bower-image]: https://badge.fury.io/bo/angular-ui-tour.png
 
-[downloads-url]: https://www.npmjs.org/package/angular-bootstrap-tour
-[downloads-image]: http://img.shields.io/npm/dm/angular-bootstrap-tour.png
+[downloads-url]: https://www.npmjs.org/package/angular-ui-tour
+[downloads-image]: http://img.shields.io/npm/dm/angular-ui-tour.png
 
-[npm-url]: https://www.npmjs.org/package/angular-bootstrap-tour
-[npm-image]: https://badge.fury.io/js/angular-bootstrap-tour.png
+[npm-url]: https://www.npmjs.org/package/angular-ui-tour
+[npm-image]: https://badge.fury.io/js/angular-ui-tour.png
 
-[irc-url]: http://webchat.freenode.net/?channels=angular-bootstrap-tour
-[irc-image]: http://img.shields.io/badge/irc-%23angular-bootstrap-tour-brightgreen.png
+[irc-url]: http://webchat.freenode.net/?channels=angular-ui-tour
+[irc-image]: http://img.shields.io/badge/irc-%23angular-ui-tour-brightgreen.png
 
-[gitter-url]: https://gitter.im/benmarch/angular-bootstrap-tour
-[gitter-image]: http://img.shields.io/badge/gitter-benmarch/angular-bootstrap-tour-brightgreen.png
+[gitter-url]: https://gitter.im/benmarch/angular-ui-tour
+[gitter-image]: http://img.shields.io/badge/gitter-benmarch/angular-ui-tour-brightgreen.png
 
 [tip-url]: https://www.gittip.com/benmarch
 [tip-image]: http://img.shields.io/gittip/benmarch.png
