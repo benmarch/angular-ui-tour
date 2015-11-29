@@ -11,6 +11,92 @@
 
 }(angular.module('bm.uiTour', ['ngSanitize', 'ui.bootstrap', 'smoothScroll'])));
 
+(function (app) {
+    'use strict';
+
+    app.factory('uiTourBackdrop', ['TourConfig', '$document', '$uibPosition', '$window', function (TourConfig, $document, $uibPosition, $window) {
+
+        var service = {},
+            $body = angular.element($document[0].body),
+            $backdrop = angular.element($document[0].createElement('div')),
+            $clone,
+            preventDefault = function (e) {
+                e.preventDefault();
+            };
+
+        (function createNoScrollingClass() {
+            var name = '.no-scrolling',
+                rules = 'height: 100%; overflow: hidden;',
+                style = document.createElement('style');
+            style.type = 'text/css';
+            document.getElementsByTagName('head')[0].appendChild(style);
+
+            if(!style.sheet && !style.sheet.insertRule) {
+                (style.styleSheet || style.sheet).addRule(name, rules);
+            } else {
+                style.sheet.insertRule(name + '{' + rules + '}', 0);
+            }
+        }());
+
+
+
+        function preventScrolling() {
+            $body.addClass('no-scrolling');
+            $body.on('touchmove', preventDefault);
+        }
+
+        function allowScrolling() {
+            $body.removeClass('no-scrolling');
+            $body.off('touchmove', preventDefault);
+        }
+
+        $backdrop.css({
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: TourConfig.get('backdropZIndex'),
+            backgroundColor: 'rgba(0, 0, 0, .5)',
+            display: 'none'
+        });
+
+        $body.append($backdrop);
+
+        service.createForElement = function (element, shouldPreventScrolling, isFixedElement) {
+            var position;
+            $clone = element.clone();
+            $backdrop.css('display', 'block');
+            $body.append($clone);
+            $clone.css('zIndex', TourConfig.get('backdropZIndex') + 1);
+            position = $uibPosition.offset(element);
+            $clone.css({
+                position: isFixedElement ? 'fixed': 'absolute',
+                top: position.top + 'px',
+                left: position.left + 'px',
+                height: position.height + 'px',
+                width: position.width + 'px',
+                marginTop: 0,
+                marginLeft: 0,
+                backgroundColor: $body.css('backgroundColor') || '#FFFFFF'
+            });
+            if (shouldPreventScrolling) {
+                preventScrolling();
+            }
+        };
+
+        service.hide = function () {
+            $backdrop.css('display', 'none');
+            $clone.remove();
+            allowScrolling();
+        };
+
+        return service;
+
+    }]);
+
+}(angular.module('bm.uiTour')));
+
 /* global angular: false */
 
 (function (app) {
@@ -29,6 +115,7 @@
             tooltipClass: '',
             orphan: false,
             backdrop: false,
+            backdropZIndex: 10000,
 
             onStart: null,
             onEnd: null,
@@ -71,7 +158,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$q', 'TourConfig', function ($q, TourConfig) {
+    app.controller('TourController', ['$q', 'TourConfig', 'uiTourBackdrop', function ($q, TourConfig, uiTourBackdrop) {
 
         var self = this,
             stepList = [],
@@ -105,7 +192,7 @@
          */
         function isNext() {
             var current = self.getCurrentStep(),
-                next = self.getNextStepElement();
+                next = self.getNextStep();
 
             return !!((next && next.enabled) || current.nextPath);
         }
@@ -117,7 +204,7 @@
          */
         function isPrev() {
             var current = self.getCurrentStep(),
-                prev = self.getPrevStepElement();
+                prev = self.getPrevStep();
 
             return !!((prev && prev.enabled) || current.prevPath);
         }
@@ -180,6 +267,9 @@
             if (self.getCurrentStep()) {
                 self.hideStep(self.getCurrentStep());
             }
+            if (options.onEnd) {
+                options.onEnd();
+            }
             currentStep = null;
             tourStatus = statuses.OFF;
         };
@@ -188,6 +278,9 @@
          * pauses the tour
          */
         self.pause = function () {
+            if (options.onPause) {
+                options.onPause();
+            }
             tourStatus = statuses.PAUSED;
             self.hideStep(self.getCurrentStep());
         };
@@ -196,6 +289,9 @@
          * resumes a paused tour or starts it
          */
         self.resume = function () {
+            if (options.onResume) {
+                options.onResume();
+            }
             tourStatus = statuses.ON;
             self.showStep(self.getCurrentStep());
         };
@@ -212,7 +308,7 @@
                     return self.hideStep(step);
                 },
                 function () {
-                    currentStep = self.getNextStepElement();
+                    currentStep = self.getNextStep();
                     if (self.getCurrentStep()) {
                         return self.showStep(self.getCurrentStep());
                     } else {
@@ -234,7 +330,7 @@
                     return self.hideStep(step);
                 },
                 function () {
-                    currentStep = self.getPrevStepElement();
+                    currentStep = self.getPrevStep();
                     if (resumeWhenFound) {
                         return $q.resolve();
                     } else if (self.getCurrentStep()) {
@@ -254,6 +350,12 @@
         self.showStep = function (step) {
             return serial([
                 step.onShow || options.onShow || $q.resolve,
+                function () {
+                    if (step.backdrop || options.backdrop) {
+                        uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
+                    }
+                    return $q.resolve();
+                },
                 step.show,
                 step.onShown || options.onShown || $q.resolve,
                 function () {
@@ -273,6 +375,12 @@
             return serial([
                 step.onHide || options.onHide || $q.resolve,
                 step.hide,
+                function () {
+                    if (step.backdrop || options.backdrop) {
+                        uiTourBackdrop.hide();
+                    }
+                    return $q.resolve();
+                },
                 step.onHidden || options.onHidden || $q.resolve
             ]);
         };
@@ -289,7 +397,7 @@
          * return next step or null
          * @returns {step}
          */
-        self.getNextStepElement = function () {
+        self.getNextStep = function () {
             if (!currentStep) {
                 return null;
             }
@@ -300,7 +408,7 @@
          * return previous step or null
          * @returns {step}
          */
-        self.getPrevStepElement = function () {
+        self.getPrevStep = function () {
             if (!currentStep) {
                 return null;
             }
@@ -445,8 +553,10 @@
                 var attrName = helpers.getAttrName(eventName, prefix);
                 if (attrs[attrName]) {
                     options[eventName] = function () {
-                        safeApply(scope, function () {
-                            scope.$eval(attrs[attrName]);
+                        return $q(function (resolve) {
+                            safeApply(scope, function () {
+                                resolve(scope.$eval(attrs[attrName]));
+                            });
                         });
                     };
                 }
@@ -548,7 +658,7 @@
                             enabled: true
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title enabled path animation container placement backdrop redirect orphan reflex duration nextStep prevStep nextPath prevPath'.split(' '),
+                        options = 'content title enabled animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath'.split(' '),
                         orderWatch;
 
                     //Pass interpolated values through
@@ -609,7 +719,7 @@
                         ctrl.removeStep(step);
                         orderWatch();
                     });
-                }
+                };
             }
         };
 
@@ -622,6 +732,10 @@
             scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
             templateUrl: 'tour-step-popup.html',
             link: function (scope, element) {
+                element.css('zIndex', TourConfig.get('backdropZIndex') + 2);
+                if (scope.originScope().tourStep.fixed) {
+                    element.css('position', 'fixed');
+                }
                 scope.$watch('isOpen', function (isOpen) {
                     if (isOpen()) {
                         smoothScroll(element[0], {
@@ -675,215 +789,6 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
         return function () {
             return {};
         };
-    }]);
-
-}(angular.module('bm.uiTour')));
-
-(function (app) {
-    'use strict';
-
-    app.factory('LinkedList', [function () {
-
-        var LinkedList = {};
-
-        LinkedList.create = function (isDouble) {
-            var head = null,
-                tail = null,
-                length = 0;
-
-            function createNode(data) {
-                var node = {
-                    data: data,
-                    next: null
-                };
-
-                if (isDouble) {
-                    node.prev = null;
-                }
-
-                return node;
-            }
-
-            return {
-                getHead: function () {
-                    return head;
-                },
-                getTail: function () {
-                    return tail;
-                },
-                size: function () {
-                    return length;
-                },
-                push: function (data) {
-                    var newNode = createNode(data);
-                    if (tail) {
-                        tail.next = newNode;
-                        if (isDouble) {
-                            newNode.prev = tail;
-                        }
-                        tail = newNode;
-                    } else {
-                        head = tail = newNode;
-                    }
-                    length += 1;
-                    return true;
-                },
-                pop: function () {
-                    if (!head) return;
-
-                    //only 1 item
-                    if (!head.next) {
-                        head = null;
-
-                        length -= 1;
-                        return true;
-                    }
-
-                    var current = head;
-
-                    do {
-                        if (current.next.next) {
-                            current = current.next;
-                        } else {
-                            current.next = null;
-                            tail = current;
-
-                            length -= 1;
-                            return true;
-                        }
-                    } while (current.next);
-                },
-                unshift: function (data) {
-                    var newNode = createNode(data);
-                    if (head) {
-                        newNode.next = head;
-                        if (isDouble) {
-                            head.prev = newNode;
-                        }
-                        head = newNode;
-                    } else {
-                        head = tail = newNode;
-                    }
-                    length += 1;
-                    return true;
-                },
-                shift: function () {
-                    if (!head) return;
-
-                    if (!head.next) {
-                        head = tail = null;
-                    } else {
-                        if (isDouble) {
-                            head.next.prev = null;
-                        }
-                        head = head.next;
-                    }
-
-                    length -= 1;
-                    return true;
-                },
-                insertAt: function (index, data) {
-                    if (index === 0 || length === 0) {
-                        return this.unshift(data);
-                    }
-                    if (index >= length) {
-                        return this.push(data);
-                    }
-
-                    var nodeBefore = head,
-                        newNode = createNode(data);
-                    for (var i = 1; i < index; ++i) {
-                        nodeBefore = nodeBefore.next;
-                    }
-                    if (isDouble) {
-                        if (nodeBefore.next) {
-                            nodeBefore.next.prev = newNode;
-                        }
-                        newNode.prev = nodeBefore;
-                    }
-                    newNode.next = nodeBefore.next;
-                    nodeBefore.next = newNode;
-
-                    length += 1;
-                    return true;
-                },
-                forEach: function (iterator) {
-                    var index = 0,
-                        current = head,
-                        stopped = false;
-
-                    while (current && !stopped) {
-                        iterator(current, index, function () { stopped = true; });
-                        index += 1;
-                        current = current.next;
-                    }
-                },
-                remove: function (data) {
-                    if (!head) return false;
-                    var current = head;
-
-                    //if first element
-                    if (head.data === data) {
-                        return this.shift();
-                    }
-
-                    while (current.next) {
-                        if (current.next.data === data) {
-                            //if last item
-                            if (current.next === tail) {
-                                return this.pop();
-                            }
-
-                            if (isDouble) {
-                                current.next.next.prev = current;
-                            }
-                            current.next = current.next.next;
-
-                            length -= 1;
-                            return true;
-                        }
-                        current = current.next;
-                    }
-
-                    return false;
-                },
-                get: function (data) {
-                    var current = head;
-
-                    while (current) {
-                        if (current.data === data) {
-                            return current;
-                        }
-                        current = current.next;
-                    }
-
-                    return null;
-                },
-                contains: function (data) {
-                    var match = false;
-                    this.forEach(function (node) {
-                        if (node.data === data) {
-                            match = true;
-                        }
-                    });
-                    return match;
-                },
-                toArray: function () {
-                    var arr = [],
-                        current = head;
-
-                    while (current) {
-                        arr.push(current.data);
-                        current = current.next;
-                    }
-
-                    return arr;
-                }
-            }
-        };
-
-        return LinkedList;
-
     }]);
 
 }(angular.module('bm.uiTour')));
