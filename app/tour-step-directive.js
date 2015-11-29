@@ -12,7 +12,7 @@
         return {
             restrict: 'EA',
             scope: true,
-            require: '^tour',
+            require: '^uiTour',
             compile: function (tElement, tAttrs) {
 
                 if (!tAttrs.tourStep) {
@@ -64,14 +64,15 @@
 
                     //on show and on hide
                     step.show = function () {
+                        element.triggerHandler('uiTourShow');
                         return $q(function (resolve) {
-                            element[0].dispatchEvent(new Event('uiTourShow'));
+                            element[0].dispatchEvent(new CustomEvent('uiTourShow'));
                             resolve();
                         });
                     };
                     step.hide = function () {
                         return $q(function (resolve) {
-                            element[0].dispatchEvent(new Event('uiTourHide'));
+                            element[0].dispatchEvent(new CustomEvent('uiTourHide'));
                             resolve();
                         });
                     };

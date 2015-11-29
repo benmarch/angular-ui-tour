@@ -19,8 +19,27 @@
     app.provider('TourConfig', [function () {
 
         var config = {
-            prefixOptions: true,
-            prefix: 'tourStep'
+            placement: 'top',
+            animation: true,
+            popupDelay: 1,
+            closePopupDelay: 0,
+            trigger: 'uiTourShow',
+            enable: true,
+            appendToBody: false,
+            tooltipClass: '',
+            orphan: false,
+            backdrop: false,
+
+            onStart: null,
+            onEnd: null,
+            onPause: null,
+            onResume: null,
+            onNext: null,
+            onPrev: null,
+            onShow: null,
+            onShown: null,
+            onHide: null,
+            onHidden: null
         };
 
         this.set = function (option, value) {
@@ -33,6 +52,10 @@
 
             service.get = function (option) {
                 return config[option];
+            };
+
+            service.getAll = function () {
+                return angular.copy(config);
             };
 
             return service;
@@ -48,7 +71,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$q', 'LinkedList', function ($q, LinkedList) {
+    app.controller('TourController', ['$q', 'TourConfig', function ($q, TourConfig) {
 
         var self = this,
             stepList = [],
@@ -60,7 +83,7 @@
                 PAUSED: 2
             },
             tourStatus = statuses.OFF,
-            options = {};
+            options = TourConfig.getAll();
 
         /**
          * just some promise sugar
@@ -142,6 +165,9 @@
          * starts the tour
          */
         self.start = function () {
+            if (options.onStart) {
+                options.onStart();
+            }
             currentStep = stepList[0];
             tourStatus = statuses.ON;
             self.showStep(self.getCurrentStep());
@@ -221,7 +247,7 @@
         };
 
         /**
-         * show supplied step or step index
+         * show supplied step
          * @param step
          * @returns {promise}
          */
@@ -239,7 +265,7 @@
         };
 
         /**
-         * hides the supplied step or step index
+         * hides the supplied step
          * @param step
          * @returns {promise}
          */
@@ -303,9 +329,20 @@
          * @returns {self}
          */
         self.init = function (opts) {
-            options = opts;
+            options = angular.extend(options, opts);
             self.options = options;
             return self;
+        };
+
+        //some debugging functions
+        self._getSteps = function () {
+            return stepList;
+        };
+        self._getStatus = function () {
+            return tourStatus;
+        };
+        self._getCurrentStep = function () {
+            return currentStep;
         };
     }]);
 
@@ -316,47 +353,36 @@
 (function (app) {
     'use strict';
 
-    function directive () {
-        return ['TourHelpers', function (TourHelpers) {
+    app.directive('uiTour', ['TourHelpers', function (TourHelpers) {
 
-            return {
-                restrict: 'EA',
-                scope: true,
-                controller: 'TourController',
-                link: function (scope, element, attrs, ctrl) {
+        return {
+            restrict: 'EA',
+            scope: true,
+            controller: 'TourController',
+            link: function (scope, element, attrs, ctrl) {
 
-                    //Pass static options through or use defaults
-                    var tour = {},
-                        events = 'onStart onEnd afterGetState afterSetState afterRemoveState onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
-                        options = 'name container keyboard storage debug redirect duration basePath backdrop orphan'.split(' ');
+                //Pass static options through or use defaults
+                var tour = {},
+                    events = 'onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
+                    properties = 'placement animation popupDelay closePopupDelay trigger enable appendToBody tooltipClass orphan backdrop'.split(' ');
 
-                    //Pass interpolated values through
-                    TourHelpers.attachInterpolatedValues(attrs, tour, options);
+                //Pass interpolated values through
+                TourHelpers.attachInterpolatedValues(attrs, tour, properties, 'uiTour');
 
-                    //Attach event handlers
-                    TourHelpers.attachEventHandlers(scope, attrs, tour, events);
+                //Attach event handlers
+                TourHelpers.attachEventHandlers(scope, attrs, tour, events, 'uiTour');
 
-                    //Monitor number of steps
-                    scope.$watchCollection(ctrl.getSteps, function (steps) {
-                        if (!steps) return;
-                        scope.stepCount = steps.length;
-                    });
-
-                    //If there is an options argument passed, just use that instead
-                    if (attrs[TourHelpers.getAttrName('options')]) {
-                        angular.extend(tour, scope.$eval(attrs[TourHelpers.getAttrName('options')]));
-                    }
-
-                    //Initialize tour
-                    scope.tour = ctrl.init(tour);
+                //If there is an options argument passed, just use that instead
+                if (attrs[TourHelpers.getAttrName('options')]) {
+                    angular.extend(tour, scope.$eval(attrs[TourHelpers.getAttrName('options')]));
                 }
-            };
 
-        }];
-    }
+                //Initialize tour
+                scope.tour = ctrl.init(tour);
+            }
+        };
 
-    app.directive('tour', directive());
-    app.directive('uiTour', directive());
+    }]);
 
 }(angular.module('bm.uiTour')));
 
@@ -411,14 +437,16 @@
          * @param {Attributes} attrs
          * @param {Object} options represents the tour or step object
          * @param {Array} events
+         * @param {boolean} prefix - used only by the tour directive
          */
-        helpers.attachEventHandlers = function (scope, attrs, options, events) {
+        helpers.attachEventHandlers = function (scope, attrs, options, events, prefix) {
 
             angular.forEach(events, function (eventName) {
-                if (attrs[helpers.getAttrName(eventName)]) {
-                    options[eventName] = function (tour) {
+                var attrName = helpers.getAttrName(eventName, prefix);
+                if (attrs[attrName]) {
+                    options[eventName] = function () {
                         safeApply(scope, function () {
-                            scope.$eval(attrs[helpers.getAttrName(eventName)]);
+                            scope.$eval(attrs[attrName]);
                         });
                     };
                 }
@@ -432,13 +460,15 @@
          * @param {Attributes} attrs
          * @param {Object} options represents the tour or step object
          * @param {Array} keys attribute names
+         * @param {boolean} prefix - used only by the tour directive
          */
-        helpers.attachInterpolatedValues = function (attrs, options, keys) {
+        helpers.attachInterpolatedValues = function (attrs, options, keys, prefix) {
 
             angular.forEach(keys, function (key) {
-                if (attrs[helpers.getAttrName(key)]) {
-                    options[key] = stringToBoolean(attrs[helpers.getAttrName(key)]);
-                    attrs.$observe(helpers.getAttrName(key), function (newValue) {
+                var attrName = helpers.getAttrName(key, prefix);
+                if (attrs[attrName]) {
+                    options[key] = stringToBoolean(attrs[attrName]);
+                    attrs.$observe(attrName, function (newValue) {
                         options[key] = stringToBoolean(newValue);
                     });
                 }
@@ -473,14 +503,11 @@
          * Returns the attribute name for an option depending on the prefix
          *
          * @param {string} option - name of option
+         * @param {string} prefix - should only be used by tour directive and set to 'uiTour'
          * @returns {string} potentially prefixed name of option, or just name of option
          */
-        helpers.getAttrName = function (option) {
-            if (TourConfig.get('prefixOptions')) {
-                return TourConfig.get('prefix') + option.charAt(0).toUpperCase() + option.substr(1);
-            } else {
-                return option;
-            }
+        helpers.getAttrName = function (option, prefix) {
+            return (prefix || 'tourStep') + option.charAt(0).toUpperCase() + option.substr(1);
         };
 
         return helpers;
@@ -503,7 +530,7 @@
         return {
             restrict: 'EA',
             scope: true,
-            require: '^tour',
+            require: '^uiTour',
             compile: function (tElement, tAttrs) {
 
                 if (!tAttrs.tourStep) {
@@ -555,14 +582,15 @@
 
                     //on show and on hide
                     step.show = function () {
+                        element.triggerHandler('uiTourShow');
                         return $q(function (resolve) {
-                            element[0].dispatchEvent(new Event('uiTourShow'));
+                            element[0].dispatchEvent(new CustomEvent('uiTourShow'));
                             resolve();
                         });
                     };
                     step.hide = function () {
                         return $q(function (resolve) {
-                            element[0].dispatchEvent(new Event('uiTourHide'));
+                            element[0].dispatchEvent(new CustomEvent('uiTourHide'));
                             resolve();
                         });
                     };

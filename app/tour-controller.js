@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$q', function ($q) {
+    app.controller('TourController', ['$q', 'TourConfig', function ($q, TourConfig) {
 
         var self = this,
             stepList = [],
@@ -15,7 +15,7 @@
                 PAUSED: 2
             },
             tourStatus = statuses.OFF,
-            options = {};
+            options = TourConfig.getAll();
 
         /**
          * just some promise sugar
@@ -97,6 +97,9 @@
          * starts the tour
          */
         self.start = function () {
+            if (options.onStart) {
+                options.onStart();
+            }
             currentStep = stepList[0];
             tourStatus = statuses.ON;
             self.showStep(self.getCurrentStep());
@@ -258,9 +261,20 @@
          * @returns {self}
          */
         self.init = function (opts) {
-            options = opts;
+            options = angular.extend(options, opts);
             self.options = options;
             return self;
+        };
+
+        //some debugging functions
+        self._getSteps = function () {
+            return stepList;
+        };
+        self._getStatus = function () {
+            return tourStatus;
+        };
+        self._getCurrentStep = function () {
+            return currentStep;
         };
     }]);
 

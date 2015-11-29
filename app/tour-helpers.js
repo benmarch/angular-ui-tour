@@ -49,15 +49,19 @@
          * @param {Attributes} attrs
          * @param {Object} options represents the tour or step object
          * @param {Array} events
+         * @param {boolean} prefix - used only by the tour directive
          */
-        helpers.attachEventHandlers = function (scope, attrs, options, events) {
+        helpers.attachEventHandlers = function (scope, attrs, options, events, prefix) {
 
             angular.forEach(events, function (eventName) {
-                if (attrs[helpers.getAttrName(eventName)]) {
-                    options[eventName] = function (tour) {
-                        safeApply(scope, function () {
-                            scope.$eval(attrs[helpers.getAttrName(eventName)]);
-                        });
+                var attrName = helpers.getAttrName(eventName, prefix);
+                if (attrs[attrName]) {
+                    options[eventName] = function () {
+                        return $q(function (resolve) {
+                            safeApply(scope, function () {
+                                resolve(scope.$eval(attrs[attrName]));
+                            });
+                        })
                     };
                 }
             });
@@ -70,13 +74,15 @@
          * @param {Attributes} attrs
          * @param {Object} options represents the tour or step object
          * @param {Array} keys attribute names
+         * @param {boolean} prefix - used only by the tour directive
          */
-        helpers.attachInterpolatedValues = function (attrs, options, keys) {
+        helpers.attachInterpolatedValues = function (attrs, options, keys, prefix) {
 
             angular.forEach(keys, function (key) {
-                if (attrs[helpers.getAttrName(key)]) {
-                    options[key] = stringToBoolean(attrs[helpers.getAttrName(key)]);
-                    attrs.$observe(helpers.getAttrName(key), function (newValue) {
+                var attrName = helpers.getAttrName(key, prefix);
+                if (attrs[attrName]) {
+                    options[key] = stringToBoolean(attrs[attrName]);
+                    attrs.$observe(attrName, function (newValue) {
                         options[key] = stringToBoolean(newValue);
                     });
                 }
@@ -111,14 +117,11 @@
          * Returns the attribute name for an option depending on the prefix
          *
          * @param {string} option - name of option
+         * @param {string} prefix - should only be used by tour directive and set to 'uiTour'
          * @returns {string} potentially prefixed name of option, or just name of option
          */
-        helpers.getAttrName = function (option) {
-            if (TourConfig.get('prefixOptions')) {
-                return TourConfig.get('prefix') + option.charAt(0).toUpperCase() + option.substr(1);
-            } else {
-                return option;
-            }
+        helpers.getAttrName = function (option, prefix) {
+            return (prefix || 'tourStep') + option.charAt(0).toUpperCase() + option.substr(1);
         };
 
         return helpers;
