@@ -30,7 +30,7 @@
                             enabled: true
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title enabled path animation container placement backdrop redirect orphan reflex duration nextStep prevStep nextPath prevPath'.split(' '),
+                        options = 'content title enabled animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath'.split(' '),
                         orderWatch;
 
                     //Pass interpolated values through
@@ -105,6 +105,9 @@
             templateUrl: 'tour-step-popup.html',
             link: function (scope, element) {
                 element.css('zIndex', TourConfig.get('backdropZIndex') + 2);
+                if (scope.originScope().tourStep.fixed) {
+                    element.css('position', 'fixed');
+                }
                 scope.$watch('isOpen', function (isOpen) {
                     if (isOpen()) {
                         smoothScroll(element[0], {

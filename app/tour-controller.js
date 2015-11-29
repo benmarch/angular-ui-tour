@@ -197,7 +197,7 @@
                 step.onShow || options.onShow || $q.resolve,
                 function () {
                     if (step.backdrop || options.backdrop) {
-                        uiTourBackdrop.createForElement(step.element);
+                        uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
                     }
                     return $q.resolve();
                 },
