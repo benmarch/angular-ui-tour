@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$q', 'TourConfig', function ($q, TourConfig) {
+    app.controller('TourController', ['$q', 'TourConfig', 'uiTourBackdrop', function ($q, TourConfig, uiTourBackdrop) {
 
         var self = this,
             stepList = [],
@@ -195,6 +195,12 @@
         self.showStep = function (step) {
             return serial([
                 step.onShow || options.onShow || $q.resolve,
+                function () {
+                    if (step.backdrop || options.backdrop) {
+                        uiTourBackdrop.createForElement(step.element);
+                    }
+                    return $q.resolve();
+                },
                 step.show,
                 step.onShown || options.onShown || $q.resolve,
                 function () {
@@ -214,6 +220,12 @@
             return serial([
                 step.onHide || options.onHide || $q.resolve,
                 step.hide,
+                function () {
+                    if (step.backdrop || options.backdrop) {
+                        uiTourBackdrop.hide();
+                    }
+                    return $q.resolve();
+                },
                 step.onHidden || options.onHidden || $q.resolve
             ]);
         };

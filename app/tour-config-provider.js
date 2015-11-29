@@ -16,6 +16,7 @@
             tooltipClass: '',
             orphan: false,
             backdrop: false,
+            backdropZIndex: 10000,
 
             onStart: null,
             onEnd: null,

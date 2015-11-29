@@ -104,6 +104,7 @@
             scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
             templateUrl: 'tour-step-popup.html',
             link: function (scope, element) {
+                element.css('zIndex', TourConfig.get('backdropZIndex') + 2);
                 scope.$watch('isOpen', function (isOpen) {
                     if (isOpen()) {
                         smoothScroll(element[0], {
