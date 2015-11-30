@@ -1,5 +1,8 @@
 # angular-ui-tour
 [![Bower Version][bower-image]][bower-url]
+[![Build Status][build-image]][build-url]
+[![Dependency Status][depstat-image]][depstat-url]
+[![Code Climate][gpa-image]][gpa-url]
 
 ## About
 
@@ -200,31 +203,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 [build-image]: http://img.shields.io/travis/benmarch/angular-ui-tour.png
 
 [gpa-url]: https://codeclimate.com/github/benmarch/angular-ui-tour
-[gpa-image]: https://codeclimate.com/github/benmarch/angular-ui-tour.png
+[gpa-image]: https://codeclimate.com/github/benmarch/angular-ui-tour/badges/gpa.svg
 
 [coverage-url]: https://codeclimate.com/github/benmarch/angular-ui-tour/code?sort=covered_percent&sort_direction=desc
 [coverage-image]: https://codeclimate.com/github/benmarch/angular-ui-tour/coverage.png
 
-[depstat-url]: https://david-dm.org/benmarch/angular-ui-tour
-[depstat-image]: https://david-dm.org/benmarch/angular-ui-tour.png?theme=shields.io
-
-[issues-url]: https://github.com/benmarch/angular-ui-tour/issues
-[issues-image]: http://img.shields.io/github/issues/benmarch/angular-ui-tour.png
+[depstat-url]: https://gemnasium.com/benmarch/angular-ui-tour
+[depstat-image]: https://gemnasium.com/benmarch/angular-ui-tour.svg
 
 [bower-url]: http://bower.io/search/?q=angular-ui-tour
 [bower-image]: https://badge.fury.io/bo/angular-ui-tour.png
-
-[downloads-url]: https://www.npmjs.org/package/angular-ui-tour
-[downloads-image]: http://img.shields.io/npm/dm/angular-ui-tour.png
-
-[npm-url]: https://www.npmjs.org/package/angular-ui-tour
-[npm-image]: https://badge.fury.io/js/angular-ui-tour.png
-
-[irc-url]: http://webchat.freenode.net/?channels=angular-ui-tour
-[irc-image]: http://img.shields.io/badge/irc-%23angular-ui-tour-brightgreen.png
-
-[gitter-url]: https://gitter.im/benmarch/angular-ui-tour
-[gitter-image]: http://img.shields.io/badge/gitter-benmarch/angular-ui-tour-brightgreen.png
-
-[tip-url]: https://www.gittip.com/benmarch
-[tip-image]: http://img.shields.io/gittip/benmarch.png
