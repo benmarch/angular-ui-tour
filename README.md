@@ -97,7 +97,7 @@ display consecutively, but the order among them is unpredictable.
 
 ### uiTour
 
-uiTour is the container for the tour steps; all tour steps must be declared as decendents of uiTour. 
+uiTour is the container for the tour steps; all tour steps must be declared as descendants of uiTour. 
 The declaration can be as simple as adding ui-tour to an element, or can include one or more options (shown above).
 
 Examples:
