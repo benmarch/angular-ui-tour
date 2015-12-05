@@ -136,6 +136,16 @@ module.exports = function (grunt) {
                     livereload: true
                 }
             }
+        },
+
+        release: {
+            options: {
+                additionalFiles: ['bower.json'],
+                npm: false,
+                indentation: '    ',
+                commitMessage: 'Bumped version to <%= version %>',
+                tagMessage: 'Committing release tag <%= version %>'
+            }
         }
     });
 

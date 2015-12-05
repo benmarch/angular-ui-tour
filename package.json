@@ -44,6 +44,7 @@
     "grunt-contrib-uglify": "*",
     "grunt-html2js": "^0.3.5",
     "grunt-karma": "*",
+    "grunt-release": "^0.13.0",
     "grunt-wiredep": "^2.0.0",
     "jasmine-core": "^2.3.4",
     "karma": "^0.13.15",
