@@ -13,7 +13,7 @@
 
                 //Pass static options through or use defaults
                 var tour = {},
-                    events = 'onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
+                    events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
                     properties = 'placement animation popupDelay closePopupDelay trigger enable appendToBody tooltipClass orphan backdrop'.split(' ');
 
                 //Pass interpolated values through
@@ -29,6 +29,9 @@
 
                 //Initialize tour
                 scope.tour = ctrl.init(tour);
+                if (typeof tour.onReady === 'function') {
+                    tour.onReady();
+                }
             }
         };
 

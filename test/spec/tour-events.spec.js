@@ -12,6 +12,7 @@ describe('Tour Config', function () {
         tourScope = $rootScope.$new();
 
         angular.extend(tourScope, {
+            onReady: jasmine.createSpy('onReady').and.returnValue($q.resolve()),
             onStart: jasmine.createSpy('onStart').and.returnValue($q.resolve()),
             onEnd: jasmine.createSpy('onEnd').and.returnValue($q.resolve()),
             onPause: jasmine.createSpy('onPause').and.returnValue($q.resolve()),
@@ -27,6 +28,13 @@ describe('Tour Config', function () {
         $compile($templateCache.get('tour-with-all-events-overridden.html'))(tourScope);
         tourHandle = tourScope.$$childTail.tour;
     }));
+
+    it('should call onReady when tour is initialized', function () {
+        //tour is initialized in beforeEach
+
+        //then
+        expect(tourScope.onReady).toHaveBeenCalledWith(tourScope.$$childTail.tour);
+    });
 
     it('should call onStart when tour is started', function () {
         //when
