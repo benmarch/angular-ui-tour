@@ -158,7 +158,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$q', 'TourConfig', 'uiTourBackdrop', function ($q, TourConfig, uiTourBackdrop) {
+    app.controller('TourController', ['$q', '$filter', 'TourConfig', 'uiTourBackdrop', function ($q, $filter, TourConfig, uiTourBackdrop) {
 
         var self = this,
             stepList = [],
@@ -218,13 +218,8 @@
             if (~stepList.indexOf(step)) {
                 return;
             }
-            var insertBeforeIndex = 0;
-            stepList.forEach(function (stepElement, index) {
-                if (step.order >= stepElement.order) {
-                    insertBeforeIndex = index;
-                }
-            });
-            stepList.splice(insertBeforeIndex + 1, 0, step);
+            stepList.push(step);
+            stepList = $filter('orderBy')(stepList, 'order');
             if (resumeWhenFound) {
                 resumeWhenFound(step);
             }
@@ -471,7 +466,7 @@
 
                 //Pass static options through or use defaults
                 var tour = {},
-                    events = 'onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
+                    events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
                     properties = 'placement animation popupDelay closePopupDelay trigger enable appendToBody tooltipClass orphan backdrop'.split(' ');
 
                 //Pass interpolated values through
@@ -487,6 +482,9 @@
 
                 //Initialize tour
                 scope.tour = ctrl.init(tour);
+                if (typeof tour.onReady === 'function') {
+                    tour.onReady();
+                }
             }
         };
 

@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$q', 'TourConfig', 'uiTourBackdrop', function ($q, TourConfig, uiTourBackdrop) {
+    app.controller('TourController', ['$q', '$filter', 'TourConfig', 'uiTourBackdrop', function ($q, $filter, TourConfig, uiTourBackdrop) {
 
         var self = this,
             stepList = [],
@@ -63,13 +63,8 @@
             if (~stepList.indexOf(step)) {
                 return;
             }
-            var insertBeforeIndex = 0;
-            stepList.forEach(function (stepElement, index) {
-                if (step.order >= stepElement.order) {
-                    insertBeforeIndex = index;
-                }
-            });
-            stepList.splice(insertBeforeIndex + 1, 0, step);
+            stepList.push(step);
+            stepList = $filter('orderBy')(stepList, 'order');
             if (resumeWhenFound) {
                 resumeWhenFound(step);
             }
