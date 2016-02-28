@@ -143,7 +143,7 @@
         self.next = function () {
             var step = self.getCurrentStep();
             return serial([
-                step.onNext || options.onNext || $q.resolve,
+                step.config('onNext') || $q.resolve,
                 function () {
                     return self.hideStep(step);
                 },
@@ -165,7 +165,7 @@
         self.prev = function () {
             var step = self.getCurrentStep();
             return serial([
-                step.onPrev || options.onPrev || $q.resolve,
+                step.config('onPrev') || $q.resolve,
                 function () {
                     return self.hideStep(step);
                 },
@@ -189,15 +189,20 @@
          */
         self.showStep = function (step) {
             return serial([
-                step.onShow || options.onShow || $q.resolve,
+                step.config('onShow') || $q.resolve,
                 function () {
-                    if (step.backdrop || options.backdrop) {
+                    if (step.config('backdrop')) {
                         uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
                     }
                     return $q.resolve();
                 },
-                step.show,
-                step.onShown || options.onShown || $q.resolve,
+                function () {
+                    return $q(function (resolve) {
+                        step.element[0].dispatchEvent(new CustomEvent('uiTourShow'));
+                        resolve();
+                    });
+                },
+                step.config('onShown') || $q.resolve,
                 function () {
                     step.isNext = isNext();
                     step.isPrev = isPrev();
@@ -213,15 +218,20 @@
          */
         self.hideStep = function (step) {
             return serial([
-                step.onHide || options.onHide || $q.resolve,
-                step.hide,
+                step.config('onHide') || $q.resolve,
                 function () {
-                    if (step.backdrop || options.backdrop) {
+                    return $q(function (resolve) {
+                        step.element[0].dispatchEvent(new CustomEvent('uiTourHide'));
+                        resolve();
+                    });
+                },
+                function () {
+                    if (step.config('backdrop')) {
                         uiTourBackdrop.hide();
                     }
                     return $q.resolve();
                 },
-                step.onHidden || options.onHidden || $q.resolve
+                step.config('onHidden') || $q.resolve
             ]);
         };
 
@@ -269,6 +279,16 @@
                     resumeWhenFound = null;
                 }
             };
+        };
+
+        /**
+         * Returns the value for specified option
+         *
+         * @param {string} option Name of option
+         * @returns {*}
+         */
+        self.config = function (option) {
+            return options[option];
         };
 
         /**

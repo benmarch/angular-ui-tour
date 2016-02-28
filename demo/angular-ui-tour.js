@@ -9,7 +9,7 @@
         });
     }]);
 
-}(angular.module('bm.uiTour', ['ngSanitize', 'ui.bootstrap', 'smoothScroll'])));
+}(angular.module('bm.uiTour', ['ngSanitize', 'ui.bootstrap', 'smoothScroll', 'ezNg'])));
 
 (function (app) {
     'use strict';
@@ -116,6 +116,7 @@
             orphan: false,
             backdrop: false,
             backdropZIndex: 10000,
+            scrollOffset: 100,
 
             onStart: null,
             onEnd: null,
@@ -298,7 +299,7 @@
         self.next = function () {
             var step = self.getCurrentStep();
             return serial([
-                step.onNext || options.onNext || $q.resolve,
+                step.config('onNext') || $q.resolve,
                 function () {
                     return self.hideStep(step);
                 },
@@ -320,7 +321,7 @@
         self.prev = function () {
             var step = self.getCurrentStep();
             return serial([
-                step.onPrev || options.onPrev || $q.resolve,
+                step.config('onPrev') || $q.resolve,
                 function () {
                     return self.hideStep(step);
                 },
@@ -344,15 +345,20 @@
          */
         self.showStep = function (step) {
             return serial([
-                step.onShow || options.onShow || $q.resolve,
+                step.config('onShow') || $q.resolve,
                 function () {
-                    if (step.backdrop || options.backdrop) {
+                    if (step.config('backdrop')) {
                         uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
                     }
                     return $q.resolve();
                 },
-                step.show,
-                step.onShown || options.onShown || $q.resolve,
+                function () {
+                    return $q(function (resolve) {
+                        step.element[0].dispatchEvent(new CustomEvent('uiTourShow'));
+                        resolve();
+                    });
+                },
+                step.config('onShown') || $q.resolve,
                 function () {
                     step.isNext = isNext();
                     step.isPrev = isPrev();
@@ -368,15 +374,20 @@
          */
         self.hideStep = function (step) {
             return serial([
-                step.onHide || options.onHide || $q.resolve,
-                step.hide,
+                step.config('onHide') || $q.resolve,
                 function () {
-                    if (step.backdrop || options.backdrop) {
+                    return $q(function (resolve) {
+                        step.element[0].dispatchEvent(new CustomEvent('uiTourHide'));
+                        resolve();
+                    });
+                },
+                function () {
+                    if (step.config('backdrop')) {
                         uiTourBackdrop.hide();
                     }
                     return $q.resolve();
                 },
-                step.onHidden || options.onHidden || $q.resolve
+                step.config('onHidden') || $q.resolve
             ]);
         };
 
@@ -427,6 +438,16 @@
         };
 
         /**
+         * Returns the value for specified option
+         *
+         * @param {string} option Name of option
+         * @returns {*}
+         */
+        self.config = function (option) {
+            return options[option];
+        };
+
+        /**
          * pass options from directive
          * @param opts
          * @returns {self}
@@ -467,7 +488,7 @@
                 //Pass static options through or use defaults
                 var tour = {},
                     events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
-                    properties = 'placement animation popupDelay closePopupDelay trigger enable appendToBody tooltipClass orphan backdrop'.split(' ');
+                    properties = 'placement animation popupDelay closePopupDelay trigger enable appendToBody tooltipClass orphan backdrop scrollOffset'.split(' ');
 
                 //Pass interpolated values through
                 TourHelpers.attachInterpolatedValues(attrs, tour, properties, 'uiTour');
@@ -629,7 +650,7 @@
 (function (app) {
     'use strict';
 
-    app.directive('tourStep', ['TourHelpers', '$uibTooltip', '$q', '$sce', function (TourHelpers, $uibTooltip, $q, $sce) {
+    app.directive('tourStep', ['TourConfig', 'TourHelpers', '$uibTooltip', '$q', '$sce', function (TourConfig, TourHelpers, $uibTooltip, $q, $sce) {
 
         var tourStepDef = $uibTooltip('tourStep', 'tourStep', 'uiTourShow', {
             popupDelay: 1 //needs to be non-zero for popping up after navigation
@@ -653,10 +674,16 @@
                     var step = {
                             element: element,
                             stepId: attrs.tourStep,
-                            enabled: true
+                            enabled: true,
+                            config: function (option) {
+                                if (angular.isDefined(step[option])) {
+                                    return step[option];
+                                }
+                                return ctrl.config(option);
+                            }
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title enabled animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath'.split(' '),
+                        options = 'content title enabled animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
                         orderWatch;
 
                     //Pass interpolated values through
@@ -688,21 +715,6 @@
                         TourHelpers.setRedirect(step, ctrl, 'onPrev', step.prevPath, step.prevStep);
                     }
 
-                    //on show and on hide
-                    step.show = function () {
-                        element.triggerHandler('uiTourShow');
-                        return $q(function (resolve) {
-                            element[0].dispatchEvent(new CustomEvent('uiTourShow'));
-                            resolve();
-                        });
-                    };
-                    step.hide = function () {
-                        return $q(function (resolve) {
-                            element[0].dispatchEvent(new CustomEvent('uiTourHide'));
-                            resolve();
-                        });
-                    };
-
                     //for HTML content
                     step.trustedContent = $sce.trustAsHtml(step.content);
 
@@ -723,21 +735,45 @@
 
     }]);
 
-    app.directive('tourStepPopup', ['TourConfig', 'smoothScroll', function (TourConfig, smoothScroll) {
+    app.directive('tourStepPopup', ['TourConfig', 'smoothScroll', 'ezComponentHelpers', function (TourConfig, smoothScroll, ezComponentHelpers) {
         return {
             restrict: 'EA',
             replace: true,
             scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
             templateUrl: 'tour-step-popup.html',
             link: function (scope, element) {
+                var step = scope.originScope().tourStep,
+                    ch = ezComponentHelpers.apply(null, arguments),
+                    templateUrl = step.config('templateUrl'),
+                    scrollOffset = step.config('scrollOffset');
+
                 element.css('zIndex', TourConfig.get('backdropZIndex') + 2);
-                if (scope.originScope().tourStep.fixed) {
+                if (step.fixed) {
                     element.css('position', 'fixed');
                 }
+
+                if (templateUrl) {
+                    ch.useTemplateUrl(templateUrl);
+                }
+
+                if (step.config('orphan')) {
+                    //this is ugly
+                    element.css({
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        margin: 0,
+                        transform: 'translateX(-50%) translateY(-50%)',
+                        '-ms-transform': 'translateX(-50%) translateY(-50%)',
+                        '-moz-transform': 'translateX(-50%) translateY(-50%)',
+                        '-webkit-transform': 'translateX(-50%) translateY(-50%)'
+                    });
+                }
+
                 scope.$watch('isOpen', function (isOpen) {
                     if (isOpen()) {
                         smoothScroll(element[0], {
-                            offset: 100
+                            offset: scrollOffset
                         });
                     }
                 });
@@ -779,14 +815,3 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
     "</div>\n" +
     "");
 }]);
-
-(function (app) {
-    'use strict';
-
-    app.factory('Tour', [function () {
-        return function () {
-            return {};
-        };
-    }]);
-
-}(angular.module('bm.uiTour')));

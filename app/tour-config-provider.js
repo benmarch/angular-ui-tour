@@ -17,6 +17,7 @@
             orphan: false,
             backdrop: false,
             backdropZIndex: 10000,
+            scrollOffset: 100,
 
             onStart: null,
             onEnd: null,

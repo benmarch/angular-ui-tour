@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.directive('tourStep', ['TourHelpers', '$uibTooltip', '$q', '$sce', function (TourHelpers, $uibTooltip, $q, $sce) {
+    app.directive('tourStep', ['TourConfig', 'TourHelpers', '$uibTooltip', '$q', '$sce', function (TourConfig, TourHelpers, $uibTooltip, $q, $sce) {
 
         var tourStepDef = $uibTooltip('tourStep', 'tourStep', 'uiTourShow', {
             popupDelay: 1 //needs to be non-zero for popping up after navigation
@@ -27,10 +27,16 @@
                     var step = {
                             element: element,
                             stepId: attrs.tourStep,
-                            enabled: true
+                            enabled: true,
+                            config: function (option) {
+                                if (angular.isDefined(step[option])) {
+                                    return step[option];
+                                }
+                                return ctrl.config(option);
+                            }
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title enabled animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath'.split(' '),
+                        options = 'content title enabled animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
                         orderWatch;
 
                     //Pass interpolated values through
@@ -62,21 +68,6 @@
                         TourHelpers.setRedirect(step, ctrl, 'onPrev', step.prevPath, step.prevStep);
                     }
 
-                    //on show and on hide
-                    step.show = function () {
-                        element.triggerHandler('uiTourShow');
-                        return $q(function (resolve) {
-                            element[0].dispatchEvent(new CustomEvent('uiTourShow'));
-                            resolve();
-                        });
-                    };
-                    step.hide = function () {
-                        return $q(function (resolve) {
-                            element[0].dispatchEvent(new CustomEvent('uiTourHide'));
-                            resolve();
-                        });
-                    };
-
                     //for HTML content
                     step.trustedContent = $sce.trustAsHtml(step.content);
 
@@ -97,21 +88,45 @@
 
     }]);
 
-    app.directive('tourStepPopup', ['TourConfig', 'smoothScroll', function (TourConfig, smoothScroll) {
+    app.directive('tourStepPopup', ['TourConfig', 'smoothScroll', 'ezComponentHelpers', function (TourConfig, smoothScroll, ezComponentHelpers) {
         return {
             restrict: 'EA',
             replace: true,
             scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
             templateUrl: 'tour-step-popup.html',
             link: function (scope, element) {
+                var step = scope.originScope().tourStep,
+                    ch = ezComponentHelpers.apply(null, arguments),
+                    templateUrl = step.config('templateUrl'),
+                    scrollOffset = step.config('scrollOffset');
+
                 element.css('zIndex', TourConfig.get('backdropZIndex') + 2);
-                if (scope.originScope().tourStep.fixed) {
+                if (step.fixed) {
                     element.css('position', 'fixed');
                 }
+
+                if (templateUrl) {
+                    ch.useTemplateUrl(templateUrl);
+                }
+
+                if (step.config('orphan')) {
+                    //this is ugly
+                    element.css({
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        margin: 0,
+                        transform: 'translateX(-50%) translateY(-50%)',
+                        '-ms-transform': 'translateX(-50%) translateY(-50%)',
+                        '-moz-transform': 'translateX(-50%) translateY(-50%)',
+                        '-webkit-transform': 'translateX(-50%) translateY(-50%)'
+                    });
+                }
+
                 scope.$watch('isOpen', function (isOpen) {
                     if (isOpen()) {
                         smoothScroll(element[0], {
-                            offset: 100
+                            offset: scrollOffset
                         });
                     }
                 });

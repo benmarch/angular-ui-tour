@@ -147,9 +147,9 @@ Examples:
 
 - Complete test suite. The config is tested, but the navigation and step coordination is not yet tested.
 - Implement currently missing features:
-  - Orphan steps
-  - TemplateUrl
-  - Scroll offset
+  - ~~Orphan steps~~
+  - ~~TemplateUrl~~
+  - ~~Scroll offset~~
   - Trusted content
   - Auto promise wrap for config events
   - Configurable triggers

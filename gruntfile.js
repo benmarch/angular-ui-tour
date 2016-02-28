@@ -42,7 +42,7 @@ module.exports = function (grunt) {
 
         concat: {
             angular: {
-                src: ['<%= config.app %>/angular-ui-tour.js', '<%= config.app %>/**/*.js', 'lib/linked-list.js'],
+                src: ['<%= config.app %>/angular-ui-tour.js', '<%= config.app %>/**/*.js', 'lib/*.js'],
                 dest: '<%= config.dist %>/angular-ui-tour.js'
             }
         },
