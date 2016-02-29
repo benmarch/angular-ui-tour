@@ -1,0 +1,21 @@
+{
+  "name": "angular-ui-tour-demo",
+  "version": "0.0.2",
+  "ignore": [
+    ".editorconfig",
+    ".gitattributes",
+    ".gitignore",
+    ".jshintrc",
+    ".npmignore",
+    ".travis.yml",
+    ".umd",
+    "gulpfile.js",
+    "npm-shrinkwrap.json",
+    "package.json"
+  ],
+  "dependencies": {
+    "angular-ui-tour": "master",
+    "angular-route": "~1.4.8",
+    "bootstrap-css-only": "~3.3.6"
+  }
+}
