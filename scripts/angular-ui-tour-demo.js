@@ -14,10 +14,10 @@ angular.module('uiTourDemo', ['bm.uiTour', 'ngRoute'])
 
         $routeProvider
             .when('/docs', {
-                templateUrl: '/partials/docs.html'
+                templateUrl: 'partials/docs.html'
             })
             .when('/other', {
-                templateUrl: '/partials/other.html'
+                templateUrl: 'partials/other.html'
             })
             .otherwise({
                 redirectTo: '/docs'
