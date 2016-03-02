@@ -11,6 +11,8 @@ originally inspired by [Bootstrap Tour](http://www.bootstraptour.com) as [Angula
 but after much feedback to remove the jQuery dependency, Angular UI Tour was born. It uses many of the features from
 Bootstrap Tour, but plays nicely with Angular, **and does not have any dependency on Twitter Bootstrap or jQuery!**
 
+Check out the live demo [here](http://benmarch.github.io/angular-ui-tour).
+
 ## Getting Started
 Get the package:
 
