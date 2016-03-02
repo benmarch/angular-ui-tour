@@ -1,0 +1,36 @@
+{
+  "name": "angular-ui-tour",
+  "main": "dist/angular-ui-tour.js",
+  "ignore": [
+    ".editorconfig",
+    ".gitattributes",
+    ".gitignore",
+    ".jshintrc",
+    ".npmignore",
+    ".travis.yml",
+    ".umd",
+    "gulpfile.js",
+    "npm-shrinkwrap.json",
+    "package.json"
+  ],
+  "dependencies": {
+    "angular-bootstrap": "~0.14.3",
+    "ngSmoothScroll": "~2.0.0",
+    "angular-sanitize": "~1.4.8",
+    "ez-ng": "~0.1.0"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.4.8",
+    "angular-route": "~1.4.8"
+  },
+  "homepage": "https://github.com/benmarch/angular-ui-tour",
+  "_release": "e176c5ee03",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "e176c5ee03ee557e1f86c6b508ede9a665ea1bcf"
+  },
+  "_source": "git://github.com/benmarch/angular-ui-tour.git",
+  "_target": "master",
+  "_originalSource": "angular-ui-tour"
+}

@@ -1,0 +1,64 @@
+{
+    "name": "ez-ng",
+    "version": "0.1.0",
+    "description": "A collection of very simple utilities that make developing AngularJS apps much easier",
+    "author": {
+        "name": "Ben March",
+        "email": "bmarch89@gmail.com",
+        "url": "https://github.com/benmarch"
+    },
+    "homepage": "https://github.com/benmarch/ez-ng",
+    "bugs": {
+        "url": "https://github.com/benmarch/ez-ng/issues"
+    },
+    "license": "MIT",
+    "maintainers": [
+        {
+            "name": "Ben March",
+            "email": "bmarch89@gmail.com",
+            "url": "https://github.com/benmarch"
+        }
+    ],
+    "contributors": [
+        {
+            "name": "Ben March",
+            "email": "bmarch89@gmail.com",
+            "url": "https://github.com/benmarch"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/benmarch/ez-ng.git"
+    },
+    "main": "dist/ez-ng.js",
+    "scripts": {
+        "test": "grunt"
+    },
+    "keywords": [
+        "angular",
+        "angularjs",
+        "event emitter",
+        "simple",
+        "components"
+    ],
+    "ignore": [
+        ".editorconfig",
+        ".gitattributes",
+        ".gitignore",
+        ".jshintrc",
+        ".npmignore",
+        ".travis.yml",
+        ".umd",
+        "gulpfile.js",
+        "npm-shrinkwrap.json",
+        "package.json",
+        "src",
+        "test"
+    ],
+    "dependencies": {
+        "angular": "angularjs#~1.4.8"
+    },
+    "devDependencies": {
+        "angular-mocks": "~1.4.8"
+    }
+}
