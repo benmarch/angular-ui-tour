@@ -184,7 +184,7 @@ a {
   word-break: keep-all; }
   .main-content table th {
     font-weight: bold; }
-  .main-content table th, .main-content table td {
+  th, td {
     padding: 0.5rem 1rem;
     border: 1px solid #e9ebec; }
 .main-content dl {

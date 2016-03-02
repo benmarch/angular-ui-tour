@@ -16,6 +16,7 @@
   "dependencies": {
     "angular-ui-tour": "master",
     "angular-route": "~1.4.8",
-    "bootstrap-css-only": "~3.3.6"
+    "bootstrap-css-only": "~3.3.6",
+    "animate.css": "~3.5.1"
   }
 }

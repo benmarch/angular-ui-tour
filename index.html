@@ -6,446 +6,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- bower:css -->
     <link rel="stylesheet" href="bower_components/bootstrap-css-only/css/bootstrap.css" />
+    <link rel="stylesheet" href="bower_components/animate.css/animate.css" />
     <!-- endbower -->
     <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/tour-demo.css" media="screen">
 </head>
-<body ui-tour>
+<body ng-controller="TourDemoController" ui-tour ui-tour-on-prev="onPrev(tour)">
 <section class="page-header">
     <h1 class="project-name">Angular UI Tour</h1>
     <h2 class="project-tagline">Product tour using Angular UI Bootstrap Tooltips</h2>
     <a href="https://github.com/benmarch/angular-ui-tour" class="button">View on GitHub</a>
     <a href="https://github.com/benmarch/angular-ui-tour/zipball/master" class="button">Download .zip</a>
     <a href="https://github.com/benmarch/angular-ui-tour/tarball/master" class="button">Download .tar.gz</a>
-    <a href="#" ng-click="tour.start()" class="button">Start Demo Tour</a>
+    <a style="cursor: pointer" ng-click="tour.start()" class="button animated bounceInRight">Start Demo Tour</a>
 </section>
 
 <aside tour-step
        tour-step-title="Welcome!"
        tour-step-content="Welcome to Angular UI Tour: the best product tour plugin for AngularJS!"
        tour-step-order="0"
-       tour-step-orphan="true">
+       tour-step-orphan="true"
+       tour-step-backdrop="true">
 </aside>
 
-<section class="main-content">
-    <h2>
-        <a id="about" class="anchor" href="#about" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>About</h2>
+<div ng-view></div>
 
-    <p>This repo is a work in progress to replace <a href="http://github.com/benmarch/angular-bootstrap-tour">Angular Bootstrap Tour</a>.
-        The main difference between this plugin and the previous is that this does not depend on jQuery. The previous plugin was
-        simply an AngularJS wrapper around <a href="http://www.bootstraptour.com">Bootstrap Tour</a> which was written for Twitter Bootstrap,
-        which depends on jQuery. Instead, this plugin uses Angular UI Bootstrap and its fantastic Tooltip plugin. I have kept some
-        of the API the same as Angular Bootstrap Tour, but because this uses Tooltips and does not use Bootstrap Tour, it made
-        sense to change a few things. Please note that this is in the very early stages of development, and the API is subject to change.</p>
+<aside tour-step
+       tour-step-title="That's it!"
+       tour-step-content="Thank you for taking the tour! Check out the <a href='http://github.com/benmarch/angular-ui-tour'>source code</a>, fork it, create pull requests, ask questions, give feedback, and complain about it :)"
+       tour-step-order="500"
+       tour-step-orphan="true"
+       tour-step-backdrop="true">
+</aside>
 
-    <h2>
-        <a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
-
-    <p>Get the package:</p>
-
-<pre><code>bower install angular-ui-tour
-</code></pre>
-
-    <p>Add the script tags:</p>
-
-<pre><code>&lt;script src="bower_components/angular/angular.js"&gt;&lt;/script&gt;
-    &lt;script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"&gt;&lt;/script&gt;
-    &lt;script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"&gt;&lt;/script&gt;
-</code></pre>
-
-    <p>Then add the module to your app:</p>
-
-<pre><code>angular.module('myApp', ['bm.uiTour']);
-</code></pre>
-
-    <h2>
-        <a id="tour-configuration" class="anchor" href="#tour-configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Tour Configuration</h2>
-
-    <p>Tours can be configured either programatically in a config block, or declaratively as part of the uiTour directive declaration.</p>
-
-    <p>To configure in a config block, use TourConfigProvider.set(optionName, optionValue);</p>
-
-    <p>To configure on a tour declaration, use <code>ui-tour-&lt;option-name&gt;="optionValue"</code></p>
-
-    <h3>
-        <a id="options" class="anchor" href="#options" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Options</h3>
-
-    <table>
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default Value</th>
-            <th>Description</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>placement</td>
-            <td>string</td>
-            <td>"top"</td>
-            <td>Where the popup should display relative to the element.</td>
-        </tr>
-        <tr>
-            <td>animation</td>
-            <td>boolean</td>
-            <td>true</td>
-            <td>Should the popup fade in/out.</td>
-        </tr>
-        <tr>
-            <td>popupDelay</td>
-            <td>number</td>
-            <td>1</td>
-            <td>Time to delay (in ms) between when the popup is requested to show and when it is shown. <strong>Note</strong> must be positive for multi-page tours to work.</td>
-        </tr>
-        <tr>
-            <td>closePopupDelay</td>
-            <td>number</td>
-            <td>0</td>
-            <td>Time to delay (in ms) between when the popup is requested to hide and when it is hidden.</td>
-        </tr>
-        <tr>
-            <td>trigger</td>
-            <td>string</td>
-            <td>"uiTourShow"</td>
-            <td>The DOM event used to show popup (see Angular UI Tooltip docs). I don't recommend changing this.</td>
-        </tr>
-        <tr>
-            <td>enable</td>
-            <td>boolean</td>
-            <td>true</td>
-            <td>This will enable or disable the entire tour.</td>
-        </tr>
-        <tr>
-            <td>appendToBody</td>
-            <td>boolean</td>
-            <td>false</td>
-            <td>Should popups be appended to body (true) or the parent element (false).</td>
-        </tr>
-        <tr>
-            <td>tooltipClass</td>
-            <td>string</td>
-            <td>""</td>
-            <td>Adds additional classes to the popup.</td>
-        </tr>
-        <tr>
-            <td>orphan</td>
-            <td>boolean</td>
-            <td>false</td>
-            <td>Should the popup display in the center of the viewport (true) or by the element (false).</td>
-        </tr>
-        <tr>
-            <td>backdrop</td>
-            <td>boolean</td>
-            <td>false</td>
-            <td>Should there be a backdrop behind the element. <strong>Note</strong> this can be flaky.</td>
-        </tr>
-        <tr>
-            <td>backdropZIndex</td>
-            <td>number</td>
-            <td>10000</td>
-            <td>Z-index of the backdrop. Popups will be positioned relative to this.</td>
-        </tr>
-        <tr>
-            <td>templateUrl</td>
-            <td>string</td>
-            <td>"tour-step-template.html"</td>
-            <td>Used as the template for the contents of the popup (see Angular UI Tooltip docs).</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td>onReady</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called when tour is initialized and attached to the scope</td>
-        </tr>
-        <tr>
-            <td>onStart</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called when tour is started, before first popup is shown</td>
-        </tr>
-        <tr>
-            <td>onEnd</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called when tour is ended, after last popup is hidden</td>
-        </tr>
-        <tr>
-            <td>onPause</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called when tour is paused, before current popup is hidden</td>
-        </tr>
-        <tr>
-            <td>onResume</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called when tour is resumed, before current popup is shown</td>
-        </tr>
-        <tr>
-            <td>onNext</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called when next step is requested, before current popup is hidden</td>
-        </tr>
-        <tr>
-            <td>onPrev</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called when previous step is requested, before current popup is hidden</td>
-        </tr>
-        <tr>
-            <td>onShow</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called just before popup is shown</td>
-        </tr>
-        <tr>
-            <td>onShown</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called just after popup is shown</td>
-        </tr>
-        <tr>
-            <td>onHide</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called just before popup is hidden</td>
-        </tr>
-        <tr>
-            <td>onHidden</td>
-            <td>function</td>
-            <td>null</td>
-            <td>Called just after popup is hidden</td>
-        </tr>
-        </tbody>
-    </table>
-
-    <p><strong>Important:</strong> If an event is overridden in a config block, the function <strong>must</strong> return a promise.
-        If it is overridden in the directive declaration, it will be wrapped in a promise automatically. If the function returns
-        a promise, it will wait until it is resolved before moving on.</p>
-
-    <h2>
-        <a id="tour-steps" class="anchor" href="#tour-steps" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Tour Steps</h2>
-
-    <p>Tour steps are extensions of <a href="https://angular-ui.github.io/bootstrap/#/tooltip">Angular UI's Tooltips</a> and therefore all
-        options are available. Although there are 3 types of Tooltips, there is only one type of Tour Step. In addition, almost
-        all of the Tour options can be overridden by individual tour steps, as well as additional options that can be changed.</p>
-
-    <h3>
-        <a id="additional-options" class="anchor" href="#additional-options" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Additional Options</h3>
-
-    <table>
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Default Value</th>
-            <th>Description</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>title</td>
-            <td>string</td>
-            <td>""</td>
-            <td>The title of the popup</td>
-        </tr>
-        <tr>
-            <td>content</td>
-            <td>string</td>
-            <td>""</td>
-            <td>The content of the popup. <strong>Note:</strong> can contain HTML for now, but this might change for security reasons.</td>
-        </tr>
-        <tr>
-            <td>order</td>
-            <td>number</td>
-            <td>null</td>
-            <td>The order in which the step will be displayed. Although it is optional, the behavior is undefined if this is not explicitly set.</td>
-        </tr>
-        <tr>
-            <td>fixed</td>
-            <td>boolean</td>
-            <td>false</td>
-            <td>Is the element fixed (does not discover automatically ATM).</td>
-        </tr>
-        <tr>
-            <td>preventScrolling</td>
-            <td>boolean</td>
-            <td>false</td>
-            <td>Should page scrolling be prevented when popup is shown (I don't recommend using this, but there are times when it is useful).</td>
-        </tr>
-        <tr>
-            <td>nextStep</td>
-            <td>string</td>
-            <td>""</td>
-            <td>If the next step is on a different page, set this to declare the name of the next step.</td>
-        </tr>
-        <tr>
-            <td>nextPath</td>
-            <td>string</td>
-            <td>""</td>
-            <td>If the next step is on a different page, set this to the path of the next page.</td>
-        </tr>
-        <tr>
-            <td>prevStep</td>
-            <td>string</td>
-            <td>""</td>
-            <td>If the previous step is on a different page, set this to declare the name of the previous step.</td>
-        </tr>
-        <tr>
-            <td>prevPath</td>
-            <td>string</td>
-            <td>""</td>
-            <td>If the previous step is on a different page, set this to the path of the previous page.</td>
-        </tr>
-        <tr>
-            <td>templateUrl</td>
-            <td>string</td>
-            <td>"tour-step-template.html"</td>
-            <td>Used as the template for the contents of the popup (see Angular UI Tooltip docs).</td>
-        </tr>
-        </tbody>
-    </table>
-
-    <p><strong>Best practice:</strong> always set the order so that the steps display in the expected order. Steps with the same order will
-        display consecutively, but the order among them is unpredictable.</p>
-
-    <h2>
-        <a id="directives" class="anchor" href="#directives" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Directives</h2>
-
-    <h3>
-        <a id="uitour" class="anchor" href="#uitour" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>uiTour</h3>
-
-    <p>uiTour is the container for the tour steps; all tour steps must be declared as descendants of uiTour.
-        The declaration can be as simple as adding ui-tour to an element, or can include one or more options (shown above).</p>
-
-    <p>Examples:</p>
-
-<pre><code>&lt;body ui-tour&gt;
-    ... &lt;!-- page content and tour steps --&gt;
-    &lt;/body&gt;
-
-
-    &lt;div ui-tour ui-tour-on-start="onTourStart()" ui-tour-placement="bottom"&gt;
-    ... &lt;!-- page content and tour steps --&gt;
-    &lt;/div&gt;
-</code></pre>
-
-    <h3>
-        <a id="tourstep" class="anchor" href="#tourstep" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>tourStep</h3>
-
-    <p>tourSteps declare which elements should have a popup during the tour. They can be declared on any element, but some consideration
-        should be taken when deciding which element on which to declare them.</p>
-
-    <p>Examples:</p>
-
-<pre><code>&lt;body ui-tour&gt;
-    &lt;div id="mainMenu" tour-step tour-step-title="Main Menu" tour-step-content="Navigate the site using this menu." tour-step-order="0" tour-step-placement="right"&gt;...&lt;/div&gt;
-    ...
-    &lt;div id="settings" tour-step tour-step-title="Settings" tour-step-content="Click here to change your settings." tour-step-order="1"&gt;...&lt;/div&gt;
-    &lt;div id="finalTourMessage" tour-step tour-step-title="Welcome!" tour-step-content="Enjoy using the app!" tour-step-order="1000" tour-step-orphan="true" tour-step-backdrop="true"&gt;...&lt;/div&gt;
-    &lt;/body&gt;
-
-
-    &lt;!-- fixed element --&gt;
-    &lt;body ui-tour&gt;
-    &lt;header style="position: fixed;" tour-step tour-step-title="Header" tour-step-content="This header is fixed at the top." tour-step-order="0" tour-step-fixed="true"&gt;...&lt;/header&gt;
-    &lt;/body&gt;
-
-
-    &lt;!-- multi-page tour --&gt;
-    &lt;!-- layout --&gt;
-    &lt;body ui-tour&gt;
-    &lt;!-- page 1: included using ngView (/page1) --&gt;
-    &lt;div tour-step="page1step1" ... tour-step-next-path="page2" tour-step-next-step="page2step1"&gt;...&lt;/div&gt;
-    &lt;!-- /page 1 --&gt;
-
-    &lt;!-- page 2: ngView is populated when next step is requested after page1step1 --&gt;
-    &lt;div tour-step="page2step1" ... tour-step-prev-path="page1" tour-step-prev-step="page1step1"&gt;...&lt;/div&gt;
-    &lt;/body&gt;
-</code></pre>
-
-    <h2>
-        <a id="todos" class="anchor" href="#todos" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>TODO's</h2>
-
-    <ul>
-        <li>Complete test suite. The config is tested, but the navigation and step coordination is not yet tested.</li>
-        <li>Implement currently missing features:
-
-            <ul>
-                <li>Orphan steps</li>
-                <li>TemplateUrl</li>
-                <li>Scroll offset</li>
-                <li>Trusted content</li>
-                <li>Auto promise wrap for config events</li>
-                <li>Configurable triggers</li>
-                <li>More complete (and original) demo</li>
-            </ul>
-        </li>
-    </ul>
-
-    <h2>
-        <a id="build-it-yourself" class="anchor" href="#build-it-yourself" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Build It Yourself</h2>
-
-    <p>Assuming you have Node, grunt, and bower installed:</p>
-
-<pre><code>npm install
-
-    bower install
-
-    grunt
-</code></pre>
-
-    <h2>
-        <a id="demo" class="anchor" href="#demo" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Demo</h2>
-
-    <p>I have set up a simple demo using the Bootswatch Cerulean demo page (one of my favorite themes.)
-        To run the demo run <code>grunt demo connect:demo</code> and open http://localhost:8000 in the browser.</p>
-
-    <p><strong>Thanks and enjoy!</strong></p>
-
-    <h2>
-        <a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
-
-    <p>(The MIT License)</p>
-
-    <p>Copyright (c) 2016  </p>
-
-    <p>Permission is hereby granted, free of charge, to any person obtaining
-        a copy of this software and associated documentation files (the
-        'Software'), to deal in the Software without restriction, including
-        without limitation the rights to use, copy, modify, merge, publish,
-        distribute, sublicense, and/or sell copies of the Software, and to
-        permit persons to whom the Software is furnished to do so, subject to
-        the following conditions:</p>
-
-    <p>The above copyright notice and this permission notice shall be
-        included in all copies or substantial portions of the Software.</p>
-
-    <p>THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-        EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-        MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-        IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-        CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-        TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-        SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
-
-    <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/benmarch/angular-ui-tour">Angular UI Tour</a> is maintained by <a href="https://github.com/benmarch">benmarch</a>.</span>
-
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-    </footer>
-
-</section>
+<script type="text/ng-template" id="tour-step-other-template.html">
+<div>
+    <div class="popover-content tour-step-content other" ng-bind-html="tourStep.trustedContent"></div>
+    <div class="popover-navigation tour-step-navigation">
+        <div class="btn-group">
+            <button class="btn btn-sm btn-default" ng-if="tourStep.isPrev" ng-click="tour.prev()">&laquo; Prev</button>
+            <button class="btn btn-sm btn-default" ng-if="tourStep.isNext" ng-click="tour.next()">Next &raquo;</button>
+            <button class="btn btn-sm btn-default" data-role="pause-resume" data-pause-text="Pause"
+                    data-resume-text="Resume" ng-click="tour.pause()">Pause
+            </button>
+        </div>
+        <button class="btn btn-sm btn-default" data-role="end" ng-click="tour.end()">End tour</button>
+    </div>
+</div>
+</script>
 
 <script type="text/javascript">
     var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
@@ -463,6 +74,7 @@
 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 <script src="bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js"></script>
 <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+<script src="bower_components/ez-ng/dist/ez-ng.js"></script>
 <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
 <script src="bower_components/angular-route/angular-route.js"></script>
 <!-- endbower -->

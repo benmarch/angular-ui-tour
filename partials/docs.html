@@ -1,0 +1,459 @@
+<section class="main-content">
+    <h2>
+        <a id="about" class="anchor" href="#about" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>About</h2>
+
+    <p>Angular UI Tour is a plugin that uses Angular UI Bootstrap's popovers to display a guided product tour. This was
+        originally inspired by <a href="http://www.bootstraptour.com">Bootstrap Tour</a> as <a href="http://github.com/benmarch/angular-bootstrap-tour">Angular Bootstrap Tour</a>,
+        but after much feedback to remove the jQuery dependency, Angular UI Tour was born. It uses many of the features from
+        Bootstrap Tour, but plays nicely with Angular, <strong>and does not have any dependency on Twitter Bootstrap or jQuery!</strong></p>
+
+    <h2 tour-step
+        tour-step-title="Get Started!"
+        tour-step-content="You can get started by installing with Bower or NPM and including the script tags..."
+        tour-step-order="10">
+        <a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
+
+    <p>Get the package:</p>
+
+<pre><code>bower install angular-ui-tour
+</code></pre>
+
+    <p>Add the script tags:</p>
+
+<pre><code>
+&lt;script src="bower_components/angular/angular.js"&gt;&lt;/script&gt;
+&lt;script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"&gt;&lt;/script&gt;
+&lt;script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"&gt;&lt;/script&gt;
+</code></pre>
+
+    <p tour-step
+       tour-step-title="Get Started!"
+       tour-step-content="...then include the module in you app!"
+       tour-step-order="20">Then add the module to your app:</p>
+
+<pre><code>angular.module('myApp', ['bm.uiTour']);
+</code></pre>
+
+    <h2>
+        <a id="tour-configuration" class="anchor" href="#tour-configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Tour Configuration</h2>
+
+    <p>Tours can be configured either programatically in a config block, or declaratively as part of the uiTour directive declaration.</p>
+
+    <p>To configure in a config block, use TourConfigProvider.set(optionName, optionValue);</p>
+
+    <p>To configure on a tour declaration, use <code>ui-tour-&lt;option-name&gt;="optionValue"</code></p>
+
+    <h3>
+        <a id="options" class="anchor" href="#options" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Options</h3>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default Value</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr tour-step
+            tour-step-title="Position"
+            tour-step-content="You can position the popover the same way any Angular UI Bootstrap popovers can be positioned, including 'top', 'left', 'top-left', etc."
+            tour-step-order="30"
+            tour-step-placement="left">
+            <td>placement</td>
+            <td>string</td>
+            <td>"top"</td>
+            <td>Where the popup should display relative to the element. See <a href="https://angular-ui.github.io/bootstrap/#/popover">Angular UI Bootstrap Popovers</a></td>
+        </tr>
+        <tr tour-step
+            tour-step-title="Animation"
+            tour-step-content="By default, popovers fade in and out. Set this to false to have them appear/disappear."
+            tour-step-order="40"
+            tour-step-animation="false">
+            <td>animation</td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>Should the popup fade in/out.</td>
+        </tr>
+        <tr tour-step
+            tour-step-title="Delay"
+            tour-step-content="Did you notice the delay? Make sure this is positive or there will be issues when navigating. Set to a higher value to delay longer."
+            tour-step-order="50"
+            tour-step-popup-delay="250">
+            <td>popupDelay</td>
+            <td>number</td>
+            <td>1</td>
+            <td>Time to delay (in ms) between when the popup is requested to show and when it is shown. <strong>Note</strong> must be positive for multi-page tours to work.</td>
+        </tr>
+        <tr>
+            <td>closePopupDelay</td>
+            <td>number</td>
+            <td>0</td>
+            <td>Time to delay (in ms) between when the popup is requested to hide and when it is hidden.</td>
+        </tr>
+        <tr>
+            <td>appendToBody</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Should popups be appended to body (true) or the parent element (false).</td>
+        </tr>
+        <tr>
+            <td>tooltipClass</td>
+            <td>string</td>
+            <td>""</td>
+            <td>Adds additional classes to the popup.</td>
+        </tr>
+        <tr tour-step
+            tour-step-title="Orphan"
+            tour-step-content="The 'Welcome!' step in this tour was an orphan. It just means it isn't positioned by its defining element."
+            tour-step-order="70">
+            <td>orphan</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Should the popup display in the center of the viewport (true) or by the element (false).</td>
+        </tr>
+        <tr tour-step
+            tour-step-title="Backdrop"
+            tour-step-content="Highlight your element! This technically creates a clone and positions it on top of the defining element, so watch for CSS that might be too specific."
+            tour-step-order="80"
+            tour-step-backdrop="true">
+            <td>backdrop</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Should there be a backdrop behind the element. <strong>Note</strong> this can be flaky.</td>
+        </tr>
+        <tr>
+            <td>backdropZIndex</td>
+            <td>number</td>
+            <td>10000</td>
+            <td>Z-index of the backdrop. Popups will be positioned relative to this.</td>
+        </tr>
+        <tr tour-step
+            tour-step-title="Templates"
+            tour-step-content="Angular UI Tour comes with a standard template, but you can use your own by specifying a template URL either for all steps or for a single step. This one just adds a class that changes the styles."
+            tour-step-order="90"
+            tour-step-template-url="'tour-step-other-template.html'">
+            <td>templateUrl</td>
+            <td>string</td>
+            <td>"tour-step-template.html"</td>
+            <td>Used as the template for the contents of the popup (see Angular UI Tooltip docs).</td>
+        </tr>
+        <tr tour-step
+            tour-step-title="Event Handlers"
+            tour-step-content="You can set event handlers on the tour or tour steps. The content of each option will evaluate on the outer scope so you can define callbacks in higher scopes. They are all async and can return promises."
+            tour-step-order="100"
+            tour-step-on-show="confirmShow()">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>onReady</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called when tour is initialized and attached to the scope</td>
+        </tr>
+        <tr>
+            <td>onStart</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called when tour is started, before first popup is shown</td>
+        </tr>
+        <tr>
+            <td>onEnd</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called when tour is ended, after last popup is hidden</td>
+        </tr>
+        <tr>
+            <td>onPause</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called when tour is paused, before current popup is hidden</td>
+        </tr>
+        <tr>
+            <td>onResume</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called when tour is resumed, before current popup is shown</td>
+        </tr>
+        <tr>
+            <td>onNext</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called when next step is requested, before current popup is hidden</td>
+        </tr>
+        <tr>
+            <td>onPrev</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called when previous step is requested, before current popup is hidden</td>
+        </tr>
+        <tr>
+            <td>onShow</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called just before popup is shown</td>
+        </tr>
+        <tr>
+            <td>onShown</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called just after popup is shown</td>
+        </tr>
+        <tr>
+            <td>onHide</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called just before popup is hidden</td>
+        </tr>
+        <tr>
+            <td>onHidden</td>
+            <td>function</td>
+            <td>null</td>
+            <td>Called just after popup is hidden</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Important:</strong> If an event is overridden in a config block, the function <strong>must</strong> return a promise.
+        If it is overridden in the directive declaration, it will be wrapped in a promise automatically. If the function returns
+        a promise, it will wait until it is resolved before moving on.</p>
+
+    <h2>
+        <a id="tour-steps" class="anchor" href="#tour-steps" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Tour Steps</h2>
+
+    <p>Tour steps are extensions of <a href="https://angular-ui.github.io/bootstrap/#/tooltip">Angular UI's Tooltips</a> and therefore all
+        options are available. Although there are 3 types of Tooltips, there is only one type of Tour Step. In addition, almost
+        all of the Tour options can be overridden by individual tour steps, as well as additional options that can be changed.</p>
+
+    <p>To configure on a tour step declaration, use <code>tour-step-&lt;option-name&gt;="optionValue"</code></p>
+
+    <h3>
+        <a id="additional-options" class="anchor" href="#additional-options" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Additional Options</h3>
+
+    <table tour-step
+           tour-step-title="Step-specific Options"
+           tour-step-content="Some options are only for tour steps, not the whole tour. Prefix each with 'tour-step-' if setting them as attributes."
+           tour-step-order="110"
+           tour-step-backdrop="true"
+           tour-step-scroll-offset="25">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default Value</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>title</td>
+            <td>string</td>
+            <td>""</td>
+            <td>The title of the popup</td>
+        </tr>
+        <tr tour-step
+            tour-step-title="Content"
+            tour-step-content="This is the content of the popover. It can even include <strong>HTML!!</strong>"
+            tour-step-order="120">
+            <td>content</td>
+            <td>string</td>
+            <td>""</td>
+            <td>The content of the popup. <strong>Note:</strong> can contain HTML</td>
+        </tr>
+        <tr>
+            <td>order</td>
+            <td>number</td>
+            <td>null</td>
+            <td>The order in which the step will be displayed. Although it is optional, the behavior is undefined if this is not explicitly set.</td>
+        </tr>
+        <tr tour-step
+            tour-step-title="Enabled"
+            tour-step-content="Set this to false, or better yet, use a scope variable to determine whether or not this step should display."
+            tour-step-order="125"
+            tour-step-enabled="{{isEnabled}}">
+            <td>enabled</td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>This will enable or disable the tour step.<br/><strong>Demo:</strong> this step is <em>{{isEnabled ? 'enabled' : 'disabled'}}</em>, <a href="#" ng-click="toggleEnabled()">click here to toggle</a>, use prev/next to see change.</td>
+        </tr>
+        <tr  tour-step
+             tour-step-title="Fixed"
+             tour-step-content="If the defining element is fixed (or has a fixed ancestor) you <em>must</em> set this to true because the library does not detect this automatically."
+             tour-step-order="130">
+            <td>fixed</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Is the element fixed (does not discover automatically ATM).</td>
+        </tr>
+        <tr tour-step
+            tour-step-title="Prevent Scrolling"
+            tour-step-content="Try to scroll. Bet you can't! :)"
+            tour-step-order="140"
+            tour-step-backdrop="true"
+            tour-step-prevent-scrolling="true">
+            <td>preventScrolling</td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Should page scrolling be prevented when popup is shown (I don't recommend using this, but there are times when it is useful). Only works with a backdrop.</td>
+        </tr>
+        <tr tour-step="navigation-next-step"
+            tour-step-title="Navigation"
+            tour-step-content="You can navigate to other views using the ngRouter. Just specify the next/previous path(s) and the corresponding step ID (value of the tour-step attribute)."
+            tour-step-order="150"
+            tour-step-next-path="other"
+            tour-step-next-step="some-other-step">
+            <td>nextStep</td>
+            <td>string</td>
+            <td>""</td>
+            <td>If the next step is on a different page, set this to declare the name of the next step.</td>
+        </tr>
+        <tr>
+            <td>nextPath</td>
+            <td>string</td>
+            <td>""</td>
+            <td>If the next step is on a different page, set this to the path of the next page.</td>
+        </tr>
+        <tr tour-step="navigation-prev-step"
+            tour-step-title="Navigation"
+            tour-step-content="And we're baaaaaack!"
+            tour-step-order="160"
+            tour-step-prev-path="other"
+            tour-step-prev-step="some-other-step">
+            <td>prevStep</td>
+            <td>string</td>
+            <td>""</td>
+            <td>If the previous step is on a different page, set this to declare the name of the previous step.</td>
+        </tr>
+        <tr>
+            <td>prevPath</td>
+            <td>string</td>
+            <td>""</td>
+            <td>If the previous step is on a different page, set this to the path of the previous page.</td>
+        </tr>
+        <tr>
+            <td>templateUrl</td>
+            <td>string</td>
+            <td>"tour-step-template.html"</td>
+            <td>Used as the template for the contents of the popup (see Angular UI Tooltip docs).</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Best practice:</strong> always set the order so that the steps display in the expected order. Steps with the same order will
+        display consecutively, but the order among them is unpredictable.</p>
+
+    <h2>
+        <a id="directives" class="anchor" href="#directives" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Directives</h2>
+
+    <h3>
+        <a id="uitour" class="anchor" href="#uitour" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>uiTour</h3>
+
+    <p>uiTour is the container for the tour steps; all tour steps must be declared as descendants of uiTour.
+        The declaration can be as simple as adding ui-tour to an element, or can include one or more options (shown above).</p>
+
+    <p>Examples:</p>
+
+<pre><code>
+&lt;body ui-tour&gt;
+... &lt;!-- page content and tour steps --&gt;
+&lt;/body&gt;
+
+
+&lt;div ui-tour ui-tour-on-start="onTourStart()" ui-tour-placement="bottom"&gt;
+... &lt;!-- page content and tour steps --&gt;
+&lt;/div&gt;
+</code></pre>
+
+    <h3>
+        <a id="tourstep" class="anchor" href="#tourstep" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>tourStep</h3>
+
+    <p>tourSteps declare which elements should have a popup during the tour. They can be declared on any element, but some consideration
+        should be taken when deciding which element on which to declare them.</p>
+
+    <p>Examples:</p>
+
+<pre><code>
+&lt;body ui-tour&gt;
+&lt;div id="mainMenu" tour-step tour-step-title="Main Menu" tour-step-content="Navigate the site using this menu." tour-step-order="0" tour-step-placement="right"&gt;...&lt;/div&gt;
+...
+&lt;div id="settings" tour-step tour-step-title="Settings" tour-step-content="Click here to change your settings." tour-step-order="1"&gt;...&lt;/div&gt;
+&lt;div id="finalTourMessage" tour-step tour-step-title="Welcome!" tour-step-content="Enjoy using the app!" tour-step-order="1000" tour-step-orphan="true" tour-step-backdrop="true"&gt;...&lt;/div&gt;
+&lt;/body&gt;
+
+
+&lt;!-- fixed element --&gt;
+&lt;body ui-tour&gt;
+&lt;header style="position: fixed;" tour-step tour-step-title="Header" tour-step-content="This header is fixed at the top." tour-step-order="0" tour-step-fixed="true"&gt;...&lt;/header&gt;
+&lt;/body&gt;
+
+
+&lt;!-- multi-page tour --&gt;
+&lt;!-- layout --&gt;
+&lt;body ui-tour&gt;
+&lt;!-- page 1: included using ngView (/page1) --&gt;
+&lt;div tour-step="page1step1" ... tour-step-next-path="page2" tour-step-next-step="page2step1"&gt;...&lt;/div&gt;
+&lt;!-- /page 1 --&gt;
+
+&lt;!-- page 2: ngView is populated when next step is requested after page1step1 --&gt;
+&lt;div tour-step="page2step1" ... tour-step-prev-path="page1" tour-step-prev-step="page1step1"&gt;...&lt;/div&gt;
+&lt;/body&gt;
+</code></pre>
+
+    <h2>
+        <a id="build-it-yourself" class="anchor" href="#build-it-yourself" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Build It Yourself</h2>
+
+    <p>Assuming you have Node, grunt, and bower installed:</p>
+
+<pre><code>
+npm install
+
+bower install
+
+grunt
+</code></pre>
+
+    <h2>
+        <a id="demo" class="anchor" href="#demo" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Demo</h2>
+
+    <p>I have set up a simple demo using the Bootswatch Cerulean demo page (one of my favorite themes.)
+        To run the demo run <code>grunt demo connect:demo</code> and open http://localhost:8000 in the browser.</p>
+
+    <p><strong>Thanks and enjoy!</strong></p>
+
+    <h2>
+        <a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+    <p>(The MIT License)</p>
+
+    <p>Copyright (c) 2016  </p>
+
+    <p>Permission is hereby granted, free of charge, to any person obtaining
+        a copy of this software and associated documentation files (the
+        'Software'), to deal in the Software without restriction, including
+        without limitation the rights to use, copy, modify, merge, publish,
+        distribute, sublicense, and/or sell copies of the Software, and to
+        permit persons to whom the Software is furnished to do so, subject to
+        the following conditions:</p>
+
+    <p>The above copyright notice and this permission notice shall be
+        included in all copies or substantial portions of the Software.</p>
+
+    <p>THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+        EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+        MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+        IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+        CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+        TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+        SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+
+    <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/benmarch/angular-ui-tour">Angular UI Tour</a> is maintained by <a href="https://github.com/benmarch">benmarch</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+    </footer>
+
+</section>

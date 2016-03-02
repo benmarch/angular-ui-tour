@@ -1,0 +1,9 @@
+.popover-title {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.popover-content.other {
+    background-color: #88F;
+    color: #fff;
+}
