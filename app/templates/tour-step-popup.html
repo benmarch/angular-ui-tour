@@ -7,7 +7,7 @@
     <div class="popover-inner tour-step-inner">
         <h3 class="popover-title tour-step-title" ng-bind="title" ng-if="title"></h3>
         <div class="popover-content tour-step-content"
-             uib-tooltip-template-transclude="'tour-step-template.html'"
+             uib-tooltip-template-transclude="originScope().tourStep.config('templateUrl') || 'tour-step-template.html'"
              tooltip-template-transclude-scope="originScope()"></div>
     </div>
 </div>

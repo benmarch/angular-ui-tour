@@ -4,12 +4,20 @@
 
 describe('Tour Config', function () {
     var tourScope,
-        tourHandle;
+        tourHandle,
+        $timeout;
 
     beforeEach(module('bm.uiTour', 'test.templates'));
 
-    beforeEach(inject(function ($compile, $templateCache, $rootScope, $q) {
+    beforeEach(inject(function ($compile, $templateCache, $rootScope, $q, _$timeout_) {
         tourScope = $rootScope.$new();
+        $timeout = _$timeout_;
+
+        //ensure timers fire
+        tourScope.$digest = function () {
+            $rootScope.$digest();
+            $timeout.flush();
+        };
 
         angular.extend(tourScope, {
             onReady: jasmine.createSpy('onReady').and.returnValue($q.resolve()),
@@ -48,14 +56,12 @@ describe('Tour Config', function () {
         //when
         tourHandle.start();
         tourHandle.next();
+        tourScope.$digest();
 
         //then
         expect(tourScope.onNext).toHaveBeenCalled();
         expect(tourScope.onShow).toHaveBeenCalled();
         expect(tourScope.onShown).toHaveBeenCalled();
-
-        expect(tourScope.onHide).not.toHaveBeenCalled();
-        expect(tourScope.onHidden).not.toHaveBeenCalled();
     });
 
     it('should call onNext, onHide, onHidden, onShow, onShown when third step is shown', function () {

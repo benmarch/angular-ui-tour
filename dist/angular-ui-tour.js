@@ -109,7 +109,6 @@
             animation: true,
             popupDelay: 1,
             closePopupDelay: 0,
-            trigger: 'uiTourShow',
             enable: true,
             appendToBody: false,
             tooltipClass: '',
@@ -134,7 +133,7 @@
             config[option] = value;
         };
 
-        this.$get = [function () {
+        this.$get = ['$q', function ($q) {
 
             var service = {};
 
@@ -145,6 +144,17 @@
             service.getAll = function () {
                 return angular.copy(config);
             };
+
+            //wrap functions with promises
+            (function () {
+                angular.forEach(config, function (value, key) {
+                    if (key.indexOf('on') === 0 && angular.isFunction(value)) {
+                        config[key] = function () {
+                            return $q.resolve(value());
+                        };
+                    }
+                });
+            }());
 
             return service;
 
@@ -159,7 +169,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$q', '$filter', 'TourConfig', 'uiTourBackdrop', function ($q, $filter, TourConfig, uiTourBackdrop) {
+    app.controller('TourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop) {
 
         var self = this,
             stepList = [],
@@ -172,6 +182,12 @@
             },
             tourStatus = statuses.OFF,
             options = TourConfig.getAll();
+
+        function digest() {
+            return $q(function (resolve) {
+                $timeout(resolve);
+            });
+        }
 
         /**
          * just some promise sugar
@@ -195,7 +211,7 @@
             var current = self.getCurrentStep(),
                 next = self.getNextStep();
 
-            return !!((next && next.enabled) || current.nextPath);
+            return !!(next || current.nextPath);
         }
 
         /**
@@ -207,7 +223,7 @@
             var current = self.getCurrentStep(),
                 prev = self.getPrevStep();
 
-            return !!((prev && prev.enabled) || current.prevPath);
+            return !!(prev || current.prevPath);
         }
 
         /**
@@ -251,7 +267,7 @@
             if (options.onStart) {
                 options.onStart();
             }
-            currentStep = stepList[0];
+            self.setCurrentStep(stepList[0]);
             tourStatus = statuses.ON;
             self.showStep(self.getCurrentStep());
         };
@@ -266,7 +282,7 @@
             if (options.onEnd) {
                 options.onEnd();
             }
-            currentStep = null;
+            self.setCurrentStep(null);
             tourStatus = statuses.OFF;
         };
 
@@ -304,7 +320,12 @@
                     return self.hideStep(step);
                 },
                 function () {
-                    currentStep = self.getNextStep();
+                    //check if redirect happened, if not, set the next step
+                    if (!step.nextStep || self.getCurrentStep().stepId !== step.nextStep) {
+                        self.setCurrentStep(self.getNextStep());
+                    }
+                },
+                function () {
                     if (self.getCurrentStep()) {
                         return self.showStep(self.getCurrentStep());
                     } else {
@@ -326,10 +347,13 @@
                     return self.hideStep(step);
                 },
                 function () {
-                    currentStep = self.getPrevStep();
-                    if (resumeWhenFound) {
-                        return $q.resolve();
-                    } else if (self.getCurrentStep()) {
+                    //check if redirect happened, if not, set the prev step
+                    if (!step.prevStep || self.getCurrentStep().stepId !== step.prevStep) {
+                        self.setCurrentStep(self.getPrevStep());
+                    }
+                },
+                function () {
+                    if (self.getCurrentStep()) {
                         return self.showStep(self.getCurrentStep());
                     } else {
                         self.end();
@@ -358,6 +382,7 @@
                         resolve();
                     });
                 },
+                digest,
                 step.config('onShown') || $q.resolve,
                 function () {
                     step.isNext = isNext();
@@ -387,6 +412,7 @@
                     }
                     return $q.resolve();
                 },
+                digest,
                 step.config('onHidden') || $q.resolve
             ]);
         };
@@ -400,14 +426,21 @@
         };
 
         /**
+         * set the current step (doesnt do anything else)
+         */
+        self.setCurrentStep = function (step) {
+            currentStep = step;
+        };
+
+        /**
          * return next step or null
          * @returns {step}
          */
         self.getNextStep = function () {
-            if (!currentStep) {
+            if (!self.getCurrentStep()) {
                 return null;
             }
-            return stepList[stepList.indexOf(currentStep) + 1];
+            return stepList[stepList.indexOf(self.getCurrentStep()) + 1];
         };
 
         /**
@@ -415,10 +448,10 @@
          * @returns {step}
          */
         self.getPrevStep = function () {
-            if (!currentStep) {
+            if (!self.getCurrentStep()) {
                 return null;
             }
-            return stepList[stepList.indexOf(currentStep) - 1];
+            return stepList[stepList.indexOf(self.getCurrentStep()) - 1];
         };
 
         /**
@@ -430,7 +463,7 @@
             self.pause();
             resumeWhenFound = function (step) {
                 if (step.stepId === waitForStep) {
-                    currentStep = stepList[stepList.indexOf(step)];
+                    self.setCurrentStep(stepList[stepList.indexOf(step)]);
                     self.resume();
                     resumeWhenFound = null;
                 }
@@ -465,9 +498,6 @@
         self._getStatus = function () {
             return tourStatus;
         };
-        self._getCurrentStep = function () {
-            return currentStep;
-        };
     }]);
 
 }(angular.module('bm.uiTour')));
@@ -488,7 +518,7 @@
                 //Pass static options through or use defaults
                 var tour = {},
                     events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
-                    properties = 'placement animation popupDelay closePopupDelay trigger enable appendToBody tooltipClass orphan backdrop scrollOffset'.split(' ');
+                    properties = 'placement animation popupDelay closePopupDelay enable appendToBody tooltipClass orphan backdrop scrollOffset'.split(' ');
 
                 //Pass interpolated values through
                 TourHelpers.attachInterpolatedValues(attrs, tour, properties, 'uiTour');
@@ -683,14 +713,23 @@
                             }
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title enabled animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
-                        orderWatch;
+                        options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
+                        orderWatch,
+                        enabledWatch;
 
                     //Pass interpolated values through
                     TourHelpers.attachInterpolatedValues(attrs, step, options);
                     orderWatch = attrs.$observe(TourHelpers.getAttrName('order'), function (order) {
                         step.order = !isNaN(order*1) ? order*1 : 0;
                         ctrl.reorderStep(step);
+                    });
+                    enabledWatch = attrs.$observe(TourHelpers.getAttrName('enabled'), function (isEnabled) {
+                        step.enabled = isEnabled === 'true';
+                        if (isEnabled === 'true') {
+                            ctrl.addStep(step);
+                        } else {
+                            ctrl.removeStep(step);
+                        }
                     });
 
                     //Attach event handlers
@@ -728,6 +767,7 @@
                     scope.$on('$destroy', function () {
                         ctrl.removeStep(step);
                         orderWatch();
+                        enabledWatch();
                     });
                 };
             }
@@ -744,7 +784,6 @@
             link: function (scope, element) {
                 var step = scope.originScope().tourStep,
                     ch = ezComponentHelpers.apply(null, arguments),
-                    templateUrl = step.config('templateUrl'),
                     scrollOffset = step.config('scrollOffset');
 
                 element.css('zIndex', TourConfig.get('backdropZIndex') + 2);
@@ -752,26 +791,27 @@
                     element.css('position', 'fixed');
                 }
 
-                if (templateUrl) {
-                    ch.useTemplateUrl(templateUrl);
-                }
-
                 if (step.config('orphan')) {
-                    //this is ugly
-                    element.css({
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        margin: 0,
-                        transform: 'translateX(-50%) translateY(-50%)',
-                        '-ms-transform': 'translateX(-50%) translateY(-50%)',
-                        '-moz-transform': 'translateX(-50%) translateY(-50%)',
-                        '-webkit-transform': 'translateX(-50%) translateY(-50%)'
-                    });
+                    ch.useStyles(
+                        '.tour-step {' +
+                        '   position: fixed;' +
+                        '   top: 50% !important;' +
+                        '   left: 50% !important;' +
+                        '   margin: 0 !important;' +
+                        '   -ms-transform: translateX(-50%) translateY(-50%);' +
+                        '   -moz-transform: translateX(-50%) translateY(-50%);' +
+                        '   -webkit-transform: translateX(-50%) translateY(-50%);' +
+                        '   transform: translateX(-50%) translateY(-50%);' +
+                        '}' +
+                        '' +
+                        '.arrow {' +
+                        '   display: none;' +
+                        '}'
+                    );
                 }
 
                 scope.$watch('isOpen', function (isOpen) {
-                    if (isOpen()) {
+                    if (isOpen() && !step.config('orphan')) {
                         smoothScroll(element[0], {
                             offset: scrollOffset
                         });
@@ -794,7 +834,7 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
     "    <div class=\"popover-inner tour-step-inner\">\n" +
     "        <h3 class=\"popover-title tour-step-title\" ng-bind=\"title\" ng-if=\"title\"></h3>\n" +
     "        <div class=\"popover-content tour-step-content\"\n" +
-    "             uib-tooltip-template-transclude=\"'tour-step-template.html'\"\n" +
+    "             uib-tooltip-template-transclude=\"originScope().tourStep.config('templateUrl') || 'tour-step-template.html'\"\n" +
     "             tooltip-template-transclude-scope=\"originScope()\"></div>\n" +
     "    </div>\n" +
     "</div>\n" +
@@ -815,3 +855,16 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
     "</div>\n" +
     "");
 }]);
+
+(function (window) {
+    function CustomEvent ( event, params ) {
+        params = params || { bubbles: false, cancelable: false, detail: undefined };
+        var evt = document.createEvent( 'CustomEvent' );
+        evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+        return evt;
+    }
+
+    CustomEvent.prototype = window.Event.prototype;
+
+    window.CustomEvent = CustomEvent;
+})(window);

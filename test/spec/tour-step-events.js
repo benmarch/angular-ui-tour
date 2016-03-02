@@ -4,12 +4,20 @@
 
 describe('Tour Config', function () {
     var tourScope,
-        tourHandle;
+        tourHandle,
+        $timeout;
 
     beforeEach(module('bm.uiTour', 'test.templates'));
 
-    beforeEach(inject(function ($compile, $templateCache, $rootScope, $q) {
+    beforeEach(inject(function ($compile, $templateCache, $rootScope, $q, _$timeout_) {
         tourScope = $rootScope.$new();
+        $timeout = _$timeout_;
+
+        //ensure timers fire
+        tourScope.$digest = function () {
+            $rootScope.$digest();
+            $timeout.flush();
+        };
 
         angular.extend(tourScope, {
             onNext: jasmine.createSpy('onNext').and.returnValue($q.resolve()),

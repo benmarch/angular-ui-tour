@@ -54,17 +54,6 @@ module.exports = function (grunt) {
             }
         },
 
-        copy: {
-            demo: {
-                files: [
-                    {
-                        src: 'dist/angular-ui-tour.js',
-                        dest: 'demo/angular-ui-tour.js'
-                    }
-                ]
-            }
-        },
-
         // Automatically inject Bower components into the app
         wiredep: {
             test: {
@@ -81,12 +70,6 @@ module.exports = function (grunt) {
                         }
                     }
                 }
-            },
-
-            demo: {
-                src: 'demo/index.html',
-                devDependencies: true,
-                ignorePath: '../'
             }
         },
 
@@ -117,24 +100,10 @@ module.exports = function (grunt) {
         },
 
 
-        'bower_main': {
-            demo: {
-                options: {
-                    dest: 'demo/bower_components'
-                }
-            }
-        },
-
-
-        connect: {
-            demo: {
-                options: {
-                    port: 8000,
-                    base: 'demo',
-                    keepalive: true,
-                    open: true,
-                    livereload: true
-                }
+        watch: {
+            all: {
+                files: ['app/**/*.js', 'app/**/*.html'],
+                tasks: ['build']
             }
         },
 
@@ -158,13 +127,6 @@ module.exports = function (grunt) {
         'html2js:app',
         'concat',
         'uglify'
-    ]);
-
-    grunt.registerTask('demo', [
-        'build',
-        'bower_main:demo',
-        'wiredep:demo',
-        'copy:demo'
     ]);
 
     grunt.registerTask('default', [

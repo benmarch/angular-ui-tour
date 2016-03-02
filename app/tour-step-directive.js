@@ -36,14 +36,23 @@
                             }
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title enabled animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
-                        orderWatch;
+                        options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
+                        orderWatch,
+                        enabledWatch;
 
                     //Pass interpolated values through
                     TourHelpers.attachInterpolatedValues(attrs, step, options);
                     orderWatch = attrs.$observe(TourHelpers.getAttrName('order'), function (order) {
                         step.order = !isNaN(order*1) ? order*1 : 0;
                         ctrl.reorderStep(step);
+                    });
+                    enabledWatch = attrs.$observe(TourHelpers.getAttrName('enabled'), function (isEnabled) {
+                        step.enabled = isEnabled === 'true';
+                        if (isEnabled === 'true') {
+                            ctrl.addStep(step);
+                        } else {
+                            ctrl.removeStep(step);
+                        }
                     });
 
                     //Attach event handlers
@@ -81,6 +90,7 @@
                     scope.$on('$destroy', function () {
                         ctrl.removeStep(step);
                         orderWatch();
+                        enabledWatch();
                     });
                 };
             }
@@ -97,7 +107,6 @@
             link: function (scope, element) {
                 var step = scope.originScope().tourStep,
                     ch = ezComponentHelpers.apply(null, arguments),
-                    templateUrl = step.config('templateUrl'),
                     scrollOffset = step.config('scrollOffset');
 
                 element.css('zIndex', TourConfig.get('backdropZIndex') + 2);
@@ -105,26 +114,27 @@
                     element.css('position', 'fixed');
                 }
 
-                if (templateUrl) {
-                    ch.useTemplateUrl(templateUrl);
-                }
-
                 if (step.config('orphan')) {
-                    //this is ugly
-                    element.css({
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        margin: 0,
-                        transform: 'translateX(-50%) translateY(-50%)',
-                        '-ms-transform': 'translateX(-50%) translateY(-50%)',
-                        '-moz-transform': 'translateX(-50%) translateY(-50%)',
-                        '-webkit-transform': 'translateX(-50%) translateY(-50%)'
-                    });
+                    ch.useStyles(
+                        '.tour-step {' +
+                        '   position: fixed;' +
+                        '   top: 50% !important;' +
+                        '   left: 50% !important;' +
+                        '   margin: 0 !important;' +
+                        '   -ms-transform: translateX(-50%) translateY(-50%);' +
+                        '   -moz-transform: translateX(-50%) translateY(-50%);' +
+                        '   -webkit-transform: translateX(-50%) translateY(-50%);' +
+                        '   transform: translateX(-50%) translateY(-50%);' +
+                        '}' +
+                        '' +
+                        '.arrow {' +
+                        '   display: none;' +
+                        '}'
+                    );
                 }
 
                 scope.$watch('isOpen', function (isOpen) {
-                    if (isOpen()) {
+                    if (isOpen() && !step.config('orphan')) {
                         smoothScroll(element[0], {
                             offset: scrollOffset
                         });

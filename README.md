@@ -6,12 +6,10 @@
 
 ## About
 
-This repo is a work in progress to replace [Angular Bootstrap Tour](http://github.com/benmarch/angular-bootstrap-tour).
-The main difference between this plugin and the previous is that this does not depend on jQuery. The previous plugin was
-simply an AngularJS wrapper around [Bootstrap Tour](http://www.bootstraptour.com) which was written for Twitter Bootstrap,
-which depends on jQuery. Instead, this plugin uses Angular UI Bootstrap and its fantastic Tooltip plugin. I have kept some
-of the API the same as Angular Bootstrap Tour, but because this uses Tooltips and does not use Bootstrap Tour, it made
-sense to change a few things. Please note that this is in the very early stages of development, and the API is subject to change.
+Angular UI Tour is a plugin that uses Angular UI Bootstrap's popovers to display a guided product tour. This was
+originally inspired by [Bootstrap Tour](http://www.bootstraptour.com) as [Angular Bootstrap Tour](http://github.com/benmarch/angular-bootstrap-tour),
+but after much feedback to remove the jQuery dependency, Angular UI Tour was born. It uses many of the features from
+Bootstrap Tour, but plays nicely with Angular, **and does not have any dependency on Twitter Bootstrap or jQuery!**
 
 ## Getting Started
 Get the package:
@@ -44,8 +42,6 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 | animation       | boolean  | true                      | Should the popup fade in/out.                                                                                                                   |
 | popupDelay      | number   | 1                         | Time to delay (in ms) between when the popup is requested to show and when it is shown. **Note** must be positive for multi-page tours to work. |
 | closePopupDelay | number   | 0                         | Time to delay (in ms) between when the popup is requested to hide and when it is hidden.                                                        |
-| trigger         | string   | "uiTourShow"              | The DOM event used to show popup (see Angular UI Tooltip docs). I don't recommend changing this.                                                |
-| enable          | boolean  | true                      | This will enable or disable the entire tour.                                                                                                    |
 | appendToBody    | boolean  | false                     | Should popups be appended to body (true) or the parent element (false).                                                                         |
 | tooltipClass    | string   | ""                        | Adds additional classes to the popup.                                                                                                           |
 | orphan          | boolean  | false                     | Should the popup display in the center of the viewport (true) or by the element (false).                                                        |
@@ -75,20 +71,23 @@ Tour steps are extensions of [Angular UI's Tooltips](https://angular-ui.github.i
 options are available. Although there are 3 types of Tooltips, there is only one type of Tour Step. In addition, almost
 all of the Tour options can be overridden by individual tour steps, as well as additional options that can be changed.
 
+To configure on a tour step declaration, use `tour-step-<option-name>="optionValue"`
+
 ### Additional Options
 
-|      Name        |   Type   | Default Value             |                     Description                                                                                                  |
-| --------------   | -------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| title            | string   | ""                        | The title of the popup                                                                                                           |
-| content          | string   | ""                        | The content of the popup. **Note:** can contain HTML for now, but this might change for security reasons.                        |
-| order            | number   | null                      | The order in which the step will be displayed. Although it is optional, the behavior is undefined if this is not explicitly set. |
-| fixed            | boolean  | false                     | Is the element fixed (does not discover automatically ATM).                                                                      |
-| preventScrolling | boolean  | false                     | Should page scrolling be prevented when popup is shown (I don't recommend using this, but there are times when it is useful).    |
-| nextStep         | string   | ""                        | If the next step is on a different page, set this to declare the name of the next step.                                          |
-| nextPath         | string   | ""                        | If the next step is on a different page, set this to the path of the next page.                                                  |
-| prevStep         | string   | ""                        | If the previous step is on a different page, set this to declare the name of the previous step.                                  |
-| prevPath         | string   | ""                        | If the previous step is on a different page, set this to the path of the previous page.                                          |
-| templateUrl      | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                |
+|      Name        |   Type   | Default Value             |                     Description                                                                                                                             |
+| --------------   | -------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| title            | string   | ""                        | The title of the popup                                                                                                                                      |
+| content          | string   | ""                        | The content of the popup. **Note:** can contain HTML                                                                                                        |
+| order            | number   | null                      | The order in which the step will be displayed. Although it is optional, the behavior is undefined if this is not explicitly set.                            |
+| enabled          | boolean  | true                      | This will enable or disable the tour step.                                                                                                                  |
+| fixed            | boolean  | false                     | Is the element fixed (does not discover automatically ATM).                                                                                                 |      
+| preventScrolling | boolean  | false                     | Should page scrolling be prevented when popup is shown (I don't recommend using this, but there are times when it is useful). Only works with a backdrop.   |
+| nextStep         | string   | ""                        | If the next step is on a different page, set this to declare the name of the next step.                                                                     |
+| nextPath         | string   | ""                        | If the next step is on a different page, set this to the path of the next page.                                                                             |
+| prevStep         | string   | ""                        | If the previous step is on a different page, set this to declare the name of the previous step.                                                             |
+| prevPath         | string   | ""                        | If the previous step is on a different page, set this to the path of the previous page.                                                                     |
+| templateUrl      | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                           |
 
 **Best practice:** always set the order so that the steps display in the expected order. Steps with the same order will 
 display consecutively, but the order among them is unpredictable.
@@ -143,18 +142,6 @@ Examples:
         <div tour-step="page2step1" ... tour-step-prev-path="page1" tour-step-prev-step="page1step1">...</div>
     </body>
 
-## TODO's
-
-- Complete test suite. The config is tested, but the navigation and step coordination is not yet tested.
-- Implement currently missing features:
-  - ~~Orphan steps~~
-  - ~~TemplateUrl~~
-  - ~~Scroll offset~~
-  - Trusted content
-  - Auto promise wrap for config events
-  - Configurable triggers
-  - More complete (and original) demo
-
 ## Build It Yourself
 
 Assuming you have Node, grunt, and bower installed:
@@ -165,11 +152,6 @@ Assuming you have Node, grunt, and bower installed:
 
     grunt
     
-## Demo
-    
-I have set up a simple demo using the Bootswatch Cerulean demo page (one of my favorite themes.) 
-To run the demo run `grunt demo connect:demo` and open http://localhost:8000 in the browser.
-
 
 **Thanks and enjoy!**
 

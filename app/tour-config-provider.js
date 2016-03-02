@@ -10,7 +10,6 @@
             animation: true,
             popupDelay: 1,
             closePopupDelay: 0,
-            trigger: 'uiTourShow',
             enable: true,
             appendToBody: false,
             tooltipClass: '',
@@ -35,7 +34,7 @@
             config[option] = value;
         };
 
-        this.$get = [function () {
+        this.$get = ['$q', function ($q) {
 
             var service = {};
 
@@ -46,6 +45,17 @@
             service.getAll = function () {
                 return angular.copy(config);
             };
+
+            //wrap functions with promises
+            (function () {
+                angular.forEach(config, function (value, key) {
+                    if (key.indexOf('on') === 0 && angular.isFunction(value)) {
+                        config[key] = function () {
+                            return $q.resolve(value());
+                        };
+                    }
+                });
+            }());
 
             return service;
 

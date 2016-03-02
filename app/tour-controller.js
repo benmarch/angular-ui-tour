@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$q', '$filter', 'TourConfig', 'uiTourBackdrop', function ($q, $filter, TourConfig, uiTourBackdrop) {
+    app.controller('TourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop) {
 
         var self = this,
             stepList = [],
@@ -16,6 +16,12 @@
             },
             tourStatus = statuses.OFF,
             options = TourConfig.getAll();
+
+        function digest() {
+            return $q(function (resolve) {
+                $timeout(resolve);
+            });
+        }
 
         /**
          * just some promise sugar
@@ -39,7 +45,7 @@
             var current = self.getCurrentStep(),
                 next = self.getNextStep();
 
-            return !!((next && next.enabled) || current.nextPath);
+            return !!(next || current.nextPath);
         }
 
         /**
@@ -51,7 +57,7 @@
             var current = self.getCurrentStep(),
                 prev = self.getPrevStep();
 
-            return !!((prev && prev.enabled) || current.prevPath);
+            return !!(prev || current.prevPath);
         }
 
         /**
@@ -95,7 +101,7 @@
             if (options.onStart) {
                 options.onStart();
             }
-            currentStep = stepList[0];
+            self.setCurrentStep(stepList[0]);
             tourStatus = statuses.ON;
             self.showStep(self.getCurrentStep());
         };
@@ -110,7 +116,7 @@
             if (options.onEnd) {
                 options.onEnd();
             }
-            currentStep = null;
+            self.setCurrentStep(null);
             tourStatus = statuses.OFF;
         };
 
@@ -148,7 +154,12 @@
                     return self.hideStep(step);
                 },
                 function () {
-                    currentStep = self.getNextStep();
+                    //check if redirect happened, if not, set the next step
+                    if (!step.nextStep || self.getCurrentStep().stepId !== step.nextStep) {
+                        self.setCurrentStep(self.getNextStep());
+                    }
+                },
+                function () {
                     if (self.getCurrentStep()) {
                         return self.showStep(self.getCurrentStep());
                     } else {
@@ -170,10 +181,13 @@
                     return self.hideStep(step);
                 },
                 function () {
-                    currentStep = self.getPrevStep();
-                    if (resumeWhenFound) {
-                        return $q.resolve();
-                    } else if (self.getCurrentStep()) {
+                    //check if redirect happened, if not, set the prev step
+                    if (!step.prevStep || self.getCurrentStep().stepId !== step.prevStep) {
+                        self.setCurrentStep(self.getPrevStep());
+                    }
+                },
+                function () {
+                    if (self.getCurrentStep()) {
                         return self.showStep(self.getCurrentStep());
                     } else {
                         self.end();
@@ -202,6 +216,7 @@
                         resolve();
                     });
                 },
+                digest,
                 step.config('onShown') || $q.resolve,
                 function () {
                     step.isNext = isNext();
@@ -231,6 +246,7 @@
                     }
                     return $q.resolve();
                 },
+                digest,
                 step.config('onHidden') || $q.resolve
             ]);
         };
@@ -244,14 +260,21 @@
         };
 
         /**
+         * set the current step (doesnt do anything else)
+         */
+        self.setCurrentStep = function (step) {
+            currentStep = step;
+        };
+
+        /**
          * return next step or null
          * @returns {step}
          */
         self.getNextStep = function () {
-            if (!currentStep) {
+            if (!self.getCurrentStep()) {
                 return null;
             }
-            return stepList[stepList.indexOf(currentStep) + 1];
+            return stepList[stepList.indexOf(self.getCurrentStep()) + 1];
         };
 
         /**
@@ -259,10 +282,10 @@
          * @returns {step}
          */
         self.getPrevStep = function () {
-            if (!currentStep) {
+            if (!self.getCurrentStep()) {
                 return null;
             }
-            return stepList[stepList.indexOf(currentStep) - 1];
+            return stepList[stepList.indexOf(self.getCurrentStep()) - 1];
         };
 
         /**
@@ -274,7 +297,7 @@
             self.pause();
             resumeWhenFound = function (step) {
                 if (step.stepId === waitForStep) {
-                    currentStep = stepList[stepList.indexOf(step)];
+                    self.setCurrentStep(stepList[stepList.indexOf(step)]);
                     self.resume();
                     resumeWhenFound = null;
                 }
@@ -308,9 +331,6 @@
         };
         self._getStatus = function () {
             return tourStatus;
-        };
-        self._getCurrentStep = function () {
-            return currentStep;
         };
     }]);
 
