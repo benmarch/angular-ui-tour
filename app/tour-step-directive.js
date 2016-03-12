@@ -47,8 +47,8 @@
                         ctrl.reorderStep(step);
                     });
                     enabledWatch = attrs.$observe(TourHelpers.getAttrName('enabled'), function (isEnabled) {
-                        step.enabled = isEnabled === 'true';
-                        if (isEnabled === 'true') {
+                        step.enabled = isEnabled !== 'false';
+                        if (step.enabled) {
                             ctrl.addStep(step);
                         } else {
                             ctrl.removeStep(step);

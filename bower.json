@@ -1,27 +1,31 @@
 {
-  "name": "angular-ui-tour",
-  "version": "0.1.0",
-  "main": "dist/angular-ui-tour.js",
-  "ignore": [
-    ".editorconfig",
-    ".gitattributes",
-    ".gitignore",
-    ".jshintrc",
-    ".npmignore",
-    ".travis.yml",
-    ".umd",
-    "gulpfile.js",
-    "npm-shrinkwrap.json",
-    "package.json"
-  ],
-  "dependencies": {
-    "angular-bootstrap": "~0.14.3",
-    "ngSmoothScroll": "~2.0.0",
-    "angular-sanitize": "~1.4.8",
-    "ez-ng": "~0.1.0"
-  },
-  "devDependencies": {
-    "angular-mocks": "~1.4.8",
-    "angular-route": "~1.4.8"
-  }
+    "name": "angular-ui-tour",
+    "version": "0.1.0",
+    "main": "dist/angular-ui-tour.js",
+    "ignore": [
+        ".editorconfig",
+        ".gitattributes",
+        ".gitignore",
+        ".jshintrc",
+        ".npmignore",
+        ".travis.yml",
+        ".umd",
+        "gruntfile.js",
+        "npm-shrinkwrap.json",
+        "package.json",
+        "karma.conf.js",
+        "app/",
+        "lib/",
+        "test/"
+    ],
+    "dependencies": {
+        "angular-bootstrap": "~0.14.3",
+        "ngSmoothScroll": "~2.0.0",
+        "angular-sanitize": "~1.4.8",
+        "ez-ng": "~0.1.0"
+    },
+    "devDependencies": {
+        "angular-mocks": "~1.4.8",
+        "angular-route": "~1.4.8"
+    }
 }

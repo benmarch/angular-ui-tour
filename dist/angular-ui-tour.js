@@ -208,8 +208,8 @@
          * @returns {boolean}
          */
         function isNext() {
-            var current = self.getCurrentStep(),
-                next = self.getNextStep();
+            var current = getCurrentStep(),
+                next = getNextStep();
 
             return !!(next || current.nextPath);
         }
@@ -220,154 +220,23 @@
          * @returns {boolean}
          */
         function isPrev() {
-            var current = self.getCurrentStep(),
-                prev = self.getPrevStep();
+            var current = getCurrentStep(),
+                prev = getPrevStep();
 
             return !!(prev || current.prevPath);
         }
 
         /**
-         * Adds a step to the tour in order
-         *
-         * @param {object} step
-         */
-        self.addStep = function (step) {
-            if (~stepList.indexOf(step)) {
-                return;
-            }
-            stepList.push(step);
-            stepList = $filter('orderBy')(stepList, 'order');
-            if (resumeWhenFound) {
-                resumeWhenFound(step);
-            }
-        };
-
-        /**
-         * Removes a step from the tour
-         *
-         * @param step
-         */
-        self.removeStep = function (step) {
-            stepList.splice(stepList.indexOf(step), 1);
-        };
-
-        /**
-         * if a step's order was changed, replace it in the list
-         * @param step
-         */
-        self.reorderStep = function (step) {
-            self.removeStep(step);
-            self.addStep(step);
-        };
-
-        /**
-         * starts the tour
-         */
-        self.start = function () {
-            if (options.onStart) {
-                options.onStart();
-            }
-            self.setCurrentStep(stepList[0]);
-            tourStatus = statuses.ON;
-            self.showStep(self.getCurrentStep());
-        };
-
-        /**
-         * ends the tour
-         */
-        self.end = function () {
-            if (self.getCurrentStep()) {
-                self.hideStep(self.getCurrentStep());
-            }
-            if (options.onEnd) {
-                options.onEnd();
-            }
-            self.setCurrentStep(null);
-            tourStatus = statuses.OFF;
-        };
-
-        /**
-         * pauses the tour
-         */
-        self.pause = function () {
-            if (options.onPause) {
-                options.onPause();
-            }
-            tourStatus = statuses.PAUSED;
-            self.hideStep(self.getCurrentStep());
-        };
-
-        /**
-         * resumes a paused tour or starts it
-         */
-        self.resume = function () {
-            if (options.onResume) {
-                options.onResume();
-            }
-            tourStatus = statuses.ON;
-            self.showStep(self.getCurrentStep());
-        };
-
-        /**
-         * move to next step
-         * @returns {promise}
-         */
-        self.next = function () {
-            var step = self.getCurrentStep();
-            return serial([
-                step.config('onNext') || $q.resolve,
-                function () {
-                    return self.hideStep(step);
-                },
-                function () {
-                    //check if redirect happened, if not, set the next step
-                    if (!step.nextStep || self.getCurrentStep().stepId !== step.nextStep) {
-                        self.setCurrentStep(self.getNextStep());
-                    }
-                },
-                function () {
-                    if (self.getCurrentStep()) {
-                        return self.showStep(self.getCurrentStep());
-                    } else {
-                        self.end();
-                    }
-                }
-            ]);
-        };
-
-        /**
-         * move to previous step
-         * @returns {promise}
-         */
-        self.prev = function () {
-            var step = self.getCurrentStep();
-            return serial([
-                step.config('onPrev') || $q.resolve,
-                function () {
-                    return self.hideStep(step);
-                },
-                function () {
-                    //check if redirect happened, if not, set the prev step
-                    if (!step.prevStep || self.getCurrentStep().stepId !== step.prevStep) {
-                        self.setCurrentStep(self.getPrevStep());
-                    }
-                },
-                function () {
-                    if (self.getCurrentStep()) {
-                        return self.showStep(self.getCurrentStep());
-                    } else {
-                        self.end();
-                    }
-                }
-            ]);
-        };
-
-        /**
          * show supplied step
+         *
+         * @
          * @param step
          * @returns {promise}
          */
-        self.showStep = function (step) {
+        function showStep(step) {
+            if (!step) {
+                return $q.reject('No step.');
+            }
             return serial([
                 step.config('onShow') || $q.resolve,
                 function () {
@@ -390,14 +259,17 @@
                     return $q.resolve();
                 }
             ]);
-        };
+        }
 
         /**
          * hides the supplied step
          * @param step
          * @returns {promise}
          */
-        self.hideStep = function (step) {
+        function hideStep(step) {
+            if (!step) {
+                return $q.reject('No step.');
+            }
             return serial([
                 step.config('onHide') || $q.resolve,
                 function () {
@@ -415,55 +287,95 @@
                 digest,
                 step.config('onHidden') || $q.resolve
             ]);
-        };
+        }
 
         /**
          * return current step or null
          * @returns {step}
          */
-        self.getCurrentStep = function () {
+        function getCurrentStep() {
             return currentStep;
-        };
+        }
 
         /**
          * set the current step (doesnt do anything else)
          */
-        self.setCurrentStep = function (step) {
+        function setCurrentStep(step) {
             currentStep = step;
-        };
+        }
 
         /**
          * return next step or null
          * @returns {step}
          */
-        self.getNextStep = function () {
-            if (!self.getCurrentStep()) {
+        function getNextStep() {
+            if (!getCurrentStep()) {
                 return null;
             }
-            return stepList[stepList.indexOf(self.getCurrentStep()) + 1];
-        };
+            return stepList[stepList.indexOf(getCurrentStep()) + 1];
+        }
 
         /**
          * return previous step or null
          * @returns {step}
          */
-        self.getPrevStep = function () {
-            if (!self.getCurrentStep()) {
+        function getPrevStep() {
+            if (!getCurrentStep()) {
                 return null;
             }
-            return stepList[stepList.indexOf(self.getCurrentStep()) - 1];
+            return stepList[stepList.indexOf(getCurrentStep()) - 1];
+        }
+
+        //---------------- Protected API -------------------
+        /**
+         * Adds a step to the tour in order
+         *
+         * @protected
+         * @param {object} step
+         */
+        self.addStep = function (step) {
+            if (~stepList.indexOf(step)) {
+                return;
+            }
+            stepList.push(step);
+            stepList = $filter('orderBy')(stepList, 'order');
+            if (resumeWhenFound) {
+                resumeWhenFound(step);
+            }
+        };
+
+        /**
+         * Removes a step from the tour
+         *
+         * @protected
+         * @param step
+         */
+        self.removeStep = function (step) {
+            stepList.splice(stepList.indexOf(step), 1);
+        };
+
+        /**
+         * if a step's order was changed, replace it in the list
+         *
+         * @protected
+         * @param step
+         */
+        self.reorderStep = function (step) {
+            self.removeStep(step);
+            self.addStep(step);
         };
 
         /**
          * Tells the tour to pause while ngView loads
          *
+         * @protected
          * @param waitForStep
          */
         self.waitFor = function (waitForStep) {
             self.pause();
             resumeWhenFound = function (step) {
                 if (step.stepId === waitForStep) {
-                    self.setCurrentStep(stepList[stepList.indexOf(step)]);
+                    setCurrentStep(stepList[stepList.indexOf(step)]);
                     self.resume();
                     resumeWhenFound = null;
                 }
@@ -473,6 +385,7 @@
         /**
          * Returns the value for specified option
          *
+         * @protected
          * @param {string} option Name of option
          * @returns {*}
          */
@@ -482,6 +395,8 @@
 
         /**
          * pass options from directive
+         *
+         * @protected
          * @param opts
          * @returns {self}
          */
@@ -490,8 +405,145 @@
             self.options = options;
             return self;
         };
+        //------------------ end Protected API ------------------
+
+
+        //------------------ Public API ------------------
+        /**
+         * starts the tour
+         *
+         * @public
+         */
+        self.start = function () {
+            if (options.onStart) {
+                options.onStart();
+            }
+            setCurrentStep(stepList[0]);
+            tourStatus = statuses.ON;
+            showStep(getCurrentStep());
+        };
+
+        /**
+         * ends the tour
+         *
+         * @public
+         */
+        self.end = function () {
+            if (getCurrentStep()) {
+                hideStep(getCurrentStep());
+            }
+            if (options.onEnd) {
+                options.onEnd();
+            }
+            setCurrentStep(null);
+            tourStatus = statuses.OFF;
+        };
+
+        /**
+         * pauses the tour
+         *
+         * @public
+         */
+        self.pause = function () {
+            if (options.onPause) {
+                options.onPause();
+            }
+            tourStatus = statuses.PAUSED;
+            hideStep(getCurrentStep());
+        };
+
+        /**
+         * resumes a paused tour or starts it
+         *
+         * @public
+         */
+        self.resume = function () {
+            if (options.onResume) {
+                options.onResume();
+            }
+            tourStatus = statuses.ON;
+            showStep(getCurrentStep());
+        };
+
+        /**
+         * move to next step
+         *
+         * @public
+         * @returns {promise}
+         */
+        self.next = function () {
+            var step = getCurrentStep();
+            return serial([
+                step.config('onNext') || $q.resolve,
+                function () {
+                    return hideStep(step);
+                },
+                function () {
+                    //check if redirect happened, if not, set the next step
+                    if (!step.nextStep || getCurrentStep().stepId !== step.nextStep) {
+                        setCurrentStep(getNextStep());
+                    }
+                },
+                function () {
+                    if (getCurrentStep()) {
+                        return showStep(getCurrentStep());
+                    } else {
+                        self.end();
+                    }
+                }
+            ]);
+        };
+
+        /**
+         * move to previous step
+         *
+         * @public
+         * @returns {promise}
+         */
+        self.prev = function () {
+            var step = getCurrentStep();
+            return serial([
+                step.config('onPrev') || $q.resolve,
+                function () {
+                    return hideStep(step);
+                },
+                function () {
+                    //check if redirect happened, if not, set the prev step
+                    if (!step.prevStep || getCurrentStep().stepId !== step.prevStep) {
+                        setCurrentStep(getPrevStep());
+                    }
+                },
+                function () {
+                    if (getCurrentStep()) {
+                        return showStep(getCurrentStep());
+                    } else {
+                        self.end();
+                    }
+                }
+            ]);
+        };
+
+        self.goToStep = function (stepOrIndex) {
+            var stepToShow;
+
+            if (angular.isNumber(stepOrIndex) && angular.isDefined(stepList[stepOrIndex])) {
+                stepToShow = stepList[stepOrIndex];
+            } else if (~stepList.indexOf(stepOrIndex)) {
+                stepToShow = stepOrIndex;
+            } else {
+                return $q.reject('No step.');
+            }
+
+            return hideStep(getCurrentStep())
+                .then(function () {
+                    setCurrentStep(stepToShow);
+                    return showStep(stepToShow);
+                });
+        };
+        //------------------ end Public API ------------------
 
         //some debugging functions
+        //all are private
         self._getSteps = function () {
             return stepList;
         };
@@ -724,8 +776,8 @@
                         ctrl.reorderStep(step);
                     });
                     enabledWatch = attrs.$observe(TourHelpers.getAttrName('enabled'), function (isEnabled) {
-                        step.enabled = isEnabled === 'true';
-                        if (isEnabled === 'true') {
+                        step.enabled = isEnabled !== 'false';
+                        if (step.enabled) {
                             ctrl.addStep(step);
                         } else {
                             ctrl.removeStep(step);
