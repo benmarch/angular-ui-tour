@@ -1,0 +1,8 @@
+ratings:
+   paths:
+   - "app/**/*"
+
+exclude_paths:
+- dist/**/*
+- lib/**/*
+- test/**/*
