@@ -223,7 +223,7 @@
                 digest,
                 step.config('onHidden') || $q.resolve
             ]);
-        }
+        };
 
         /**
          * Tells the tour to pause while ngView loads
