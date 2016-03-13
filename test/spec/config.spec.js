@@ -28,9 +28,11 @@ describe('Tour Config', function () {
 
         //when
         $rootScope.$digest();
+        var config = TourConfig.getAll();
+        config.name = '';
 
         //then
-        expect(scope.$$childTail.tour.options).toEqual(TourConfig.getAll());
+        expect(scope.$$childTail.tour.options).toEqual(config);
     });
 
     it('should initialize a new tour with onStart overridden', function () {

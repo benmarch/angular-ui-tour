@@ -12,7 +12,9 @@
             link: function (scope, element, attrs, ctrl) {
 
                 //Pass static options through or use defaults
-                var tour = {},
+                var tour = {
+                        name: attrs.uiTour
+                    },
                     events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
                     properties = 'placement animation popupDelay closePopupDelay enable appendToBody tooltipClass orphan backdrop scrollOffset'.split(' ');
 

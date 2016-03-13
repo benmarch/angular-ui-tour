@@ -1,8 +1,30 @@
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - ruby
+      - javascript
+      - python
+      - php
+  eslint:
+    enabled: true
+  fixme:
+    enabled: true
+ratings:
+  paths:
+  - "**.inc"
+  - "**.js"
+  - "**.jsx"
+  - "**.module"
+  - "**.php"
+  - "**.py"
+  - "**.rb"
+exclude_paths:
+- dist/
+- test/
+- lib/
 ratings:
    paths:
    - "app/**/*"
 
-exclude_paths:
-- dist/**/*
-- lib/**/*
-- test/**/*

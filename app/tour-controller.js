@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop) {
+    app.controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', 'uiTourService', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop, uiTourService) {
 
         var self = this,
             stepList = [],
@@ -263,6 +263,7 @@
         self.init = function (opts) {
             options = angular.extend(options, opts);
             self.options = options;
+            uiTourService._registerTour(self);
             return self;
         };
         //------------------ end Protected API ------------------
