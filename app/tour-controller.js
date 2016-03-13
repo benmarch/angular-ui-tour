@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop) {
+    app.controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop) {
 
         var self = this,
             stepList = [],
@@ -64,68 +64,6 @@
                 prev = getPrevStep();
 
             return !!(prev || current.prevPath);
-        }
-
-        /**
-         * show supplied step
-         *
-         * @param step
-         * @returns {promise}
-         */
-        function showStep(step) {
-            if (!step) {
-                return $q.reject('No step.');
-            }
-            return serial([
-                step.config('onShow') || $q.resolve,
-                function () {
-                    if (step.config('backdrop')) {
-                        uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
-                    }
-                    return $q.resolve();
-                },
-                function () {
-                    return $q(function (resolve) {
-                        step.element[0].dispatchEvent(new CustomEvent('uiTourShow'));
-                        resolve();
-                    });
-                },
-                digest,
-                step.config('onShown') || $q.resolve,
-                function () {
-                    step.isNext = isNext();
-                    step.isPrev = isPrev();
-                    return $q.resolve();
-                }
-            ]);
-        }
-
-        /**
-         * hides the supplied step
-         * @param step
-         * @returns {Promise}
-         */
-        function hideStep(step) {
-            if (!step) {
-                return $q.reject('No step.');
-            }
-            return serial([
-                step.config('onHide') || $q.resolve,
-                function () {
-                    return $q(function (resolve) {
-                        step.element[0].dispatchEvent(new CustomEvent('uiTourHide'));
-                        resolve();
-                    });
-                },
-                function () {
-                    if (step.config('backdrop')) {
-                        uiTourBackdrop.hide();
-                    }
-                    return $q.resolve();
-                },
-                digest,
-                step.config('onHidden') || $q.resolve
-            ]);
         }
 
         /**
@@ -205,6 +143,88 @@
             self.addStep(step);
         };
 
+        self.hasStep = function (stepOrStepIdOrIndex) {
+            //index
+            if (angular.isNumber(stepOrStepIdOrIndex) && angular.isDefined(stepList[stepOrStepIdOrIndex])) {
+                return true;
+            }
+
+            //ID string
+            if (angular.isString(stepOrStepIdOrIndex)) {
+                return !!stepList.filter(function (step) {
+                    return step.id === stepOrStepIdOrIndex;
+                })[0];
+            }
+
+            //step object
+            return !!~stepList.indexOf(stepOrStepIdOrIndex);
+        };
+
+        /**
+         * show supplied step
+         *
+         * @protected
+         * @param step
+         * @returns {promise}
+         */
+        self.showStep = function(step) {
+            if (!step) {
+                return $q.reject('No step.');
+            }
+            return serial([
+                step.config('onShow') || $q.resolve,
+                function () {
+                    if (step.config('backdrop')) {
+                        uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
+                    }
+                    return $q.resolve();
+                },
+                function () {
+                    return $q(function (resolve) {
+                        step.element[0].dispatchEvent(new CustomEvent('uiTourShow'));
+                        resolve();
+                    });
+                },
+                digest,
+                step.config('onShown') || $q.resolve,
+                function () {
+                    step.isNext = isNext();
+                    step.isPrev = isPrev();
+                    return $q.resolve();
+                }
+            ]);
+        };
+
+        /**
+         * hides the supplied step
+         *
+         * @protected
+         * @param step
+         * @returns {Promise}
+         */
+        self.hideStep = function (step) {
+            if (!step) {
+                return $q.reject('No step.');
+            }
+            return serial([
+                step.config('onHide') || $q.resolve,
+                function () {
+                    return $q(function (resolve) {
+                        step.element[0].dispatchEvent(new CustomEvent('uiTourHide'));
+                        resolve();
+                    });
+                },
+                function () {
+                    if (step.config('backdrop')) {
+                        uiTourBackdrop.hide();
+                    }
+                    return $q.resolve();
+                },
+                digest,
+                step.config('onHidden') || $q.resolve
+            ]);
+        }
+
         /**
          * Tells the tour to pause while ngView loads
          *
@@ -260,7 +280,7 @@
                 function () {
                     setCurrentStep(stepList[0]);
                     tourStatus = statuses.ON;
-                    return showStep(getCurrentStep());
+                    return self.showStep(getCurrentStep());
                 }
             ]);
         };
@@ -279,7 +299,7 @@
                     tourStatus = statuses.OFF;
 
                     if (step) {
-                        return hideStep(step);
+                        return self.hideStep(step);
                     }
                 }
             ]);
@@ -295,7 +315,7 @@
                 options.onPause || $q.resolve,
                 function () {
                     tourStatus = statuses.PAUSED;
-                    return hideStep(getCurrentStep());
+                    return self.hideStep(getCurrentStep());
                 }
             ]);
         };
@@ -310,7 +330,7 @@
                 options.onResume || $q.resolve,
                 function () {
                     tourStatus = statuses.ON;
-                    return showStep(getCurrentStep());
+                    return self.showStep(getCurrentStep());
                 }
             ]);
         };
@@ -326,7 +346,7 @@
             return serial([
                 step.config('onNext') || $q.resolve,
                 function () {
-                    return hideStep(step);
+                    return self.hideStep(step);
                 },
                 function () {
                     //check if redirect happened, if not, set the next step
@@ -336,7 +356,7 @@
                 },
                 function () {
                     if (getCurrentStep()) {
-                        return showStep(getCurrentStep());
+                        return self.showStep(getCurrentStep());
                     } else {
                         self.end();
                     }
@@ -355,7 +375,7 @@
             return serial([
                 step.config('onPrev') || $q.resolve,
                 function () {
-                    return hideStep(step);
+                    return self.hideStep(step);
                 },
                 function () {
                     //check if redirect happened, if not, set the prev step
@@ -365,7 +385,7 @@
                 },
                 function () {
                     if (getCurrentStep()) {
-                        return showStep(getCurrentStep());
+                        return self.showStep(getCurrentStep());
                     } else {
                         self.end();
                     }
@@ -386,7 +406,7 @@
                 stepToShow = stepList[stepOrStepIdOrIndex];
             } else if (angular.isString(stepOrStepIdOrIndex)) {
                 stepToShow = stepList.filter(function (step) {
-                    return step.id === stepOrStepIdOrIndex;
+                    return step.stepId === stepOrStepIdOrIndex;
                 })[0];
             } else if (~stepList.indexOf(stepOrStepIdOrIndex)) {
                 stepToShow = stepOrStepIdOrIndex;
@@ -396,10 +416,10 @@
                 return $q.reject('No step.');
             }
 
-            return hideStep(getCurrentStep())
+            return self.hideStep(getCurrentStep())
                 .then(function () {
                     setCurrentStep(stepToShow);
-                    return showStep(stepToShow);
+                    return self.showStep(stepToShow);
                 });
         };
         //------------------ end Public API ------------------
@@ -412,6 +432,8 @@
         self._getStatus = function () {
             return tourStatus;
         };
+        self._getCurrentStep = getCurrentStep;
+        self._setCurrentStep = setCurrentStep;
     }]);
 
 }(angular.module('bm.uiTour')));

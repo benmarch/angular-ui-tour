@@ -8,7 +8,7 @@
         return {
             restrict: 'EA',
             scope: true,
-            controller: 'TourController',
+            controller: 'uiTourController',
             link: function (scope, element, attrs, ctrl) {
 
                 //Pass static options through or use defaults
