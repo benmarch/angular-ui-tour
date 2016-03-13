@@ -346,6 +346,47 @@
     <p><strong>Best practice:</strong> always set the order so that the steps display in the expected order. Steps with the same order will
         display consecutively, but the order among them is unpredictable.</p>
 
+    <h2>Tour API</h2>
+
+    <p>The tour itself has a small API that can be used to control the flow of the tour. The tour object is available on the
+        scope of the uiTour directive, and can be required as <code>TourController</code> in directives on or in the uiTour's subtree.</p>
+
+    <table><thead>
+    <tr>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    </thead><tbody>
+    <tr>
+        <td>start()</td>
+        <td>Starts the tour by showing the first tour step. <br> <strong>Parameters:</strong> &lt;none&gt; <br> <strong>Returns:</strong> <em>Promise</em> Resolves after step is shown.</td>
+    </tr>
+    <tr>
+        <td>end()</td>
+        <td>Ends the tour, calling start() again will start from the beginning. <br> <strong>Parameters:</strong> &lt;none&gt; <br> <strong>Returns:</strong> <em>Promise</em> Resolves after step is hidden.</td>
+    </tr>
+    <tr>
+        <td>pause()</td>
+        <td>Pauses the tour by hiding the current step. <br> <strong>Parameters:</strong> &lt;none&gt; <br> <strong>Returns:</strong> <em>Promise</em> Resolves after step is hidden.</td>
+    </tr>
+    <tr>
+        <td>resume()</td>
+        <td>Resumes the tour from the last shown step if it is paused. <br> <strong>Parameters:</strong> &lt;none&gt; <br> <strong>Returns:</strong> <em>Promise</em> Resolves after step is shown.</td>
+    </tr>
+    <tr>
+        <td>next()</td>
+        <td>Hides the current step and shows the next one. <br> <strong>Parameters:</strong> &lt;none&gt; <br> <strong>Returns:</strong> <em>Promise</em> Resolves after next step is shown.</td>
+    </tr>
+    <tr>
+        <td>prev()</td>
+        <td>Hides the current step and shows the previous one. <br> <strong>Parameters:</strong> &lt;none&gt; <br> <strong>Returns:</strong> <em>Promise</em> Resolves after previous step is shown.</td>
+    </tr>
+    <tr>
+        <td>goTo()</td>
+        <td>Hides the current step and jumps to the provided one. <br> <strong>Parameters:</strong> <em>step</em> Can be step object, step ID string, or step index <br> <strong>Returns:</strong> <em>Promise</em> Resolved when provided step is shown, rejects if no step provided or found.</td>
+    </tr>
+    </tbody></table>
+
     <h2>
         <a id="directives" class="anchor" href="#directives" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Directives</h2>
 

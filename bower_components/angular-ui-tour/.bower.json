@@ -9,9 +9,13 @@
     ".npmignore",
     ".travis.yml",
     ".umd",
-    "gulpfile.js",
+    "gruntfile.js",
     "npm-shrinkwrap.json",
-    "package.json"
+    "package.json",
+    "karma.conf.js",
+    "app/",
+    "lib/",
+    "test/"
   ],
   "dependencies": {
     "angular-bootstrap": "~0.14.3",
@@ -24,11 +28,11 @@
     "angular-route": "~1.4.8"
   },
   "homepage": "https://github.com/benmarch/angular-ui-tour",
-  "_release": "e176c5ee03",
+  "_release": "dc88cbb1ff",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "e176c5ee03ee557e1f86c6b508ede9a665ea1bcf"
+    "commit": "dc88cbb1ffb64b59e183d8eee96654acb12b5ddf"
   },
   "_source": "git://github.com/benmarch/angular-ui-tour.git",
   "_target": "master",

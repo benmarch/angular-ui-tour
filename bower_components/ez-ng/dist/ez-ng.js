@@ -49,7 +49,7 @@
      * //...
      * ```
      */
-    module.factory('ezComponentHelpers', ['$http', '$templateCache', '$compile', '$document', function ($http, $templateCache, $compile, $document) {
+    module.factory('ezComponentHelpers', ['$http', '$templateCache', '$compile', '$document', '$window', function ($http, $templateCache, $compile, $document, $window) {
 
         return function (scope, element, attrs, ctrl, transclude) {
 
@@ -124,7 +124,7 @@
              *
              * @description
              * Takes a string of CSS styles and adds them to the element. The styles become scoped to the element
-             * thanks to a fantastic script by Rich Tibbett (http://github.com/richtr). Note that the element itself
+             * thanks to a fantastic script by PM5544 (https://github.com/PM5544/scoped-polyfill). Note that the element itself
              * will also be affected by the scoped styles. Styles are applied after a browser event cycle.
              *
              * @example
@@ -143,7 +143,8 @@
              * ```
              */
             helpers.useStyles = function (styles) {
-                var el = $document[0].createElement('style');
+                var el = $document[0].createElement('style'),
+                    wrapper = angular.element($document[0].createElement('scopedstylewrapper'));
 
                 el.type = 'text/css';
                 el.scoped = true;
@@ -155,7 +156,10 @@
                     el.appendChild($document[0].createTextNode(styles));
                 }
 
-                element.append(el);
+                element.after(wrapper);
+                wrapper.append(element);
+                wrapper.append(el);
+                $window.scopedPolyFill(el);
             };
 
             /**
@@ -214,6 +218,9 @@
      * @description
      * Shim for angular 1.5's component service (copied from AngularJs source)
      * https://github.com/angular/angular.js/blob/master/src/ng/compile.js
+     *
+     * See [Angular's Component documentation](https://docs.angularjs.org/api/ng/provider/$compileProvider#component)
+     * for all options.
      *
      * Additionally provides styles and stylesUrl options for injecting "scoped" styles. See component-helpers.js
      *
@@ -523,118 +530,221 @@
 
 }(angular.module('ezNg')));
 
-/*!
- * <style scoped> shim
- * http://github.com/richtr
- *
- * Copyright 2012 Rich Tibbett
- * Released under the MIT license
- * http://opensource.org/licenses/MIT
- *
- * Date: 8th November 2012
- */
+var scopedPolyFill = (function (doc, undefined) {
 
-/*
- * DESCRIPTION:
- * ------------
- *
- * Javascript shim for <style scoped> elements.
- *
- * Reference specification ->
- *
- * http://www.whatwg.org/specs/web-apps/current-work/multipage/semantics.html#attr-style-scoped
- *
- * Demo page ->
- *
- * http://fiddle.jshell.net/RZ99U/1/show/light/
- *
- * USAGE:
- * ------
- *
- * 1. Add this file anywhere in your web page (outside of any load event handlers):
- *
- * <script type="text/javascript" src="style_scoped_shim.js"></script>
- *
- *
- * 2. Use <style scoped> elements as normal
- *
- * See the test page linked above for a live example.
- *
- */
+    // check for support of scoped and certain option
+    var compat = (function () {
+        var check = doc.createElement('style')
+            , DOMStyle = 'undefined' !== typeof check.sheet ? 'sheet' : 'undefined' !== typeof check.getSheet ? 'getSheet' : 'styleSheet'
+            , scopeSupported = undefined !== check.scoped
+            , testSheet
+            , DOMRules
+            , testStyle
+            ;
 
-(function() {
+        // we need to append it to the DOM because the DOM element at least FF keeps NULL as a sheet utill appended
+        // and we can't check for the rules / cssRules and changeSelectorText untill we have that
+        doc.body.appendChild(check);
+        testSheet = check[DOMStyle];
 
-    document.addEventListener('DOMContentLoaded', function() {
+        // add a test styleRule to be able to test selectorText changing support
+        // IE doesn't allow inserting of '' as a styleRule
+        testSheet.addRule ? testSheet.addRule('c', 'blink') : testSheet.insertRule('c{}', 0);
 
-        // Don't run if the UA implicitly supports <style scoped>
-        var testEl = document.createElement("style");
-        if (testEl.scoped !== undefined && testEl.scoped !== null) return;
+        // store the way to get to the list of rules
+        DOMRules = testSheet.rules ? 'rules' : 'cssRules';
 
-        var rewriteCSS = function(el) {
+        // cache the test rule (its allways the first since we didn't add any other thing inside this <style>
+        testStyle = testSheet[DOMRules][0];
 
-            el._scopedStyleApplied = true;
+        // try catch it to prevent IE from throwing errors
+        // can't check the read-only flag since IE just throws errors when setting it and Firefox won't allow setting it (and has no read-only flag
+        try {
+            testStyle.selectorText = 'd';
+        } catch (e) { }
 
-            var elName = "scopedstylewrapper";
-            var elId = "s" + (Math.floor(Math.random() * 1e15) + 1);
-            var uid = "." + elId;
+        // check if the selectorText has changed to the value we tried to set it to
+        // toLowerCase() it to account for browsers who change the text
+        var changeSelectorTextAllowed = 'd' === testStyle.selectorText.toLowerCase();
 
-            // Wrap a custom HTML container around style[scoped]'s parent node
-            var container = el.parentNode;
-            if(container == document.body) {
-                uid = "body"; // scope CSS rules to <body>
-            } else {
-                var parent = container.parentNode;
-                var wrapper = document.createElement(elName);
-                wrapper.className = elId;
-                parent.replaceChild(wrapper, container);
-                wrapper.appendChild(container);
-            }
+        // remove the <style> to clean up
+        check.parentNode.removeChild(check);
 
-            // Prefix all CSS rules with uid
-            var rewrittenCSS = el.textContent.replace(/(((?:(?:[^,{]+),?)*?)\{(?:([^}:]*):?([^};]*);?)*?\};*)/img, uid + " $1");
-
-            // <style scoped> @-directives rules from WHATWG specification
-
-            // Remove added uid prefix from all CSS @-directives commands
-            // since we have no way of scoping @-directives yet
-            // e.g. .scopingClass @font-face { ... } does not currently work :(
-            rewrittenCSS = rewrittenCSS.replace(new RegExp(uid + "\\s+(@[\\w|-]+)" , 'img'), "$1");
-            // Remove @global (to make the @global CSS rule work globally)
-            rewrittenCSS = rewrittenCSS.replace("@global", "");
-            // Ignore @page directives (not allowed in <style scoped>)
-            rewrittenCSS = rewrittenCSS.replace("@page", ".notAllowedInScopedCSS @page");
-
-            el.textContent = rewrittenCSS;
+        // return the object with the appropriate flags
+        return {
+            scopeSupported: scopeSupported
+            , rules: DOMRules
+            , sheet: DOMStyle
+            , changeSelectorTextAllowed: changeSelectorTextAllowed
         };
+    })();
 
-        var extractScopedStyles = function( root ) {
-            // Obtain style[scoped] elements from page
-            if(root.nodeType !== Node.ELEMENT_NODE && root.nodeType !== Node.DOCUMENT_NODE)
+    // scope is supported? just return a function which returns "this" when scoped support is found to make it chainable for jQuery
+    if (compat.scopeSupported)
+        return function () { return this };
+
+    //window.console && console.log( "No support for <style scoped> found, commencing jumping through hoops in 3, 2, 1..." );
+
+    // this was called so we "scope" all the <style> nodes which need to be scoped now
+    var scopedSheets
+        , i
+        , idCounter = 0
+        ;
+
+    if (doc.querySelectorAll) {
+
+        scopedSheets = doc.querySelectorAll('style[scoped]');
+
+    } else {
+
+        var tempSheets = [], scopedAttr;
+        scopedSheets = doc.getElementsByTagName('style');
+        i = scopedSheets.length;
+
+        while (i--) {
+            scopedAttr = scopedSheets[i].getAttribute('scoped');
+
+            if ("scoped" === scopedAttr || "" === scopedAttr)
+                tempSheets.push(scopedSheets[i]);
+            // Array.prototype.apply doen't work in the browsers this is eecuted for so we have to use array.push()
+
+        }
+
+        scopedSheets = tempSheets;
+
+    }
+
+    i = scopedSheets.length;
+    while (i--)
+        scopeIt(scopedSheets[i]);
+
+    // make a function so we can return it to enable the "scoping" of other <styles> which are inserted later on for instance
+    function scopeIt(styleNode, jQueryItem) {
+
+        // catch the second argument if this was called via the $.each
+        if (jQueryItem)
+            styleNode = jQueryItem;
+
+        // check if we received a <style> node
+        // if not chcek if it's a jQuery object and go from there
+        // if no <style> and no jQuery? return to avoid errors
+        if (!styleNode.nodeName) {
+
+            if (!styleNode.jquery)
                 return;
-            var els = root.querySelectorAll('style[scoped]');
-            for (var i = 0, l = els.length; i < l; i++) {
-                if(!els[i]._scopedStyleApplied)
-                    rewriteCSS(els[i]);
+            else
+                return styleNode.each(scopeIt);
+
+        }
+
+        if ('STYLE' !== styleNode.nodeName)
+            return;
+
+        // init some vars
+        var parentSheet = styleNode[compat.sheet]
+            , allRules = parentSheet[compat.rules]
+            , par = styleNode.parentNode
+            , id = par.id || (par.id = 'scopedByScopedPolyfill_' + ++idCounter)
+            , glue = ''
+            , index = allRules.length || 0
+            , rule
+            ;
+
+        // get al the ids from the parents so we are as specific as possible
+        // if no ids are found we always have the id which is placed on the <style>'s parentNode
+        while (par) {
+
+            if (par.id)
+            //if id begins with a number, we have to apply css escaping
+                if (parseInt(par.id.slice(0, 1))) {
+                    glue = '#\\3' + par.id.slice(0, 1) + ' ' + par.id.slice(1) + ' ' + glue;
+                } else {
+                    glue = '#' + par.id + ' ' + glue;
+                }
+
+            par = par.parentNode;
+
+        }
+
+        // iterate over the collection from the end back to account for IE's inability to insert a styleRule at a certain point
+        // it can only add them to the end...
+        while (index--) {
+
+            rule = allRules[index];
+            processCssRules(rule, index);
+
+        }
+
+        //recursively process cssRules
+        function processCssRules(parentRule, index) {
+            var sheet = parentRule.cssRules ? parentRule : parentSheet
+                , allRules = parentRule.cssRules || [parentRule]
+                , i = allRules.length || 0
+                , ruleIndex = parentRule.cssRules ? i : index
+                , rule
+                , selector
+                , styleRule
+                ;
+
+            // iterate over the collection from the end back to account for IE's inability to insert a styleRule at a certain point
+            // it can only add them to the end...
+            while (i--) {
+
+                rule = allRules[i];
+                if (rule.selectorText) {
+
+                    selector = glue + ' ' + rule.selectorText.split(',').join(', ' + glue);
+
+                    // replace :root by the scoped element
+                    selector = selector.replace(/[\ ]+:root/gi, '');
+
+                    // we can just change the selectorText for this one
+                    if (compat.changeSelectorTextAllowed) {
+
+                        rule.selectorText = selector;
+
+                    } else {// or we need to remove the rule and add it back in if we cant edit the selectorText
+
+                        /*
+                         * IE only adds the normal rules to the array (no @imports, @page etc)
+                         * and also does not have a type attribute so we check if that exists and execute the old IE part if it doesn't
+                         * all other browsers have the type attribute to show the type
+                         *  1 : normal style rules  <---- use these ones
+                         *  2 : @charset
+                         *  3 : @import
+                         *  4 : @media
+                         *  5 : @font-face
+                         *  6 : @page rules
+                         *
+                         */
+                        if (!rule.type || 1 === rule.type) {
+
+                            styleRule = rule.style.cssText;
+                            // IE doesn't allow inserting of '' as a styleRule
+                            if (styleRule) {
+                                sheet.removeRule ? sheet.removeRule(ruleIndex) : sheet.deleteRule(ruleIndex);
+                                sheet.addRule ? sheet.addRule(selector, styleRule, ruleIndex) : sheet.insertRule(selector + '{' + styleRule + '}', ruleIndex);
+                            }
+                        }
+                    }
+                } else if (rule.cssRules) {
+                    processCssRules(rule, ruleIndex);
+                }
             }
-        };
 
-        // Process scoped stylesheets from current page
-        extractScopedStyles(document);
+        }
+    }
 
-        // Listen for scoped stylesheet injection
-        document.addEventListener('DOMNodeInserted', function(e) {
-            var el = e.target;
-            if (el.tagName === "STYLE" && (el.getAttribute("scoped") !== undefined &&
-                el.getAttribute("scoped") !== null) && !el._scopedStyleApplied) {
-                rewriteCSS(el);
-            }
-            // Process nested style[scope] elements (if any)
-            extractScopedStyles(el);
-        }, false);
+    // Expose it as a jQuery function for convenience
+    if (typeof jQuery === "function" && typeof jQuery.fn === "object") {
+        jQuery.fn.scopedPolyFill = function () {
+            return this.each(scopeIt);
+        }
+    }
 
-    }, false);
+    return scopeIt;
 
-}());
+})(document);
 
 /*global angular:false*/
 (function (module) {
