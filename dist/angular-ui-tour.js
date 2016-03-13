@@ -183,6 +183,12 @@
             tourStatus = statuses.OFF,
             options = TourConfig.getAll();
 
+        /**
+         * Closer to $evalAsync, just resolves a promise
+         * after the next digest cycle
+         *
+         * @returns {Promise}
+         */
         function digest() {
             return $q(function (resolve) {
                 $timeout(resolve);
@@ -229,7 +235,6 @@
         /**
          * show supplied step
          *
-         * @
          * @param step
          * @returns {promise}
          */
@@ -264,7 +269,7 @@
         /**
          * hides the supplied step
          * @param step
-         * @returns {promise}
+         * @returns {Promise}
          */
         function hideStep(step) {
             if (!step) {
@@ -299,6 +304,7 @@
 
         /**
          * set the current step (doesnt do anything else)
+         * @param {step} step Current step
          */
         function setCurrentStep(step) {
             currentStep = step;
@@ -415,12 +421,14 @@
          * @public
          */
         self.start = function () {
-            if (options.onStart) {
-                options.onStart();
-            }
-            setCurrentStep(stepList[0]);
-            tourStatus = statuses.ON;
-            showStep(getCurrentStep());
+            return serial([
+                options.onStart || $q.resolve,
+                function () {
+                    setCurrentStep(stepList[0]);
+                    tourStatus = statuses.ON;
+                    return showStep(getCurrentStep());
+                }
+            ]);
         };
 
         /**
@@ -429,14 +437,18 @@
          * @public
          */
         self.end = function () {
-            if (getCurrentStep()) {
-                hideStep(getCurrentStep());
-            }
-            if (options.onEnd) {
-                options.onEnd();
-            }
-            setCurrentStep(null);
-            tourStatus = statuses.OFF;
+            var step = getCurrentStep();
+            return serial([
+                options.onEnd || $q.resolve,
+                function () {
+                    setCurrentStep(null);
+                    tourStatus = statuses.OFF;
+
+                    if (step) {
+                        return hideStep(step);
+                    }
+                }
+            ]);
         };
 
         /**
@@ -445,11 +457,13 @@
          * @public
          */
         self.pause = function () {
-            if (options.onPause) {
-                options.onPause();
-            }
-            tourStatus = statuses.PAUSED;
-            hideStep(getCurrentStep());
+            return serial([
+                options.onPause || $q.resolve,
+                function () {
+                    tourStatus = statuses.PAUSED;
+                    return hideStep(getCurrentStep());
+                }
+            ]);
         };
 
         /**
@@ -458,11 +472,13 @@
          * @public
          */
         self.resume = function () {
-            if (options.onResume) {
-                options.onResume();
-            }
-            tourStatus = statuses.ON;
-            showStep(getCurrentStep());
+            return serial([
+                options.onResume || $q.resolve,
+                function () {
+                    tourStatus = statuses.ON;
+                    return showStep(getCurrentStep());
+                }
+            ]);
         };
 
         /**
@@ -523,14 +539,26 @@
             ]);
         };
 
-        self.goToStep = function (stepOrIndex) {
+        /**
+         * Jumps to the provided step, step ID, or step index
+         *
+         * @param {step | string | number} stepOrStepIdOrIndex Step object, step ID string, or step index to jump to
+         * @returns {promise} Promise that resolves once the step is shown
+         */
+        self.goTo = function (stepOrStepIdOrIndex) {
             var stepToShow;
 
-            if (angular.isNumber(stepOrIndex) && angular.isDefined(stepList[stepOrIndex])) {
-                stepToShow = stepList[stepOrIndex];
-            } else if (~stepList.indexOf(stepOrIndex)) {
-                stepToShow = stepOrIndex;
-            } else {
+            if (angular.isNumber(stepOrStepIdOrIndex) && angular.isDefined(stepList[stepOrStepIdOrIndex])) {
+                stepToShow = stepList[stepOrStepIdOrIndex];
+            } else if (angular.isString(stepOrStepIdOrIndex)) {
+                stepToShow = stepList.filter(function (step) {
+                    return step.id === stepOrStepIdOrIndex;
+                })[0];
+            } else if (~stepList.indexOf(stepOrStepIdOrIndex)) {
+                stepToShow = stepOrStepIdOrIndex;
+            }
+
+            if (!stepToShow) {
                 return $q.reject('No step.');
             }
 

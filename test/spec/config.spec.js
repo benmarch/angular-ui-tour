@@ -6,7 +6,11 @@ describe('Tour Config', function () {
     var $compile,
         $templateCache,
         $rootScope,
-        TourConfig;
+        TourConfig,
+        digestAfter = function (fn, argumentArray) {
+            fn.apply(null, argumentArray || []);
+            $rootScope.$digest();
+        };
 
     beforeEach(module('bm.uiTour', 'test.templates'));
 
@@ -37,11 +41,10 @@ describe('Tour Config', function () {
             started = true;
         };
         $compile($templateCache.get('tour-with-on-start-function.html'))(scope);
+        var tour = scope.$$childTail.tour;
 
         //when
-        $rootScope.$digest();
-        scope.$$childTail.tour.start();
-        $rootScope.$digest();
+        digestAfter(tour.start);
 
         //then
         expect(started).toBe(true);
@@ -51,12 +54,13 @@ describe('Tour Config', function () {
         //given
         var scope = $rootScope.$new();
         $compile($templateCache.get('tour-with-placement-override.html'))(scope);
+        var tour = scope.$$childTail.tour;
 
         //when
         $rootScope.$digest();
 
         //then
-        expect(scope.$$childTail.tour.options.placement).toEqual('bottom');
+        expect(tour.options.placement).toEqual('bottom');
     });
 
     it('should initialize a new tour step with onNext overridden', inject(function ($q) {
@@ -68,12 +72,11 @@ describe('Tour Config', function () {
             return $q.resolve();
         };
         $compile($templateCache.get('tour-step-with-on-next-function.html'))(scope);
+        var tour = scope.$$childTail.tour;
 
         //when
-        $rootScope.$digest();
-        scope.$$childTail.tour.start();
-        scope.$$childTail.tour.next();
-        $rootScope.$digest();
+        digestAfter(tour.start);
+        digestAfter(tour.next);
 
         //then
         expect(called).toBe(true);

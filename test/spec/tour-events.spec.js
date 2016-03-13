@@ -5,7 +5,11 @@
 describe('Tour Config', function () {
     var tourScope,
         tourHandle,
-        $timeout;
+        $timeout,
+        digestAfter = function (fn, argumentArray) {
+            fn.apply(null, argumentArray || []);
+            tourScope.$digest();
+        };
 
     beforeEach(module('bm.uiTour', 'test.templates'));
 
@@ -46,7 +50,7 @@ describe('Tour Config', function () {
 
     it('should call onStart when tour is started', function () {
         //when
-        tourHandle.start();
+        digestAfter(tourHandle.start);
 
         //then
         expect(tourScope.onStart).toHaveBeenCalled();
@@ -54,9 +58,8 @@ describe('Tour Config', function () {
 
     it('should call onNext, onShow, onShown when next step is shown', function () {
         //when
-        tourHandle.start();
-        tourHandle.next();
-        tourScope.$digest();
+        digestAfter(tourHandle.start);
+        digestAfter(tourHandle.next);
 
         //then
         expect(tourScope.onNext).toHaveBeenCalled();
@@ -66,10 +69,11 @@ describe('Tour Config', function () {
 
     it('should call onNext, onHide, onHidden, onShow, onShown when third step is shown', function () {
         //when
-        tourHandle.start();
-        tourHandle.next()
-            .then(tourHandle.next);
-        tourScope.$digest();
+        digestAfter(tourHandle.start);
+        digestAfter(function () {
+            tourHandle.next()
+                .then(tourHandle.next);
+        });
 
         //then
         expect(tourScope.onNext).toHaveBeenCalled();
@@ -81,9 +85,8 @@ describe('Tour Config', function () {
 
     it('should call onPrev, onHide, onHidden, onShow, onShown when first step is re-shown', function () {
         //given
-        tourHandle.start();
-        tourHandle.next();
-        tourScope.$digest();
+        digestAfter(tourHandle.start);
+        digestAfter(tourHandle.next);
         tourScope.onShow.calls.reset();
         tourScope.onShown.calls.reset();
         tourScope.onHide.calls.reset();
@@ -103,8 +106,8 @@ describe('Tour Config', function () {
 
     it('should call onPause when tour is paused', function () {
         //when
-        tourHandle.start();
-        tourHandle.pause();
+        digestAfter(tourHandle.start);
+        digestAfter(tourHandle.pause);
 
         //then
         expect(tourScope.onPause).toHaveBeenCalled();
@@ -112,9 +115,9 @@ describe('Tour Config', function () {
 
     it('should call onResume when tour is resumed', function () {
         //when
-        tourHandle.start();
-        tourHandle.pause();
-        tourHandle.resume();
+        digestAfter(tourHandle.start);
+        digestAfter(tourHandle.pause);
+        digestAfter(tourHandle.resume);
 
         //then
         expect(tourScope.onResume).toHaveBeenCalled();
@@ -122,8 +125,8 @@ describe('Tour Config', function () {
 
     it('should call onEnd when tour is explicitly ended', function () {
         //when
-        tourHandle.start();
-        tourHandle.end();
+        digestAfter(tourHandle.start);
+        digestAfter(tourHandle.end);
 
         //then
         expect(tourScope.onEnd).toHaveBeenCalled();
@@ -131,11 +134,12 @@ describe('Tour Config', function () {
 
     it('should call onEnd when tour is implicitly ended', function () {
         //when
-        tourHandle.start();
-        tourHandle.next()
-            .then(tourHandle.next)
-            .then(tourHandle.next);
-        tourScope.$digest();
+        digestAfter(tourHandle.start);
+        digestAfter(function () {
+            tourHandle.next()
+                .then(tourHandle.next)
+                .then(tourHandle.next);
+        });
 
         //then
         expect(tourScope.onEnd).toHaveBeenCalled();

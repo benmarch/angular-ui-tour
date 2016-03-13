@@ -5,7 +5,11 @@
 describe('Tour Config', function () {
     var tourScope,
         tourHandle,
-        $timeout;
+        $timeout,
+        digestAfter = function (fn, argumentArray) {
+            fn.apply(null, argumentArray || []);
+            tourScope.$digest();
+        };
 
     beforeEach(module('bm.uiTour', 'test.templates'));
 
@@ -34,8 +38,7 @@ describe('Tour Config', function () {
 
     it('should not call any event handlers when started', function () {
         //when
-        tourHandle.start();
-        tourScope.$digest();
+        digestAfter(tourHandle.start);
 
         //then
         expect(tourScope.onNext).not.toHaveBeenCalled();
@@ -48,9 +51,8 @@ describe('Tour Config', function () {
 
     it('should call onShow, onShown when next step is shown', function () {
         //when
-        tourHandle.start();
-        tourHandle.next();
-        tourScope.$digest();
+        digestAfter(tourHandle.start);
+        digestAfter(tourHandle.next);
 
         //then
         expect(tourScope.onShow).toHaveBeenCalled();
@@ -64,9 +66,8 @@ describe('Tour Config', function () {
 
     it('should call onNext, onHide, onHidden when third step is shown', function () {
         //given
-        tourHandle.start();
-        tourHandle.next();
-        tourScope.$digest();
+        digestAfter(tourHandle.start);
+        digestAfter(tourHandle.next);
         tourScope.onShow.calls.reset();
         tourScope.onShown.calls.reset();
 
@@ -86,9 +87,8 @@ describe('Tour Config', function () {
 
     it('should call onPrev, onHide, onHidden when first step is re-shown', function () {
         //given
-        tourHandle.start();
-        tourHandle.next();
-        tourScope.$digest();
+        digestAfter(tourHandle.start);
+        digestAfter(tourHandle.next);
         tourScope.onShow.calls.reset();
         tourScope.onShown.calls.reset();
 

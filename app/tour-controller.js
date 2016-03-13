@@ -255,15 +255,14 @@
          * @public
          */
         self.start = function () {
-            var promise = $q.resolve();
-            if (options.onStart) {
-                promise = promise.then(options.onStart);
-            }
-            return promise.then(function () {
-                setCurrentStep(stepList[0]);
-                tourStatus = statuses.ON;
-                return showStep(getCurrentStep());
-            });
+            return serial([
+                options.onStart || $q.resolve,
+                function () {
+                    setCurrentStep(stepList[0]);
+                    tourStatus = statuses.ON;
+                    return showStep(getCurrentStep());
+                }
+            ]);
         };
 
         /**
@@ -272,21 +271,18 @@
          * @public
          */
         self.end = function () {
-            var step = getCurrentStep(),
-                promise = $q.resolve();
-            if (options.onEnd) {
-                promise = promise.then(options.onEnd);
-            }
-            promise.then(function () {
-                setCurrentStep(null);
-                tourStatus = statuses.OFF;
+            var step = getCurrentStep();
+            return serial([
+                options.onEnd || $q.resolve,
+                function () {
+                    setCurrentStep(null);
+                    tourStatus = statuses.OFF;
 
-                if (step) {
-                    return hideStep(step);
+                    if (step) {
+                        return hideStep(step);
+                    }
                 }
-            });
-
-            return promise;
+            ]);
         };
 
         /**
@@ -295,14 +291,13 @@
          * @public
          */
         self.pause = function () {
-            var promise = $q.resolve();
-            if (options.onPause) {
-                promise = promise.then(options.onPause);
-            }
-            return promise.then(function () {
-                tourStatus = statuses.PAUSED;
-                return hideStep(getCurrentStep());
-            });
+            return serial([
+                options.onPause || $q.resolve,
+                function () {
+                    tourStatus = statuses.PAUSED;
+                    return hideStep(getCurrentStep());
+                }
+            ]);
         };
 
         /**
@@ -311,14 +306,13 @@
          * @public
          */
         self.resume = function () {
-            var promise = $q.resolve();
-            if (options.onResume) {
-                promise = promise.then(options.onResume);
-            }
-            return promise.then(function () {
-                tourStatus = statuses.ON;
-                return showStep(getCurrentStep());
-            });
+            return serial([
+                options.onResume || $q.resolve,
+                function () {
+                    tourStatus = statuses.ON;
+                    return showStep(getCurrentStep());
+                }
+            ]);
         };
 
         /**
