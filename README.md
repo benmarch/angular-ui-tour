@@ -94,6 +94,21 @@ To configure on a tour step declaration, use `tour-step-<option-name>="optionVal
 **Best practice:** always set the order so that the steps display in the expected order. Steps with the same order will 
 display consecutively, but the order among them is unpredictable.
 
+## Tour API
+
+The tour itself has a small API that can be used to control the flow of the tour. The tour object is available on the
+scope of the uiTour directive, and can be required as `TourController` in directives on or in the uiTour's subtree.
+
+| Method  | Description                                                                                                                                                                                                                                 |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| start() | Starts the tour by showing the first tour step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                                     |
+| end()   | Ends the tour, calling start() again will start from the beginning. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                |
+| pause() | Pauses the tour by hiding the current step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                                        |
+| resume()| Resumes the tour from the last shown step if it is paused. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                          |
+| next()  | Hides the current step and shows the next one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after next step is shown.                                                                                                 |
+| prev()  | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
+| goTo()  | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
+
 ## Directives
 
 ### uiTour
