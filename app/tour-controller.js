@@ -45,11 +45,41 @@
             currentStep = step;
         }
 
+        /**
+         * gets a step relative to current step
+         *
+         * @param {number} offset Positive integer to search right, negative to search left
+         * @returns {step}
+         */
         function getStepByOffset(offset) {
             if (!getCurrentStep()) {
                 return null;
             }
             return stepList[stepList.indexOf(getCurrentStep()) + offset];
+        }
+
+        /**
+         * retrieves a step (if it exists in the step list) by index, ID, or identity
+         * Note: I realize ID is short for identity, but ID is really the step name here
+         *
+         * @param {string | number | step} stepOrStepIdOrIndex Step to retrieve
+         * @returns {step}
+         */
+        function getStepByIdentityOrIdOrIndex(stepOrStepIdOrIndex) {
+            //index
+            if (angular.isNumber(stepOrStepIdOrIndex)) {
+                return stepList[stepOrStepIdOrIndex];
+            }
+
+            //ID string
+            if (angular.isString(stepOrStepIdOrIndex)) {
+                return stepList.filter(function (step) {
+                    return step.stepId === stepOrStepIdOrIndex;
+                })[0];
+            }
+
+            //step object
+            return ~stepList.indexOf(stepOrStepIdOrIndex) ? stepOrStepIdOrIndex : null;
         }
 
         /**
@@ -149,21 +179,15 @@
             self.addStep(step);
         };
 
+        /**
+         * Checks to see if a step exists by ID, index, or identity
+         *
+         * @protected
+         * @param {string | number | step} stepOrStepIdOrIndex Step to check
+         * @returns {boolean}
+         */
         self.hasStep = function (stepOrStepIdOrIndex) {
-            //index
-            if (angular.isNumber(stepOrStepIdOrIndex)) {
-                return angular.isDefined(stepList[stepOrStepIdOrIndex]);
-            }
-
-            //ID string
-            if (angular.isString(stepOrStepIdOrIndex)) {
-                return !!stepList.filter(function (step) {
-                    return step.id === stepOrStepIdOrIndex;
-                })[0];
-            }
-
-            //step object
-            return !!~stepList.indexOf(stepOrStepIdOrIndex);
+            return !!getStepByIdentityOrIdOrIndex(stepOrStepIdOrIndex);
         };
 
         /**
@@ -174,35 +198,33 @@
          * @returns {promise}
          */
         self.showStep = function(step) {
-            return $q(function (resolve, reject) {
-                if (!step) {
-                    reject('No step.');
+            if (!step) {
+                return $q.reject('No step.');
+            }
+
+            return handleEvent(step.config('onShow')).then(function () {
+
+                if (step.config('backdrop')) {
+                    uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
                 }
 
-                handleEvent(step.config('onShow')).then(function () {
+            }).then(function () {
 
-                    if (step.config('backdrop')) {
-                        uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
-                    }
+                return dispatchEvent(step, 'uiTourShow');
 
-                }).then(function () {
+            }).then(function () {
 
-                    return dispatchEvent(step, 'uiTourShow');
+                return digest();
 
-                }).then(function () {
+            }).then(function () {
 
-                    return digest();
+                return handleEvent(step.config('onShown'));
 
-                }).then(function () {
+            }).then(function () {
 
-                    return handleEvent(step.config('onShown'));
+                step.isNext = isNext();
+                step.isPrev = isPrev();
 
-                }).then(function () {
-
-                    step.isNext = isNext();
-                    step.isPrev = isPrev();
-
-                }).then(resolve);
             });
         };
 
@@ -214,30 +236,28 @@
          * @returns {Promise}
          */
         self.hideStep = function (step) {
-            return $q(function (resolve, reject) {
-                if (!step) {
-                    return reject('No step.');
+            if (!step) {
+                return $q.reject('No step.');
+            }
+
+            return handleEvent(step.config('onHide')).then(function () {
+
+                return dispatchEvent(step, 'uiTourHide');
+
+            }).then(function () {
+
+                if (step.config('backdrop')) {
+                    uiTourBackdrop.hide();
                 }
 
-                handleEvent(step.config('onHide')).then(function () {
+            }).then(function () {
 
-                    return dispatchEvent(step, 'uiTourHide');
+                return digest();
 
-                }).then(function () {
+            }).then(function () {
 
-                    if (step.config('backdrop')) {
-                        uiTourBackdrop.hide();
-                    }
+                return handleEvent(step.config('onHidden'));
 
-                }).then(function () {
-
-                    return digest();
-
-                }).then(function () {
-
-                    return handleEvent(step.config('onHidden'));
-
-                }).then(resolve);
             });
         };
 
@@ -376,7 +396,7 @@
          */
         self.goTo = function (goTo) {
             var currentStep = getCurrentStep(),
-                stepToShow,
+                stepToShow = getStepByIdentityOrIdOrIndex(goTo),
                 actionMap = {
                     $prev: {
                         getStep: getPrevStep,
@@ -391,57 +411,31 @@
                 };
 
             if (goTo === '$prev' || goTo === '$next') {
-                return $q(function (resolve) {
-                    stepToShow = actionMap[goTo].getStep();
+                //trigger either onNext or onPrev here
+                //if next or previous requires a redirect, it will happen here
+                //the tour will pause here until the next view loads and
+                //the next/prev step is found
+                return handleEvent(currentStep.config(actionMap[goTo].preEvent)).then(function () {
 
-                    //trigger either onNext or onPrev here
-                    //if next or previous requires a redirect, it will happen here
-                    //the tour will pause here until the next view loads and
-                    //the next/prev step is found
+                    return self.hideStep(currentStep);
 
-                    handleEvent(currentStep.config(actionMap[goTo].preEvent)).then(function () {
+                }).then(function () {
 
-                        return self.hideStep(currentStep);
+                    //if a redirect occurred during onNext or onPrev, getCurrentStep() !== currentStep
+                    //this will only be true if no redirect occurred, since the redirect sets current step
+                    if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
+                        setCurrentStep(actionMap[goTo].getStep());
+                    }
 
-                    }).then(function () {
+                }).then(function () {
 
-                        //if a redirect occurred during onNext or onPrev, getCurrentStep() !== currentStep
+                    if (getCurrentStep()) {
+                        return self.showStep(getCurrentStep());
+                    } else {
+                        self.end();
+                    }
 
-                        //this will only be true if no redirect occurred, since the redirect sets current step
-                        if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
-                            setCurrentStep(actionMap[goTo].getStep());
-                        }
-
-                    }).then(function () {
-
-                        if (getCurrentStep()) {
-                            return self.showStep(getCurrentStep());
-                        } else {
-                            self.end();
-                        }
-
-                    }).then(resolve);
                 });
-            }
-
-            //if not $prev or $next
-            if (angular.isNumber(goTo)) {
-
-                //if it is an index
-                stepToShow = stepList[goTo];
-
-            } else if (angular.isString(goTo)) {
-
-                //if it is a step ID
-                stepToShow = stepList.filter(function (step) {
-                    return step.stepId === goTo;
-                })[0];
-
-            } else if (~stepList.indexOf(goTo)) {
-
-                //if it is a step
-                stepToShow = goTo;
-
             }
 
             //if no step found
