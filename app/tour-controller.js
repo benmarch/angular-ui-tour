@@ -30,19 +30,6 @@
         }
 
         /**
-         * just some promise sugar
-         * @param funcs - array of functions that return promises
-         * @returns {promise}
-         */
-        function serial(funcs) {
-            var promise = funcs.shift()();
-            funcs.forEach(function (func) {
-                promise = promise.then(func);
-            });
-            return promise;
-        }
-
-        /**
          * return current step or null
          * @returns {step}
          */
@@ -58,15 +45,19 @@
             currentStep = step;
         }
 
+        function getStepByOffset(offset) {
+            if (!getCurrentStep()) {
+                return null;
+            }
+            return stepList[stepList.indexOf(getCurrentStep()) + offset];
+        }
+
         /**
          * return next step or null
          * @returns {step}
          */
         function getNextStep() {
-            if (!getCurrentStep()) {
-                return null;
-            }
-            return stepList[stepList.indexOf(getCurrentStep()) + 1];
+            return getStepByOffset(+1);
         }
 
         /**
@@ -74,10 +65,7 @@
          * @returns {step}
          */
         function getPrevStep() {
-            if (!getCurrentStep()) {
-                return null;
-            }
-            return stepList[stepList.indexOf(getCurrentStep()) - 1];
+            return getStepByOffset(-1);
         }
 
         /**
@@ -86,10 +74,7 @@
          * @returns {boolean}
          */
         function isNext() {
-            var current = getCurrentStep(),
-                next = getNextStep();
-
-            return !!(next || current.nextPath);
+            return !!(getNextStep() || getCurrentStep().nextPath);
         }
 
         /**
@@ -98,10 +83,31 @@
          * @returns {boolean}
          */
         function isPrev() {
-            var current = getCurrentStep(),
-                prev = getPrevStep();
+            return !!(getPrevStep() || getCurrentStep().prevPath);
+        }
 
-            return !!(prev || current.prevPath);
+        /**
+         * Used by showStep and hideStep to trigger popover events
+         *
+         * @param step
+         * @param eventName
+         * @returns {*}
+         */
+        function dispatchEvent(step, eventName) {
+            return $q(function (resolve) {
+                step.element[0].dispatchEvent(new CustomEvent(eventName));
+                resolve();
+            });
+        }
+
+        /**
+         * A safe way to invoke a possibly null event handler
+         *
+         * @param handler
+         * @returns {*}
+         */
+        function handleEvent(handler) {
+            return (handler || $q.resolve)();
         }
 
         //---------------- Protected API -------------------
@@ -145,8 +151,8 @@
 
         self.hasStep = function (stepOrStepIdOrIndex) {
             //index
-            if (angular.isNumber(stepOrStepIdOrIndex) && angular.isDefined(stepList[stepOrStepIdOrIndex])) {
-                return true;
+            if (angular.isNumber(stepOrStepIdOrIndex)) {
+                return angular.isDefined(stepList[stepOrStepIdOrIndex]);
             }
 
             //ID string
@@ -168,31 +174,36 @@
          * @returns {promise}
          */
         self.showStep = function(step) {
-            if (!step) {
-                return $q.reject('No step.');
-            }
-            return serial([
-                step.config('onShow') || $q.resolve,
-                function () {
+            return $q(function (resolve, reject) {
+                if (!step) {
+                    reject('No step.');
+                }
+
+                handleEvent(step.config('onShow')).then(function () {
+
                     if (step.config('backdrop')) {
                         uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
                     }
-                    return $q.resolve();
-                },
-                function () {
-                    return $q(function (resolve) {
-                        step.element[0].dispatchEvent(new CustomEvent('uiTourShow'));
-                        resolve();
-                    });
-                },
-                digest,
-                step.config('onShown') || $q.resolve,
-                function () {
+
+                }).then(function () {
+
+                    return dispatchEvent(step, 'uiTourShow');
+
+                }).then(function () {
+
+                    return digest();
+
+                }).then(function () {
+
+                    return handleEvent(step.config('onShown'));
+
+                }).then(function () {
+
                     step.isNext = isNext();
                     step.isPrev = isPrev();
-                    return $q.resolve();
-                }
-            ]);
+
+                }).then(resolve);
+            });
         };
 
         /**
@@ -203,26 +214,31 @@
          * @returns {Promise}
          */
         self.hideStep = function (step) {
-            if (!step) {
-                return $q.reject('No step.');
-            }
-            return serial([
-                step.config('onHide') || $q.resolve,
-                function () {
-                    return $q(function (resolve) {
-                        step.element[0].dispatchEvent(new CustomEvent('uiTourHide'));
-                        resolve();
-                    });
-                },
-                function () {
+            return $q(function (resolve, reject) {
+                if (!step) {
+                    return reject('No step.');
+                }
+
+                handleEvent(step.config('onHide')).then(function () {
+
+                    return dispatchEvent(step, 'uiTourHide');
+
+                }).then(function () {
+
                     if (step.config('backdrop')) {
                         uiTourBackdrop.hide();
                     }
-                    return $q.resolve();
-                },
-                digest,
-                step.config('onHidden') || $q.resolve
-            ]);
+
+                }).then(function () {
+
+                    return digest();
+
+                }).then(function () {
+
+                    return handleEvent(step.config('onHidden'));
+
+                }).then(resolve);
+            });
         };
 
         /**
@@ -276,14 +292,20 @@
          * @public
          */
         self.start = function () {
-            return serial([
-                options.onStart || $q.resolve,
-                function () {
+            return $q(function (resolve) {
+
+                handleEvent(options.onStart).then(function () {
+
                     setCurrentStep(stepList[0]);
                     tourStatus = statuses.ON;
+
+                }).then(function () {
+
                     return self.showStep(getCurrentStep());
-                }
-            ]);
+
+                }).then(resolve);
+
+            });
         };
 
         /**
@@ -292,18 +314,22 @@
          * @public
          */
         self.end = function () {
-            var step = getCurrentStep();
-            return serial([
-                options.onEnd || $q.resolve,
-                function () {
+            return $q(function (resolve) {
+
+                handleEvent(options.onEnd).then(function () {
+
+                    if (getCurrentStep()) {
+                        return self.hideStep(getCurrentStep());
+                    }
+
+                }).then(function () {
+
                     setCurrentStep(null);
                     tourStatus = statuses.OFF;
 
-                    if (step) {
-                        return self.hideStep(step);
-                    }
-                }
-            ]);
+                }).then(resolve);
+
+            });
         };
 
         /**
@@ -312,13 +338,16 @@
          * @public
          */
         self.pause = function () {
-            return serial([
-                options.onPause || $q.resolve,
-                function () {
+            return $q(function (resolve) {
+
+                handleEvent(options.onPause).then(function () {
+
                     tourStatus = statuses.PAUSED;
                     return self.hideStep(getCurrentStep());
-                }
-            ]);
+
+                }).then(resolve);
+
+            });
         };
 
         /**
@@ -327,13 +356,16 @@
          * @public
          */
         self.resume = function () {
-            return serial([
-                options.onResume || $q.resolve,
-                function () {
+            return $q(function (resolve) {
+
+                handleEvent(options.onResume).then(function () {
+
                     tourStatus = statuses.ON;
                     return self.showStep(getCurrentStep());
-                }
-            ]);
+
+                }).then(resolve);
+
+            });
         };
 
         /**
@@ -343,26 +375,7 @@
          * @returns {promise}
          */
         self.next = function () {
-            var step = getCurrentStep();
-            return serial([
-                step.config('onNext') || $q.resolve,
-                function () {
-                    return self.hideStep(step);
-                },
-                function () {
-                    //check if redirect happened, if not, set the next step
-                    if (!step.nextStep || getCurrentStep().stepId !== step.nextStep) {
-                        setCurrentStep(getNextStep());
-                    }
-                },
-                function () {
-                    if (getCurrentStep()) {
-                        return self.showStep(getCurrentStep());
-                    } else {
-                        self.end();
-                    }
-                }
-            ]);
+            return self.goTo('$next');
         };
 
         /**
@@ -372,51 +385,97 @@
          * @returns {promise}
          */
         self.prev = function () {
-            var step = getCurrentStep();
-            return serial([
-                step.config('onPrev') || $q.resolve,
-                function () {
-                    return self.hideStep(step);
-                },
-                function () {
-                    //check if redirect happened, if not, set the prev step
-                    if (!step.prevStep || getCurrentStep().stepId !== step.prevStep) {
-                        setCurrentStep(getPrevStep());
-                    }
-                },
-                function () {
-                    if (getCurrentStep()) {
-                        return self.showStep(getCurrentStep());
-                    } else {
-                        self.end();
-                    }
-                }
-            ]);
+            return self.goTo('$prev');
         };
 
         /**
          * Jumps to the provided step, step ID, or step index
          *
-         * @param {step | string | number} stepOrStepIdOrIndex Step object, step ID string, or step index to jump to
+         * @param {step | string | number} goTo Step object, step ID string, or step index to jump to
          * @returns {promise} Promise that resolves once the step is shown
          */
-        self.goTo = function (stepOrStepIdOrIndex) {
-            var stepToShow;
+        self.goTo = function (goTo) {
+            var currentStep = getCurrentStep(),
+                stepToShow,
+                promise = $q.resolve(),
+                actionMap = {
+                    $prev: {
+                        getStep: getPrevStep,
+                        preEvent: 'onPrev',
+                        navCheck: 'prevStep'
+                    },
+                    $next: {
+                        getStep: getNextStep,
+                        preEvent: 'onNext',
+                        navCheck: 'nextStep'
+                    }
+                };
 
-            if (angular.isNumber(stepOrStepIdOrIndex) && angular.isDefined(stepList[stepOrStepIdOrIndex])) {
-                stepToShow = stepList[stepOrStepIdOrIndex];
-            } else if (angular.isString(stepOrStepIdOrIndex)) {
-                stepToShow = stepList.filter(function (step) {
-                    return step.stepId === stepOrStepIdOrIndex;
-                })[0];
-            } else if (~stepList.indexOf(stepOrStepIdOrIndex)) {
-                stepToShow = stepOrStepIdOrIndex;
+            if (goTo === '$prev' || goTo === '$next') {
+
+                stepToShow = actionMap[goTo].getStep();
+
+                promise = promise.then(function () {
+
+                    //trigger either onNext or onPrev here
+                    //if next or previous requires a redirect, it will happen here
+                    //the tour will pause here until the next view loads and
+                    //the next/prev step is found
+
+                    return handleEvent(currentStep.config(actionMap[goTo].preEvent));
+
+                }).then(function () {
+
+                    return self.hideStep(currentStep);
+
+                }).then(function () {
+
+                    //if a redirect occurred during onNext or onPrev, getCurrentStep() !== currentStep
+
+                    //this will only be true if no redirect occurred, since the redirect sets current step
+                    if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
+                        setCurrentStep(actionMap[goTo].getStep());
+                    }
+
+                }).then(function () {
+
+                    if (getCurrentStep()) {
+                        return self.showStep(getCurrentStep());
+                    } else {
+                        self.end();
+                    }
+
+                });
+
+                return promise;
             }
 
+            //if not $prev or $next
+            if (angular.isNumber(goTo)) {
+
+                //if it is an index
+                stepToShow = stepList[goTo];
+
+            } else if (angular.isString(goTo)) {
+
+                //if it is a step ID
+                stepToShow = stepList.filter(function (step) {
+                    return step.stepId === goTo;
+                })[0];
+
+            } else if (~stepList.indexOf(goTo)) {
+
+                //if it is a step
+                stepToShow = goTo;
+
+            }
+
+            //if no step found
             if (!stepToShow) {
                 return $q.reject('No step.');
             }
 
+            //take action
             return self.hideStep(getCurrentStep())
                 .then(function () {
                     setCurrentStep(stepToShow);
