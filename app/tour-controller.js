@@ -43,30 +43,6 @@
         }
 
         /**
-         * is there a next step
-         *
-         * @returns {boolean}
-         */
-        function isNext() {
-            var current = getCurrentStep(),
-                next = getNextStep();
-
-            return !!(next || current.nextPath);
-        }
-
-        /**
-         * is there a previous step
-         *
-         * @returns {boolean}
-         */
-        function isPrev() {
-            var current = getCurrentStep(),
-                prev = getPrevStep();
-
-            return !!(prev || current.prevPath);
-        }
-
-        /**
          * return current step or null
          * @returns {step}
          */
@@ -102,6 +78,30 @@
                 return null;
             }
             return stepList[stepList.indexOf(getCurrentStep()) - 1];
+        }
+
+        /**
+         * is there a next step
+         *
+         * @returns {boolean}
+         */
+        function isNext() {
+            var current = getCurrentStep(),
+                next = getNextStep();
+
+            return !!(next || current.nextPath);
+        }
+
+        /**
+         * is there a previous step
+         *
+         * @returns {boolean}
+         */
+        function isPrev() {
+            var current = getCurrentStep(),
+                prev = getPrevStep();
+
+            return !!(prev || current.prevPath);
         }
 
         //---------------- Protected API -------------------

@@ -109,7 +109,10 @@
                     ch = ezComponentHelpers.apply(null, arguments),
                     scrollOffset = step.config('scrollOffset');
 
-                element.css('zIndex', TourConfig.get('backdropZIndex') + 2);
+                element.css({
+                    zIndex: TourConfig.get('backdropZIndex') + 2,
+                    display: 'block'
+                });
                 if (step.fixed) {
                     element.css('position', 'fixed');
                 }
