@@ -109,6 +109,16 @@ scope of the uiTour directive, and can be required as `TourController` in direct
 | prev()  | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
 | goTo()  | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
 
+## Tour Service
+
+The `uiTourService` can be used for retrieving a reference to a tour object. There are three methods to retrieve the reference (note that they are all synchronous):
+
+| Method                    | Description                                                                                                                                                                                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| getTour()                 | If you have a single tour on your page, this is the easiest way to get the reference to it from a service or controller.                                                                                                                 |
+| getTourByName(name)       | If you have multiple tours you can name them by supplying a value to the `ui-tour` attribute. This method allows you to retrieve a tour by name.                                                                                         |
+| getTourByElement(element) | If you want to know which tour is available to a specific element (in order to create a tour step, for example) you can pass the element into this method to retrieve the appropriate tour. This can be a DOM element, or jqLite object. |
+
 ## Directives
 
 ### uiTour
