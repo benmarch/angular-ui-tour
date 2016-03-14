@@ -292,18 +292,14 @@
          * @public
          */
         self.start = function () {
-            return $q(function (resolve) {
+            return handleEvent(options.onStart).then(function () {
 
-                handleEvent(options.onStart).then(function () {
+                setCurrentStep(stepList[0]);
+                tourStatus = statuses.ON;
 
-                    setCurrentStep(stepList[0]);
-                    tourStatus = statuses.ON;
+            }).then(function () {
 
-                }).then(function () {
-
-                    return self.showStep(getCurrentStep());
-
-                }).then(resolve);
+                return self.showStep(getCurrentStep());
 
             });
         };
@@ -314,20 +310,16 @@
          * @public
          */
         self.end = function () {
-            return $q(function (resolve) {
+            return handleEvent(options.onEnd).then(function () {
 
-                handleEvent(options.onEnd).then(function () {
+                if (getCurrentStep()) {
+                    return self.hideStep(getCurrentStep());
+                }
 
-                    if (getCurrentStep()) {
-                        return self.hideStep(getCurrentStep());
-                    }
+            }).then(function () {
 
-                }).then(function () {
-
-                    setCurrentStep(null);
-                    tourStatus = statuses.OFF;
-
-                }).then(resolve);
+                setCurrentStep(null);
+                tourStatus = statuses.OFF;
 
             });
         };
@@ -338,15 +330,9 @@
          * @public
          */
         self.pause = function () {
-            return $q(function (resolve) {
-
-                handleEvent(options.onPause).then(function () {
-
-                    tourStatus = statuses.PAUSED;
-                    return self.hideStep(getCurrentStep());
-
-                }).then(resolve);
-
+            return handleEvent(options.onPause).then(function () {
+                tourStatus = statuses.PAUSED;
+                return self.hideStep(getCurrentStep());
             });
         };
 
@@ -356,15 +342,9 @@
          * @public
          */
         self.resume = function () {
-            return $q(function (resolve) {
-
-                handleEvent(options.onResume).then(function () {
-
-                    tourStatus = statuses.ON;
-                    return self.showStep(getCurrentStep());
-
-                }).then(resolve);
-
+            return handleEvent(options.onResume).then(function () {
+                tourStatus = statuses.ON;
+                return self.showStep(getCurrentStep());
             });
         };
 
