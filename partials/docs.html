@@ -387,6 +387,30 @@
     </tr>
     </tbody></table>
 
+    <h2>Tour Service</h2>
+
+    <p>The <code>uiTourService</code> can be used for retrieving a reference to a tour object. There are three methods to retrieve the reference (note that they are all synchronous):</p>
+
+    <table><thead>
+    <tr>
+        <th>Method</th>
+        <th>Description</th>
+    </tr>
+    </thead><tbody>
+    <tr>
+        <td>getTour()</td>
+        <td>If you have a single tour on your page, this is the easiest way to get the reference to it from a service or controller.</td>
+    </tr>
+    <tr>
+        <td>getTourByName(name)</td>
+        <td>If you have multiple tours you can name them by supplying a value to the <code>ui-tour</code> attribute. This method allows you to retrieve a tour by name.</td>
+    </tr>
+    <tr>
+        <td>getTourByElement(element)</td>
+        <td>If you want to know which tour is available to a specific element (in order to create a tour step, for example) you can pass the element into this method to retrieve the appropriate tour. This can be a DOM element, or jqLite object.</td>
+    </tr>
+    </tbody></table>
+
     <h2>
         <a id="directives" class="anchor" href="#directives" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Directives</h2>
 
