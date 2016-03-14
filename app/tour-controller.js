@@ -397,7 +397,6 @@
         self.goTo = function (goTo) {
             var currentStep = getCurrentStep(),
                 stepToShow,
-                promise = $q.resolve(),
                 actionMap = {
                     $prev: {
                         getStep: getPrevStep,
@@ -412,42 +411,37 @@
                 };
 
             if (goTo === '$prev' || goTo === '$next') {
-
-                stepToShow = actionMap[goTo].getStep();
-
-                promise = promise.then(function () {
+                return $q(function (resolve) {
+                    stepToShow = actionMap[goTo].getStep();
 
                     //trigger either onNext or onPrev here
                     //if next or previous requires a redirect, it will happen here
                     //the tour will pause here until the next view loads and
                     //the next/prev step is found
 
-                    return handleEvent(currentStep.config(actionMap[goTo].preEvent));
+                    handleEvent(currentStep.config(actionMap[goTo].preEvent)).then(function () {
 
-                }).then(function () {
+                        return self.hideStep(currentStep);
 
-                    return self.hideStep(currentStep);
+                    }).then(function () {
 
-                }).then(function () {
+                        //if a redirect occurred during onNext or onPrev, getCurrentStep() !== currentStep
 
-                    //if a redirect occurred during onNext or onPrev, getCurrentStep() !== currentStep
+                        //this will only be true if no redirect occurred, since the redirect sets current step
+                        if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
+                            setCurrentStep(actionMap[goTo].getStep());
+                        }
 
-                    //this will only be true if no redirect occurred, since the redirect sets current step
-                    if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
-                        setCurrentStep(actionMap[goTo].getStep());
-                    }
+                    }).then(function () {
 
-                }).then(function () {
+                        if (getCurrentStep()) {
+                            return self.showStep(getCurrentStep());
+                        } else {
+                            self.end();
+                        }
 
-                    if (getCurrentStep()) {
-                        return self.showStep(getCurrentStep());
-                    } else {
-                        self.end();
-                    }
-
+                    }).then(resolve);
                 });
-
-                return promise;
             }
 
             //if not $prev or $next
