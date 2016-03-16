@@ -39,6 +39,7 @@ describe('Tour Config', function () {
 
         $compile($templateCache.get('tour-with-all-events-overridden.html'))(tourScope);
         tourHandle = tourScope.$$childTail.tour;
+        tourHandle.emit('init');
     }));
 
     it('should call onReady when tour is initialized', function () {

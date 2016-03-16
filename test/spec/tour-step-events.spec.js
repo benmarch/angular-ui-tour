@@ -34,6 +34,7 @@ describe('Tour Config', function () {
 
         $compile($templateCache.get('tour-step-with-all-events-overridden.html'))(tourScope);
         tourHandle = tourScope.$$childTail.tour;
+        tourHandle.emit('init');
     }));
 
     it('should not call any event handlers when started', function () {

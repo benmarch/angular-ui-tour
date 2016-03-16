@@ -43,6 +43,23 @@
         }
 
         /**
+         * This will attach the properties native to Angular UI Tooltips. If there is a tour-level value set
+         * for any of them, this passes that value along to the step
+         *
+         * @param {$rootScope.Scope} scope The tour step's scope
+         * @param {Attributes} attrs The tour step's Attributes
+         * @param {Object} step Represents the tour step object
+         * @param {Array} properties The list of Tooltip properties
+         */
+        helpers.attachTourConfigProperties = function (scope, attrs, step, properties) {
+            angular.forEach(properties, function (property) {
+                if (!attrs[helpers.getAttrName(property)] && angular.isDefined(step.config(property))) {
+                    attrs.$set(helpers.getAttrName(property), String(step.config(property)));
+                }
+            });
+        };
+
+        /**
          * Helper function that attaches event handlers to options
          *
          * @param {$rootScope.Scope} scope

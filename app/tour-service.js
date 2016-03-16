@@ -39,10 +39,19 @@
          *
          * @protected
          * @param tour
-         * @private
          */
         service._registerTour = function (tour) {
             tours.push(tour);
+        };
+
+        /**
+         * Used by uiTourController to remove a destroyed tour from the registry
+         *
+         * @protected
+         * @param tour
+         */
+        service._unregisterTour = function (tour) {
+            tours.splice(tours.indexOf(tour), 1);
         };
 
         return service;

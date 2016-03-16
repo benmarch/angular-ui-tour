@@ -5,7 +5,12 @@
 describe('Tour Service', function () {
     var uiTourService,
         $compile,
-        $rootScope;
+        $rootScope,
+        mockTour = {
+            options: {
+                name: 'mock'
+            }
+        };
 
     beforeEach(module('bm.uiTour', 'test.templates'));
 
@@ -64,6 +69,19 @@ describe('Tour Service', function () {
 
         //then
         expect(tour.options.name).toBe('third');
+
+    });
+
+    it('should remove a tour from the registry', function () {
+
+        //given
+        uiTourService._registerTour(mockTour);
+
+        //when
+        uiTourService._unregisterTour(mockTour);
+
+        //then
+        expect(uiTourService.getTourByName('mock')).toBe(undefined);
 
     });
 

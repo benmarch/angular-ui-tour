@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', 'uiTourService', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop, uiTourService) {
+    app.controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', 'uiTourService', 'ezEventEmitter', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop, uiTourService, EventEmitter) {
 
         var self = this,
             stepList = [],
@@ -16,6 +16,8 @@
             },
             tourStatus = statuses.OFF,
             options = TourConfig.getAll();
+
+        EventEmitter.mixin(self);
 
         /**
          * Closer to $evalAsync, just resolves a promise
@@ -300,7 +302,18 @@
             options = angular.extend(options, opts);
             self.options = options;
             uiTourService._registerTour(self);
+            self.initialized = true;
+            self.emit('init');
             return self;
+        };
+
+        /**
+         * Unregisters with the tour service when tour is destroyed
+         *
+         * @protected
+         */
+        self.destroy = function () {
+            uiTourService._unregisterTour(self);
         };
         //------------------ end Protected API ------------------
 

@@ -34,6 +34,10 @@
                 if (typeof tour.onReady === 'function') {
                     tour.onReady();
                 }
+
+                scope.$on('$destroy', function () {
+                    ctrl.destroy();
+                });
             }
         };
 

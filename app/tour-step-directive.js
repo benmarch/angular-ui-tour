@@ -37,14 +37,23 @@
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
                         options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
+                        tooltipAttrs = 'animation appendToBody placement popupDelay popupCloseDelay'.split(' '),
                         orderWatch,
                         enabledWatch;
+
+                    //Will add values to pass to $uibTooltip
+                    function configureInheritedProperties() {
+                        TourHelpers.attachTourConfigProperties(scope, attrs, step, tooltipAttrs, 'tourStep');
+                        tourStepLinker(scope, element, attrs);
+                    }
 
                     //Pass interpolated values through
                     TourHelpers.attachInterpolatedValues(attrs, step, options);
                     orderWatch = attrs.$observe(TourHelpers.getAttrName('order'), function (order) {
                         step.order = !isNaN(order*1) ? order*1 : 0;
-                        ctrl.reorderStep(step);
+                        if (ctrl.hasStep(step)) {
+                            ctrl.reorderStep(step);
+                        }
                     });
                     enabledWatch = attrs.$observe(TourHelpers.getAttrName('enabled'), function (isEnabled) {
                         step.enabled = isEnabled !== 'false';
@@ -81,10 +90,17 @@
                     step.trustedContent = $sce.trustAsHtml(step.content);
 
                     //Add step to tour
-                    ctrl.addStep(step);
                     scope.tourStep = step;
                     scope.tour = scope.tour || ctrl;
-                    tourStepLinker(scope, element, attrs);
+                    if (ctrl.initialized) {
+                        configureInheritedProperties();
+                        ctrl.addStep(step);
+                    } else {
+                        ctrl.once('init', function () {
+                            configureInheritedProperties();
+                            ctrl.addStep(step);
+                        });
+                    }
 
                     //clean up when element is destroyed
                     scope.$on('$destroy', function () {
