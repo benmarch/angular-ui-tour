@@ -35,6 +35,7 @@
   "dependencies": {},
   "devDependencies": {
     "grunt": "^0.4.5",
+    "grunt-bower-install-simple": "^1.2.1",
     "grunt-bower-main": "~0.2.0",
     "grunt-complexity": "*",
     "grunt-contrib-concat": "^1.0.0",

@@ -99,6 +99,9 @@ module.exports = function (grunt) {
             }
         },
 
+        'bower-install-simple': {
+            bower: {}
+        },
 
         watch: {
             all: {
@@ -124,6 +127,7 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('build', [
+        'bower-install-simple',
         'html2js:app',
         'concat',
         'uglify'
