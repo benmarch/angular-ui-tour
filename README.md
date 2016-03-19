@@ -47,7 +47,7 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 | appendToBody    | boolean  | false                     | Should popups be appended to body (true) or the parent element (false).                                                                         |
 | tooltipClass    | string   | ""                        | Adds additional classes to the popup.                                                                                                           |
 | orphan          | boolean  | false                     | Should the popup display in the center of the viewport (true) or by the element (false).                                                        |
-| backdrop        | boolean  | false                     | Should there be a backdrop behind the element. **Note** this can be flaky.                                                                      |
+| backdrop        | boolean  | false                     | Should there be a backdrop behind the element. **Note** this can be flaky, I recommend using appendToBody with this.                            |
 | backdropZIndex  | number   | 10000                     | Z-index of the backdrop. Popups will be positioned relative to this.                                                                            |
 | templateUrl     | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                               |
 |                 |          |                           |                                                                                                                                                 |    
@@ -118,6 +118,36 @@ The `uiTourService` can be used for retrieving a reference to a tour object. The
 | getTour()                 | If you have a single tour on your page, this is the easiest way to get the reference to it from a service or controller.                                                                                                                 |
 | getTourByName(name)       | If you have multiple tours you can name them by supplying a value to the `ui-tour` attribute. This method allows you to retrieve a tour by name.                                                                                         |
 | getTourByElement(element) | If you want to know which tour is available to a specific element (in order to create a tour step, for example) you can pass the element into this method to retrieve the appropriate tour. This can be a DOM element, or jqLite object. |
+
+## Tour Events
+
+The tour itself is an event emitter that emits the following events. The difference between listening for events and setting
+handlers as shown above is that these events are outside of the lifecycle of the tour. That means that the events are
+emitted and then the tour moves on without waiting for any handlers to finish. By setting an above handler, the tour will
+wait for a handler to complete before moving on. If you simply need to know when something happened, use an event listener,
+but if you need to execute code before the tour moves continues, set an event handler.
+
+Listen for the following events using this pattern:
+
+```js
+tour.on('<eventName>', function (data) {
+    //your logic here
+});
+```
+
+| Event Name     | Timing                                                   | Data          |
+| -------------- | -------------------------------------------------------- | ------------- |
+| initialized    | After config is set                                      | null          |
+| started        | Before the first step is shown                           | first step    |
+| paused         | After current step is hidden                             | current step  |
+| resumed        | Before current step is shown                             | current step  |
+| ended          | After last step is hidden                                | null          |
+| stepAdded      | After step is added to step list                         | added step    |
+| stepRemoved    | After step is removed from step list                     | removed step  |
+| stepsReordered | After all steps have been ordered properly               | null          |
+| stepChanged    | After previous step is hidden, before next step is shown | next step     |
+
+
 
 ## Directives
 

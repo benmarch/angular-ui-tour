@@ -67,7 +67,7 @@
          * @param {string | number | step} stepOrStepIdOrIndex Step to retrieve
          * @returns {step}
          */
-        function getStepByIdentityOrIdOrIndex(stepOrStepIdOrIndex) {
+        function getStep(stepOrStepIdOrIndex) {
             //index
             if (angular.isNumber(stepOrStepIdOrIndex)) {
                 return stepList[stepOrStepIdOrIndex];
@@ -80,8 +80,22 @@
                 })[0];
             }
 
-            //step object
-            return ~stepList.indexOf(stepOrStepIdOrIndex) ? stepOrStepIdOrIndex : null;
+            //object
+            if (angular.isObject(stepOrStepIdOrIndex)) {
+                //step identity
+                if (~stepList.indexOf(stepOrStepIdOrIndex)) {
+                    return stepOrStepIdOrIndex;
+                }
+
+                //step copy
+                if (stepOrStepIdOrIndex.stepId) {
+                    return stepList.filter(function (step) {
+                        return step.stepId === stepOrStepIdOrIndex.stepId;
+                    })[0];
+                }
+            }
+
+            return null;
         }
 
         /**
@@ -155,6 +169,7 @@
             }
             stepList.push(step);
             stepList = $filter('orderBy')(stepList, 'order');
+            self.emit('stepAdded', angular.copy(step));
             if (resumeWhenFound) {
                 resumeWhenFound(step);
             }
@@ -168,6 +183,7 @@
          */
         self.removeStep = function (step) {
             stepList.splice(stepList.indexOf(step), 1);
+            self.emit('stepRemoved', angular.copy(step));
         };
 
         /**
@@ -179,6 +195,7 @@
         self.reorderStep = function (step) {
             self.removeStep(step);
             self.addStep(step);
+            self.emit('stepsReordered', angular.copy(step));
         };
 
         /**
@@ -189,7 +206,7 @@
          * @returns {boolean}
          */
         self.hasStep = function (stepOrStepIdOrIndex) {
-            return !!getStepByIdentityOrIdOrIndex(stepOrStepIdOrIndex);
+            return !!getStep(stepOrStepIdOrIndex);
         };
 
         /**
@@ -224,6 +241,7 @@
 
             }).then(function () {
 
+                self.emit('stepShown', angular.copy(step));
                 step.isNext = isNext();
                 step.isPrev = isPrev();
 
@@ -259,6 +277,10 @@
             }).then(function () {
 
                 return handleEvent(step.config('onHidden'));
+
+            }).then(function () {
+
+                self.emit('stepHidden', angular.copy(step));
 
             });
         };
@@ -303,7 +325,7 @@
             self.options = options;
             uiTourService._registerTour(self);
             self.initialized = true;
-            self.emit('init');
+            self.emit('initialized');
             return self;
         };
 
@@ -319,19 +341,28 @@
 
 
         //------------------ Public API ------------------
+
         /**
          * starts the tour
          *
-         * @public
+         * @returns {Promise}
          */
         self.start = function () {
+            return self.startAt(0);
+        };
+
+        /**
+         * starts the tour at a specified step, step index, or step ID
+         *
+         * @public
+         */
+        self.startAt = function (stepOrStepIdOrIndex) {
             return handleEvent(options.onStart).then(function () {
 
-                setCurrentStep(stepList[0]);
+                var step = getStep(stepOrStepIdOrIndex);
+                setCurrentStep(step);
                 tourStatus = statuses.ON;
-
-            }).then(function () {
-
+                self.emit('started', angular.copy(step));
                 return self.showStep(getCurrentStep());
 
             });
@@ -352,6 +383,7 @@
             }).then(function () {
 
                 setCurrentStep(null);
+                self.emit('ended');
                 tourStatus = statuses.OFF;
 
             });
@@ -366,6 +398,8 @@
             return handleEvent(options.onPause).then(function () {
                 tourStatus = statuses.PAUSED;
                 return self.hideStep(getCurrentStep());
+            }).then(function () {
+                self.emit('paused', angular.copy(getCurrentStep()));
             });
         };
 
@@ -377,6 +411,7 @@
         self.resume = function () {
             return handleEvent(options.onResume).then(function () {
                 tourStatus = statuses.ON;
+                self.emit('resumed', angular.copy(getCurrentStep()));
                 return self.showStep(getCurrentStep());
             });
         };
@@ -409,7 +444,7 @@
          */
         self.goTo = function (goTo) {
             var currentStep = getCurrentStep(),
-                stepToShow = getStepByIdentityOrIdOrIndex(goTo),
+                stepToShow = getStep(goTo),
                 actionMap = {
                     $prev: {
                         getStep: getPrevStep,
@@ -438,6 +473,7 @@
                     //this will only be true if no redirect occurred, since the redirect sets current step
                     if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
                         setCurrentStep(actionMap[goTo].getStep());
+                        self.emit('stepChanged', angular.copy(getCurrentStep()));
                     }
 
                 }).then(function () {
@@ -460,18 +496,44 @@
             return self.hideStep(getCurrentStep())
                 .then(function () {
                     setCurrentStep(stepToShow);
+                    self.emit('stepChanged', angular.copy(getCurrentStep()));
                     return self.showStep(stepToShow);
                 });
         };
+
+        /**
+         * returns a copy of the current step (copied to avoid breaking internal functions)
+         *
+         * @returns {step}
+         */
+        self.getCurrentStep = function () {
+            return angular.copy(getCurrentStep());
+        };
+
+        /**
+         * @typedef number TourStatus
+         */
+
+        /**
+         * Returns the current status of the tour
+         * @returns {TourStatus}
+         */
+        self.getStatus = function () {
+            return tourStatus;
+        };
+        /**
+         * @enum TourStatus
+         */
+        self.status = statuses;
+
         //------------------ end Public API ------------------
 
         //some debugging functions
-        //all are private
+        //all are private, unsafe, subject to change
+        //strongly not recommended for production code
+
         self._getSteps = function () {
             return stepList;
-        };
-        self._getStatus = function () {
-            return tourStatus;
         };
         self._getCurrentStep = getCurrentStep;
         self._setCurrentStep = setCurrentStep;

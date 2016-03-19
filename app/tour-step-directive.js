@@ -96,7 +96,7 @@
                         configureInheritedProperties();
                         ctrl.addStep(step);
                     } else {
-                        ctrl.once('init', function () {
+                        ctrl.once('initialized', function () {
                             configureInheritedProperties();
                             ctrl.addStep(step);
                         });

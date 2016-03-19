@@ -39,7 +39,7 @@ describe('Tour Config', function () {
 
         $compile($templateCache.get('tour-with-all-events-overridden.html'))(tourScope);
         tourHandle = tourScope.$$childTail.tour;
-        tourHandle.emit('init');
+        spyOn(tourHandle, 'emit').and.callThrough();
     }));
 
     it('should call onReady when tour is initialized', function () {
@@ -55,6 +55,7 @@ describe('Tour Config', function () {
 
         //then
         expect(tourScope.onStart).toHaveBeenCalled();
+        expect(tourHandle.emit).toHaveBeenCalledWith('started', jasmine.any(Object));
     });
 
     it('should call onNext, onShow, onShown when next step is shown', function () {
@@ -66,6 +67,8 @@ describe('Tour Config', function () {
         expect(tourScope.onNext).toHaveBeenCalled();
         expect(tourScope.onShow).toHaveBeenCalled();
         expect(tourScope.onShown).toHaveBeenCalled();
+        expect(tourHandle.emit).toHaveBeenCalledWith('stepShown', jasmine.any(Object));
+        expect(tourHandle.emit).toHaveBeenCalledWith('stepChanged', jasmine.any(Object));
     });
 
     it('should call onNext, onHide, onHidden, onShow, onShown when third step is shown', function () {
@@ -82,6 +85,7 @@ describe('Tour Config', function () {
         expect(tourScope.onShown).toHaveBeenCalled();
         expect(tourScope.onHide).toHaveBeenCalled();
         expect(tourScope.onHidden).toHaveBeenCalled();
+        expect(tourHandle.emit).toHaveBeenCalledWith('stepHidden', jasmine.any(Object));
     });
 
     it('should call onPrev, onHide, onHidden, onShow, onShown when first step is re-shown', function () {
@@ -112,6 +116,7 @@ describe('Tour Config', function () {
 
         //then
         expect(tourScope.onPause).toHaveBeenCalled();
+        expect(tourHandle.emit).toHaveBeenCalledWith('paused', jasmine.any(Object));
     });
 
     it('should call onResume when tour is resumed', function () {
@@ -122,6 +127,7 @@ describe('Tour Config', function () {
 
         //then
         expect(tourScope.onResume).toHaveBeenCalled();
+        expect(tourHandle.emit).toHaveBeenCalledWith('resumed', jasmine.any(Object));
     });
 
     it('should call onEnd when tour is explicitly ended', function () {
@@ -131,6 +137,7 @@ describe('Tour Config', function () {
 
         //then
         expect(tourScope.onEnd).toHaveBeenCalled();
+        expect(tourHandle.emit).toHaveBeenCalledWith('ended');
     });
 
     it('should call onEnd when tour is implicitly ended', function () {
@@ -144,5 +151,6 @@ describe('Tour Config', function () {
 
         //then
         expect(tourScope.onEnd).toHaveBeenCalled();
+        expect(tourHandle.emit).toHaveBeenCalledWith('ended');
     });
 });

@@ -155,6 +155,30 @@ describe('Tour Controller', function () {
 
     });
 
+    describe('#startAt()', function () {
+
+        it('should show the provided step', function () {
+
+            //given
+            var step = {};
+            spyOn(TourController, 'showStep');
+
+            //when
+            TourController.addStep(angular.copy(step));
+            TourController.addStep(angular.copy(step));
+            TourController.addStep(step);
+            digestAfter(function () {
+                TourController.startAt(step);
+            });
+
+            //then
+            expect(TourController._getCurrentStep()).toBe(step);
+            expect(TourController.showStep).toHaveBeenCalledWith(step);
+
+        });
+
+    });
+
     describe('#end()', function () {
 
         it('should call onEnd if it is defined', function () {
