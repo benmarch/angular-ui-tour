@@ -18,21 +18,24 @@
     "test/"
   ],
   "dependencies": {
-    "angular-bootstrap": "~0.14.3",
+    "angular-bootstrap": ">=0.14.3",
     "ngSmoothScroll": "~2.0.0",
-    "angular-sanitize": "~1.4.8",
-    "ez-ng": "~0.1.0"
+    "angular-sanitize": ">=1.3",
+    "ez-ng": "~0.1.7"
   },
   "devDependencies": {
-    "angular-mocks": "~1.4.8",
-    "angular-route": "~1.4.8"
+    "angular-mocks": ">=1.3",
+    "angular-route": ">=1.3"
+  },
+  "resolutions": {
+    "angular": "1.5.1"
   },
   "homepage": "https://github.com/benmarch/angular-ui-tour",
-  "_release": "dc88cbb1ff",
+  "_release": "43b498bd93",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "dc88cbb1ffb64b59e183d8eee96654acb12b5ddf"
+    "commit": "43b498bd93c1da27397673ecf8fc5bae1570457b"
   },
   "_source": "git://github.com/benmarch/angular-ui-tour.git",
   "_target": "master",

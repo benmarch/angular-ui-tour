@@ -169,7 +169,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('TourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop) {
+    app.controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', 'uiTourService', 'ezEventEmitter', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop, uiTourService, EventEmitter) {
 
         var self = this,
             stepList = [],
@@ -183,6 +183,8 @@
             tourStatus = statuses.OFF,
             options = TourConfig.getAll();
 
+        EventEmitter.mixin(self);
+
         /**
          * Closer to $evalAsync, just resolves a promise
          * after the next digest cycle
@@ -193,105 +195,6 @@
             return $q(function (resolve) {
                 $timeout(resolve);
             });
-        }
-
-        /**
-         * just some promise sugar
-         * @param funcs - array of functions that return promises
-         * @returns {promise}
-         */
-        function serial(funcs) {
-            var promise = funcs.shift()();
-            funcs.forEach(function (func) {
-                promise = promise.then(func);
-            });
-            return promise;
-        }
-
-        /**
-         * is there a next step
-         *
-         * @returns {boolean}
-         */
-        function isNext() {
-            var current = getCurrentStep(),
-                next = getNextStep();
-
-            return !!(next || current.nextPath);
-        }
-
-        /**
-         * is there a previous step
-         *
-         * @returns {boolean}
-         */
-        function isPrev() {
-            var current = getCurrentStep(),
-                prev = getPrevStep();
-
-            return !!(prev || current.prevPath);
-        }
-
-        /**
-         * show supplied step
-         *
-         * @param step
-         * @returns {promise}
-         */
-        function showStep(step) {
-            if (!step) {
-                return $q.reject('No step.');
-            }
-            return serial([
-                step.config('onShow') || $q.resolve,
-                function () {
-                    if (step.config('backdrop')) {
-                        uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
-                    }
-                    return $q.resolve();
-                },
-                function () {
-                    return $q(function (resolve) {
-                        step.element[0].dispatchEvent(new CustomEvent('uiTourShow'));
-                        resolve();
-                    });
-                },
-                digest,
-                step.config('onShown') || $q.resolve,
-                function () {
-                    step.isNext = isNext();
-                    step.isPrev = isPrev();
-                    return $q.resolve();
-                }
-            ]);
-        }
-
-        /**
-         * hides the supplied step
-         * @param step
-         * @returns {Promise}
-         */
-        function hideStep(step) {
-            if (!step) {
-                return $q.reject('No step.');
-            }
-            return serial([
-                step.config('onHide') || $q.resolve,
-                function () {
-                    return $q(function (resolve) {
-                        step.element[0].dispatchEvent(new CustomEvent('uiTourHide'));
-                        resolve();
-                    });
-                },
-                function () {
-                    if (step.config('backdrop')) {
-                        uiTourBackdrop.hide();
-                    }
-                    return $q.resolve();
-                },
-                digest,
-                step.config('onHidden') || $q.resolve
-            ]);
         }
 
         /**
@@ -311,14 +214,48 @@
         }
 
         /**
+         * gets a step relative to current step
+         *
+         * @param {number} offset Positive integer to search right, negative to search left
+         * @returns {step}
+         */
+        function getStepByOffset(offset) {
+            if (!getCurrentStep()) {
+                return null;
+            }
+            return stepList[stepList.indexOf(getCurrentStep()) + offset];
+        }
+
+        /**
+         * retrieves a step (if it exists in the step list) by index, ID, or identity
+         * Note: I realize ID is short for identity, but ID is really the step name here
+         *
+         * @param {string | number | step} stepOrStepIdOrIndex Step to retrieve
+         * @returns {step}
+         */
+        function getStepByIdentityOrIdOrIndex(stepOrStepIdOrIndex) {
+            //index
+            if (angular.isNumber(stepOrStepIdOrIndex)) {
+                return stepList[stepOrStepIdOrIndex];
+            }
+
+            //ID string
+            if (angular.isString(stepOrStepIdOrIndex)) {
+                return stepList.filter(function (step) {
+                    return step.stepId === stepOrStepIdOrIndex;
+                })[0];
+            }
+
+            //step object
+            return ~stepList.indexOf(stepOrStepIdOrIndex) ? stepOrStepIdOrIndex : null;
+        }
+
+        /**
          * return next step or null
          * @returns {step}
          */
         function getNextStep() {
-            if (!getCurrentStep()) {
-                return null;
-            }
-            return stepList[stepList.indexOf(getCurrentStep()) + 1];
+            return getStepByOffset(+1);
         }
 
         /**
@@ -326,10 +263,49 @@
          * @returns {step}
          */
         function getPrevStep() {
-            if (!getCurrentStep()) {
-                return null;
-            }
-            return stepList[stepList.indexOf(getCurrentStep()) - 1];
+            return getStepByOffset(-1);
+        }
+
+        /**
+         * is there a next step
+         *
+         * @returns {boolean}
+         */
+        function isNext() {
+            return !!(getNextStep() || getCurrentStep().nextPath);
+        }
+
+        /**
+         * is there a previous step
+         *
+         * @returns {boolean}
+         */
+        function isPrev() {
+            return !!(getPrevStep() || getCurrentStep().prevPath);
+        }
+
+        /**
+         * Used by showStep and hideStep to trigger popover events
+         *
+         * @param step
+         * @param eventName
+         * @returns {*}
+         */
+        function dispatchEvent(step, eventName) {
+            return $q(function (resolve) {
+                step.element[0].dispatchEvent(new CustomEvent(eventName));
+                resolve();
+            });
+        }
+
+        /**
+         * A safe way to invoke a possibly null event handler
+         *
+         * @param handler
+         * @returns {*}
+         */
+        function handleEvent(handler) {
+            return (handler || $q.resolve)();
         }
 
         //---------------- Protected API -------------------
@@ -372,6 +348,88 @@
         };
 
         /**
+         * Checks to see if a step exists by ID, index, or identity
+         *
+         * @protected
+         * @param {string | number | step} stepOrStepIdOrIndex Step to check
+         * @returns {boolean}
+         */
+        self.hasStep = function (stepOrStepIdOrIndex) {
+            return !!getStepByIdentityOrIdOrIndex(stepOrStepIdOrIndex);
+        };
+
+        /**
+         * show supplied step
+         *
+         * @protected
+         * @param step
+         * @returns {promise}
+         */
+        self.showStep = function(step) {
+            if (!step) {
+                return $q.reject('No step.');
+            }
+
+            return handleEvent(step.config('onShow')).then(function () {
+
+                if (step.config('backdrop')) {
+                    uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
+                }
+
+            }).then(function () {
+
+                return dispatchEvent(step, 'uiTourShow');
+
+            }).then(function () {
+
+                return digest();
+
+            }).then(function () {
+
+                return handleEvent(step.config('onShown'));
+
+            }).then(function () {
+
+                step.isNext = isNext();
+                step.isPrev = isPrev();
+
+            });
+        };
+
+        /**
+         * hides the supplied step
+         *
+         * @protected
+         * @param step
+         * @returns {Promise}
+         */
+        self.hideStep = function (step) {
+            if (!step) {
+                return $q.reject('No step.');
+            }
+
+            return handleEvent(step.config('onHide')).then(function () {
+
+                return dispatchEvent(step, 'uiTourHide');
+
+            }).then(function () {
+
+                if (step.config('backdrop')) {
+                    uiTourBackdrop.hide();
+                }
+
+            }).then(function () {
+
+                return digest();
+
+            }).then(function () {
+
+                return handleEvent(step.config('onHidden'));
+
+            });
+        };
+
+        /**
          * Tells the tour to pause while ngView loads
          *
          * @protected
@@ -409,7 +467,19 @@
         self.init = function (opts) {
             options = angular.extend(options, opts);
             self.options = options;
+            uiTourService._registerTour(self);
+            self.initialized = true;
+            self.emit('init');
             return self;
+        };
+
+        /**
+         * Unregisters with the tour service when tour is destroyed
+         *
+         * @protected
+         */
+        self.destroy = function () {
+            uiTourService._unregisterTour(self);
         };
         //------------------ end Protected API ------------------
 
@@ -421,14 +491,16 @@
          * @public
          */
         self.start = function () {
-            return serial([
-                options.onStart || $q.resolve,
-                function () {
-                    setCurrentStep(stepList[0]);
-                    tourStatus = statuses.ON;
-                    return showStep(getCurrentStep());
-                }
-            ]);
+            return handleEvent(options.onStart).then(function () {
+
+                setCurrentStep(stepList[0]);
+                tourStatus = statuses.ON;
+
+            }).then(function () {
+
+                return self.showStep(getCurrentStep());
+
+            });
         };
 
         /**
@@ -437,18 +509,18 @@
          * @public
          */
         self.end = function () {
-            var step = getCurrentStep();
-            return serial([
-                options.onEnd || $q.resolve,
-                function () {
-                    setCurrentStep(null);
-                    tourStatus = statuses.OFF;
+            return handleEvent(options.onEnd).then(function () {
 
-                    if (step) {
-                        return hideStep(step);
-                    }
+                if (getCurrentStep()) {
+                    return self.hideStep(getCurrentStep());
                 }
-            ]);
+
+            }).then(function () {
+
+                setCurrentStep(null);
+                tourStatus = statuses.OFF;
+
+            });
         };
 
         /**
@@ -457,13 +529,10 @@
          * @public
          */
         self.pause = function () {
-            return serial([
-                options.onPause || $q.resolve,
-                function () {
-                    tourStatus = statuses.PAUSED;
-                    return hideStep(getCurrentStep());
-                }
-            ]);
+            return handleEvent(options.onPause).then(function () {
+                tourStatus = statuses.PAUSED;
+                return self.hideStep(getCurrentStep());
+            });
         };
 
         /**
@@ -472,13 +541,10 @@
          * @public
          */
         self.resume = function () {
-            return serial([
-                options.onResume || $q.resolve,
-                function () {
-                    tourStatus = statuses.ON;
-                    return showStep(getCurrentStep());
-                }
-            ]);
+            return handleEvent(options.onResume).then(function () {
+                tourStatus = statuses.ON;
+                return self.showStep(getCurrentStep());
+            });
         };
 
         /**
@@ -488,26 +554,7 @@
          * @returns {promise}
          */
         self.next = function () {
-            var step = getCurrentStep();
-            return serial([
-                step.config('onNext') || $q.resolve,
-                function () {
-                    return hideStep(step);
-                },
-                function () {
-                    //check if redirect happened, if not, set the next step
-                    if (!step.nextStep || getCurrentStep().stepId !== step.nextStep) {
-                        setCurrentStep(getNextStep());
-                    }
-                },
-                function () {
-                    if (getCurrentStep()) {
-                        return showStep(getCurrentStep());
-                    } else {
-                        self.end();
-                    }
-                }
-            ]);
+            return self.goTo('$next');
         };
 
         /**
@@ -517,55 +564,69 @@
          * @returns {promise}
          */
         self.prev = function () {
-            var step = getCurrentStep();
-            return serial([
-                step.config('onPrev') || $q.resolve,
-                function () {
-                    return hideStep(step);
-                },
-                function () {
-                    //check if redirect happened, if not, set the prev step
-                    if (!step.prevStep || getCurrentStep().stepId !== step.prevStep) {
-                        setCurrentStep(getPrevStep());
-                    }
-                },
-                function () {
-                    if (getCurrentStep()) {
-                        return showStep(getCurrentStep());
-                    } else {
-                        self.end();
-                    }
-                }
-            ]);
+            return self.goTo('$prev');
         };
 
         /**
          * Jumps to the provided step, step ID, or step index
          *
-         * @param {step | string | number} stepOrStepIdOrIndex Step object, step ID string, or step index to jump to
+         * @param {step | string | number} goTo Step object, step ID string, or step index to jump to
          * @returns {promise} Promise that resolves once the step is shown
          */
-        self.goTo = function (stepOrStepIdOrIndex) {
-            var stepToShow;
+        self.goTo = function (goTo) {
+            var currentStep = getCurrentStep(),
+                stepToShow = getStepByIdentityOrIdOrIndex(goTo),
+                actionMap = {
+                    $prev: {
+                        getStep: getPrevStep,
+                        preEvent: 'onPrev',
+                        navCheck: 'prevStep'
+                    },
+                    $next: {
+                        getStep: getNextStep,
+                        preEvent: 'onNext',
+                        navCheck: 'nextStep'
+                    }
+                };
 
-            if (angular.isNumber(stepOrStepIdOrIndex) && angular.isDefined(stepList[stepOrStepIdOrIndex])) {
-                stepToShow = stepList[stepOrStepIdOrIndex];
-            } else if (angular.isString(stepOrStepIdOrIndex)) {
-                stepToShow = stepList.filter(function (step) {
-                    return step.id === stepOrStepIdOrIndex;
-                })[0];
-            } else if (~stepList.indexOf(stepOrStepIdOrIndex)) {
-                stepToShow = stepOrStepIdOrIndex;
+            if (goTo === '$prev' || goTo === '$next') {
+                //trigger either onNext or onPrev here
+                //if next or previous requires a redirect, it will happen here
+                //the tour will pause here until the next view loads and
+                //the next/prev step is found
+                return handleEvent(currentStep.config(actionMap[goTo].preEvent)).then(function () {
+
+                    return self.hideStep(currentStep);
+
+                }).then(function () {
+
+                    //if a redirect occurred during onNext or onPrev, getCurrentStep() !== currentStep
+                    //this will only be true if no redirect occurred, since the redirect sets current step
+                    if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
+                        setCurrentStep(actionMap[goTo].getStep());
+                    }
+
+                }).then(function () {
+
+                    if (getCurrentStep()) {
+                        return self.showStep(getCurrentStep());
+                    } else {
+                        self.end();
+                    }
+
+                });
             }
 
+            //if no step found
             if (!stepToShow) {
                 return $q.reject('No step.');
             }
 
-            return hideStep(getCurrentStep())
+            //take action
+            return self.hideStep(getCurrentStep())
                 .then(function () {
                     setCurrentStep(stepToShow);
-                    return showStep(stepToShow);
+                    return self.showStep(stepToShow);
                 });
         };
         //------------------ end Public API ------------------
@@ -578,6 +639,8 @@
         self._getStatus = function () {
             return tourStatus;
         };
+        self._getCurrentStep = getCurrentStep;
+        self._setCurrentStep = setCurrentStep;
     }]);
 
 }(angular.module('bm.uiTour')));
@@ -592,11 +655,13 @@
         return {
             restrict: 'EA',
             scope: true,
-            controller: 'TourController',
+            controller: 'uiTourController',
             link: function (scope, element, attrs, ctrl) {
 
                 //Pass static options through or use defaults
-                var tour = {},
+                var tour = {
+                        name: attrs.uiTour
+                    },
                     events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
                     properties = 'placement animation popupDelay closePopupDelay enable appendToBody tooltipClass orphan backdrop scrollOffset'.split(' ');
 
@@ -616,6 +681,10 @@
                 if (typeof tour.onReady === 'function') {
                     tour.onReady();
                 }
+
+                scope.$on('$destroy', function () {
+                    ctrl.destroy();
+                });
             }
         };
 
@@ -666,6 +735,23 @@
 
             return string;
         }
+
+        /**
+         * This will attach the properties native to Angular UI Tooltips. If there is a tour-level value set
+         * for any of them, this passes that value along to the step
+         *
+         * @param {$rootScope.Scope} scope The tour step's scope
+         * @param {Attributes} attrs The tour step's Attributes
+         * @param {Object} step Represents the tour step object
+         * @param {Array} properties The list of Tooltip properties
+         */
+        helpers.attachTourConfigProperties = function (scope, attrs, step, properties) {
+            angular.forEach(properties, function (property) {
+                if (!attrs[helpers.getAttrName(property)] && angular.isDefined(step.config(property))) {
+                    attrs.$set(helpers.getAttrName(property), String(step.config(property)));
+                }
+            });
+        };
 
         /**
          * Helper function that attaches event handlers to options
@@ -755,6 +841,68 @@
 
 }(angular.module('bm.uiTour')));
 
+(function (module) {
+    'use strict';
+
+    module.factory('uiTourService', [function () {
+
+        var service = {},
+            tours = [];
+
+        /**
+         * If there is only one tour, returns the tour
+         */
+        service.getTour = function () {
+            return tours[0];
+        };
+
+        /**
+         * Look up a specific tour by name
+         *
+         * @param {string} name Name of tour
+         */
+        service.getTourByName = function (name) {
+            return tours.filter(function (tour) {
+                return tour.options.name === name;
+            })[0];
+        };
+
+        /**
+         * Finds the tour available to a specific element
+         *
+         * @param {jqLite | HTMLElement} element Element to use to look up tour
+         * @returns {*}
+         */
+        service.getTourByElement = function (element) {
+            return angular.element(element).controller('uiTour');
+        };
+
+        /**
+         * Used by uiTourController to register a tour
+         *
+         * @protected
+         * @param tour
+         */
+        service._registerTour = function (tour) {
+            tours.push(tour);
+        };
+
+        /**
+         * Used by uiTourController to remove a destroyed tour from the registry
+         *
+         * @protected
+         * @param tour
+         */
+        service._unregisterTour = function (tour) {
+            tours.splice(tours.indexOf(tour), 1);
+        };
+
+        return service;
+
+    }]);
+
+}(angular.module('bm.uiTour')));
+
 /* global angular: false */
 
 (function (app) {
@@ -794,14 +942,23 @@
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
                         options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
+                        tooltipAttrs = 'animation appendToBody placement popupDelay popupCloseDelay'.split(' '),
                         orderWatch,
                         enabledWatch;
+
+                    //Will add values to pass to $uibTooltip
+                    function configureInheritedProperties() {
+                        TourHelpers.attachTourConfigProperties(scope, attrs, step, tooltipAttrs, 'tourStep');
+                        tourStepLinker(scope, element, attrs);
+                    }
 
                     //Pass interpolated values through
                     TourHelpers.attachInterpolatedValues(attrs, step, options);
                     orderWatch = attrs.$observe(TourHelpers.getAttrName('order'), function (order) {
                         step.order = !isNaN(order*1) ? order*1 : 0;
-                        ctrl.reorderStep(step);
+                        if (ctrl.hasStep(step)) {
+                            ctrl.reorderStep(step);
+                        }
                     });
                     enabledWatch = attrs.$observe(TourHelpers.getAttrName('enabled'), function (isEnabled) {
                         step.enabled = isEnabled !== 'false';
@@ -838,10 +995,17 @@
                     step.trustedContent = $sce.trustAsHtml(step.content);
 
                     //Add step to tour
-                    ctrl.addStep(step);
                     scope.tourStep = step;
                     scope.tour = scope.tour || ctrl;
-                    tourStepLinker(scope, element, attrs);
+                    if (ctrl.initialized) {
+                        configureInheritedProperties();
+                        ctrl.addStep(step);
+                    } else {
+                        ctrl.once('init', function () {
+                            configureInheritedProperties();
+                            ctrl.addStep(step);
+                        });
+                    }
 
                     //clean up when element is destroyed
                     scope.$on('$destroy', function () {
@@ -866,7 +1030,10 @@
                     ch = ezComponentHelpers.apply(null, arguments),
                     scrollOffset = step.config('scrollOffset');
 
-                element.css('zIndex', TourConfig.get('backdropZIndex') + 2);
+                element.css({
+                    zIndex: TourConfig.get('backdropZIndex') + 2,
+                    display: 'block'
+                });
                 if (step.fixed) {
                     element.css('position', 'fixed');
                 }

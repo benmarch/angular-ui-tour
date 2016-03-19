@@ -121,7 +121,7 @@
             <td>backdrop</td>
             <td>boolean</td>
             <td>false</td>
-            <td>Should there be a backdrop behind the element. <strong>Note</strong> this can be flaky.</td>
+            <td>Should there be a backdrop behind the element. <strong>Note</strong> this can be flaky, I recommend using appendToBody with this.</td>
         </tr>
         <tr>
             <td>backdropZIndex</td>
@@ -408,6 +408,75 @@
     <tr>
         <td>getTourByElement(element)</td>
         <td>If you want to know which tour is available to a specific element (in order to create a tour step, for example) you can pass the element into this method to retrieve the appropriate tour. This can be a DOM element, or jqLite object.</td>
+    </tr>
+    </tbody></table>
+
+    <h2>Tour Events</h2>
+
+    <p>The tour itself is an event emitter that emits the following events. The difference between listening for events and setting
+        handlers as shown above is that these events are outside of the lifecycle of the tour. That means that the events are
+        emitted and then the tour moves on without waiting for any handlers to finish. By setting an above handler, the tour will
+        wait for a handler to complete before moving on. If you simply need to know when something happened, use an event listener,
+        but if you need to execute code before the tour moves continues, set an event handler.</p>
+
+    <p>Listen for the following events using this pattern:</p>
+
+<pre lang="js"><code class="hljs haxe">tour.on(<span class="hljs-string">'&lt;eventName&gt;'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(data)</span> </span>{
+    <span class="hljs-comment">//your logic here</span>
+});
+</code></pre>
+
+    <table><thead>
+    <tr>
+        <th>Event Name</th>
+        <th>Timing</th>
+        <th>Data</th>
+    </tr>
+    </thead><tbody>
+    <tr>
+        <td>initialized</td>
+        <td>After config is set</td>
+        <td>null</td>
+    </tr>
+    <tr>
+        <td>started</td>
+        <td>Before the first step is shown</td>
+        <td>first step</td>
+    </tr>
+    <tr>
+        <td>paused</td>
+        <td>After current step is hidden</td>
+        <td>current step</td>
+    </tr>
+    <tr>
+        <td>resumed</td>
+        <td>Before current step is shown</td>
+        <td>current step</td>
+    </tr>
+    <tr>
+        <td>ended</td>
+        <td>After last step is hidden</td>
+        <td>null</td>
+    </tr>
+    <tr>
+        <td>stepAdded</td>
+        <td>After step is added to step list</td>
+        <td>added step</td>
+    </tr>
+    <tr>
+        <td>stepRemoved</td>
+        <td>After step is removed from step list</td>
+        <td>removed step</td>
+    </tr>
+    <tr>
+        <td>stepsReordered</td>
+        <td>After all steps have been ordered properly</td>
+        <td>null</td>
+    </tr>
+    <tr>
+        <td>stepChanged</td>
+        <td>After previous step is hidden, before next step is shown</td>
+        <td>next step</td>
     </tr>
     </tbody></table>
 

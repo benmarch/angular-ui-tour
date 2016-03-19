@@ -2,7 +2,7 @@ angular.module('uiTourDemo', ['bm.uiTour', 'ngRoute'])
 
     .config(['TourConfigProvider', '$routeProvider', function (TourConfigProvider, $routeProvider) {
 
-        TourConfigProvider.set('scrollOffset', 200);
+        TourConfigProvider.set('scrollOffset', 50);
 
         TourConfigProvider.set('onStart', function () {
             console.log('Started Tour');
