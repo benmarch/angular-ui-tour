@@ -38,30 +38,30 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 
 ### Options
 
-|      Name       |   Type   | Default Value             |                     Description                                                                                                                 |
-| --------------  | -------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| placement       | string   | "top"                     | Where the popup should display relative to the element.                                                                                         |
-| animation       | boolean  | true                      | Should the popup fade in/out.                                                                                                                   |
-| popupDelay      | number   | 1                         | Time to delay (in ms) between when the popup is requested to show and when it is shown. **Note** must be positive for multi-page tours to work. |
-| closePopupDelay | number   | 0                         | Time to delay (in ms) between when the popup is requested to hide and when it is hidden.                                                        |
-| appendToBody    | boolean  | false                     | Should popups be appended to body (true) or the parent element (false).                                                                         |
-| tooltipClass    | string   | ""                        | Adds additional classes to the popup.                                                                                                           |
-| orphan          | boolean  | false                     | Should the popup display in the center of the viewport (true) or by the element (false).                                                        |
-| backdrop        | boolean  | false                     | Should there be a backdrop behind the element. **Note** this can be flaky, I recommend using appendToBody with this.                            |
-| backdropZIndex  | number   | 10000                     | Z-index of the backdrop. Popups will be positioned relative to this.                                                                            |
-| templateUrl     | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                               |
-|                 |          |                           |                                                                                                                                                 |    
-| onReady         | function | null                      | Called when tour is initialized and attached to the scope                                                                                       |
-| onStart         | function | null                      | Called when tour is started, before first popup is shown                                                                                        |
-| onEnd           | function | null                      | Called when tour is ended, after last popup is hidden                                                                                           |
-| onPause         | function | null                      | Called when tour is paused, before current popup is hidden                                                                                      |
-| onResume        | function | null                      | Called when tour is resumed, before current popup is shown                                                                                      |
-| onNext          | function | null                      | Called when next step is requested, before current popup is hidden                                                                              |
-| onPrev          | function | null                      | Called when previous step is requested, before current popup is hidden                                                                          |
-| onShow          | function | null                      | Called just before popup is shown                                                                                                               |
-| onShown         | function | null                      | Called just after popup is shown                                                                                                                |
-| onHide          | function | null                      | Called just before popup is hidden                                                                                                              |
-| onHidden        | function | null                      | Called just after popup is hidden                                                                                                               |
+|      Name       |   Type   | Default Value             |                     Description                                                                                                                              |
+| --------------  | -------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| placement       | string   | "top"                     | Where the popup should display relative to the element.                                                                                                      |
+| animation       | boolean  | true                      | Should the popup fade in/out.                                                                                                                                |
+| popupDelay      | number   | 1                         | Time to delay (in ms) between when the popup is requested to show and when it is shown. **Note** must be positive for multi-page tours to work.              |
+| closePopupDelay | number   | 0                         | Time to delay (in ms) between when the popup is requested to hide and when it is hidden.                                                                     |
+| appendToBody    | boolean  | false                     | Should popups be appended to body (true) or the parent element (false).                                                                                      |
+| tooltipClass    | string   | ""                        | Adds additional classes to the popup.                                                                                                                        |
+| orphan          | boolean  | false                     | Should the popup display in the center of the viewport (true) or by the element (false).                                                                     |
+| backdrop        | boolean  | false                     | Should there be a backdrop behind the element. **Note** this can be flaky, I recommend using appendToBody with this to prevent unexpected stacking issues.   |
+| backdropZIndex  | number   | 10000                     | Z-index of the backdrop. Popups will be positioned relative to this.                                                                                         |
+| templateUrl     | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                            |
+|                 |          |                           |                                                                                                                                                              |    
+| onReady         | function | null                      | Called when tour is initialized and attached to the scope                                                                                                    |
+| onStart         | function | null                      | Called when tour is started, before first popup is shown                                                                                                     |
+| onEnd           | function | null                      | Called when tour is ended, after last popup is hidden                                                                                                        |
+| onPause         | function | null                      | Called when tour is paused, before current popup is hidden                                                                                                   |
+| onResume        | function | null                      | Called when tour is resumed, before current popup is shown                                                                                                   |
+| onNext          | function | null                      | Called when next step is requested, before current popup is hidden                                                                                           |
+| onPrev          | function | null                      | Called when previous step is requested, before current popup is hidden                                                                                       |
+| onShow          | function | null                      | Called just before popup is shown                                                                                                                            |
+| onShown         | function | null                      | Called just after popup is shown                                                                                                                             |
+| onHide          | function | null                      | Called just before popup is hidden                                                                                                                           |
+| onHidden        | function | null                      | Called just after popup is hidden                                                                                                                            |
 
 **Important:** If an event is overridden in a config block, the function **must** return a promise.
  If it is overridden in the directive declaration, it will be wrapped in a promise automatically. If the function returns
@@ -92,62 +92,8 @@ To configure on a tour step declaration, use `tour-step-<option-name>="optionVal
 | templateUrl      | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                           |
 
 **Best practice:** always set the order so that the steps display in the expected order. Steps with the same order will 
-display consecutively, but the order among them is unpredictable.
-
-## Tour API
-
-The tour itself has a small API that can be used to control the flow of the tour. The tour object is available on the
-scope of the uiTour directive, and can be required as `TourController` in directives on or in the uiTour's subtree.
-
-| Method  | Description                                                                                                                                                                                                                                 |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| start() | Starts the tour by showing the first tour step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                                     |
-| end()   | Ends the tour, calling start() again will start from the beginning. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                |
-| pause() | Pauses the tour by hiding the current step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                                        |
-| resume()| Resumes the tour from the last shown step if it is paused. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                          |
-| next()  | Hides the current step and shows the next one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after next step is shown.                                                                                                 |
-| prev()  | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
-| goTo()  | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
-
-## Tour Service
-
-The `uiTourService` can be used for retrieving a reference to a tour object. There are three methods to retrieve the reference (note that they are all synchronous):
-
-| Method                    | Description                                                                                                                                                                                                                              |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| getTour()                 | If you have a single tour on your page, this is the easiest way to get the reference to it from a service or controller.                                                                                                                 |
-| getTourByName(name)       | If you have multiple tours you can name them by supplying a value to the `ui-tour` attribute. This method allows you to retrieve a tour by name.                                                                                         |
-| getTourByElement(element) | If you want to know which tour is available to a specific element (in order to create a tour step, for example) you can pass the element into this method to retrieve the appropriate tour. This can be a DOM element, or jqLite object. |
-
-## Tour Events
-
-The tour itself is an event emitter that emits the following events. The difference between listening for events and setting
-handlers as shown above is that these events are outside of the lifecycle of the tour. That means that the events are
-emitted and then the tour moves on without waiting for any handlers to finish. By setting an above handler, the tour will
-wait for a handler to complete before moving on. If you simply need to know when something happened, use an event listener,
-but if you need to execute code before the tour moves continues, set an event handler.
-
-Listen for the following events using this pattern:
-
-```js
-tour.on('<eventName>', function (data) {
-    //your logic here
-});
-```
-
-| Event Name     | Timing                                                   | Data          |
-| -------------- | -------------------------------------------------------- | ------------- |
-| initialized    | After config is set                                      | null          |
-| started        | Before the first step is shown                           | first step    |
-| paused         | After current step is hidden                             | current step  |
-| resumed        | Before current step is shown                             | current step  |
-| ended          | After last step is hidden                                | null          |
-| stepAdded      | After step is added to step list                         | added step    |
-| stepRemoved    | After step is removed from step list                     | removed step  |
-| stepsReordered | After all steps have been ordered properly               | null          |
-| stepChanged    | After previous step is hidden, before next step is shown | next step     |
-
-
+display consecutively, but the order among them is unpredictable. At first, use increments of 10 so that if you need to add steps
+in the middle later you won't have to reorder everything.... Remember when code needed line numbers??? :)
 
 ## Directives
 
@@ -198,6 +144,60 @@ Examples:
         <!-- page 2: ngView is populated when next step is requested after page1step1 -->
         <div tour-step="page2step1" ... tour-step-prev-path="page1" tour-step-prev-step="page1step1">...</div>
     </body>
+
+## Tour API
+
+The tour itself has a small API that can be used to control the flow of the tour. The tour object is available on the
+scope of the uiTour directive, and can be required as `TourController` in directives on or in the uiTour's subtree.
+
+| Method    | Description                                                                                                                                                                                                                                 |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| start()   | Starts the tour by showing the first tour step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                                     |
+| startAt() | Starts the tour by showing the provided step. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolves after step is shown.                                                       |
+| end()     | Ends the tour, calling start() again will start from the beginning. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                |
+| pause()   | Pauses the tour by hiding the current step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                                        |
+| resume()  | Resumes the tour from the last shown step if it is paused. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                          |
+| next()    | Hides the current step and shows the next one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after next step is shown.                                                                                                 |
+| prev()    | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
+| goTo()    | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
+
+## Tour Service
+
+The `uiTourService` can be used for retrieving a reference to a tour object. There are three methods to retrieve the reference (note that they are all synchronous):
+
+| Method                    | Description                                                                                                                                                                                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| getTour()                 | If you have a single tour on your page, this is the easiest way to get the reference to it from a service or controller.                                                                                                                 |
+| getTourByName(name)       | If you have multiple tours you can name them by supplying a value to the `ui-tour` attribute. This method allows you to retrieve a tour by name.                                                                                         |
+| getTourByElement(element) | If you want to know which tour is available to a specific element (in order to create a tour step, for example) you can pass the element into this method to retrieve the appropriate tour. This can be a DOM element, or jqLite object. |
+
+## Tour Events
+
+The tour itself is an event emitter that emits the following events. The difference between listening for events and setting
+handlers as shown above is that these events are outside of the lifecycle of the tour. That means that the events are
+emitted and then the tour moves on without waiting for any handlers to finish. By setting an above handler, the tour will
+wait for a handler to complete before moving on. If you simply need to know when something happened, use an event listener,
+but if you need to execute code before the tour moves continues, set an event handler.
+
+Listen for the following events using this pattern:
+
+```js
+tour.on('<eventName>', function (data) {
+    //your logic here
+});
+```
+
+| Event Name     | Timing                                                   | Data          |
+| -------------- | -------------------------------------------------------- | ------------- |
+| initialized    | After config is set                                      | null          |
+| started        | Before the first step is shown                           | first step    |
+| paused         | After current step is hidden                             | current step  |
+| resumed        | Before current step is shown                             | current step  |
+| ended          | After last step is hidden                                | null          |
+| stepAdded      | After step is added to step list                         | added step    |
+| stepRemoved    | After step is removed from step list                     | removed step  |
+| stepsReordered | After all steps have been ordered properly               | null          |
+| stepChanged    | After previous step is hidden, before next step is shown | next step     |
 
 ## Build It Yourself
 
