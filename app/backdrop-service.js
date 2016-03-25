@@ -44,15 +44,18 @@
             width: '100%',
             height: '100%',
             zIndex: TourConfig.get('backdropZIndex'),
-            backgroundColor: 'rgba(0, 0, 0, .5)',
+            backgroundColor: 'transparent',
             display: 'none'
         });
 
         $body.append($backdrop);
 
         service.createForElement = function (element, shouldPreventScrolling, isFixedElement) {
+            if (shouldPreventScrolling) {
+                preventScrolling();
+            }
             var position;
-            $clone = element.clone();
+            $clone = angular.element($document[0].createElement('div'));
             $backdrop.css('display', 'block');
             $body.append($clone);
             $clone.css('zIndex', TourConfig.get('backdropZIndex') + 1);
@@ -65,11 +68,9 @@
                 width: position.width + 'px',
                 marginTop: 0,
                 marginLeft: 0,
-                backgroundColor: $body.css('backgroundColor') || '#FFFFFF'
+                backgroundColor: $body.css('backgroundColor') || '#FFFFFF',
+                boxShadow: '0px 0px 0px 200vw rgba(0, 0, 0, 0.5)'
             });
-            if (shouldPreventScrolling) {
-                preventScrolling();
-            }
         };
 
         service.hide = function () {
