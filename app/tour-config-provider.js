@@ -17,6 +17,7 @@
             backdrop: false,
             backdropZIndex: 10000,
             scrollOffset: 100,
+            hotkeys: false,
 
             onStart: null,
             onEnd: null,

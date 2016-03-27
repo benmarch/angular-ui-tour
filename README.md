@@ -22,6 +22,10 @@ Add the script tags:
 
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="bower_components/angular-hotkeys/build/hotkeys.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+    <script src="bower_components/ez-ng/dist/ez-ng.js"></script>
+    <script src="bower_components/ngSmoothScroll/dist/angular-smooth-scroll.min.js"></script>
     <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
 
 Then add the module to your app:
@@ -50,7 +54,8 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 | backdrop        | boolean  | false                     | Should there be a backdrop behind the element. **Note** this can be flaky, I recommend using appendToBody with this.                            |
 | backdropZIndex  | number   | 10000                     | Z-index of the backdrop. Popups will be positioned relative to this.                                                                            |
 | templateUrl     | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                               |
-|                 |          |                           |                                                                                                                                                 |    
+| hotkeys         | boolean  | false                     | Allows the use of right/left keyboard keys to navigate thru steps and esc key to end the tour.                                                  |
+|                 |          |                           |                                                                                                                                                 |
 | onReady         | function | null                      | Called when tour is initialized and attached to the scope                                                                                       |
 | onStart         | function | null                      | Called when tour is started, before first popup is shown                                                                                        |
 | onEnd           | function | null                      | Called when tour is ended, after last popup is hidden                                                                                           |

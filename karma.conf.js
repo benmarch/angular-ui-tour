@@ -21,6 +21,7 @@ module.exports = function(config) {
             'bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js',
             'bower_components/angular-sanitize/angular-sanitize.js',
             'bower_components/ez-ng/dist/ez-ng.js',
+            'bower_components/angular-hotkeys/build/hotkeys.js',
             'bower_components/angular-mocks/angular-mocks.js',
             'bower_components/angular-route/angular-route.js',
             //endbower
