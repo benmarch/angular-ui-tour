@@ -14,6 +14,9 @@ Bootstrap Tour, but plays nicely with Angular, **and does not have any dependenc
 Check out the live demo [here](http://benmarch.github.io/angular-ui-tour).
 
 ## Getting Started
+*It is highly recommended that you use Bower and Wiredep to install this plugin for now. I am working on making it (and its dependencies) 
+available through NPM, but I don't believe it works yet.*
+ 
 Get the package:
 
     bower install angular-ui-tour
@@ -22,6 +25,9 @@ Add the script tags:
 
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
+    <script src="bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js"></script>
+    <script src="bower_components/ez-ng/dist/ez-ng.js"></script>
     <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
 
 Then add the module to your app:
