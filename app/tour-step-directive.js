@@ -25,7 +25,6 @@
 
                     //Assign required options
                     var step = {
-                            element: element,
                             stepId: attrs.tourStep,
                             enabled: true,
                             config: function (option) {
@@ -36,7 +35,7 @@
                             }
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
+                        options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
                         tooltipAttrs = 'animation appendToBody placement popupDelay popupCloseDelay'.split(' '),
                         orderWatch,
                         enabledWatch;
@@ -102,6 +101,12 @@
                         });
                     }
 
+                    Object.defineProperties(step, {
+                        element: {
+                            value: element
+                        }
+                    });
+
                     //clean up when element is destroyed
                     scope.$on('$destroy', function () {
                         ctrl.removeStep(step);
@@ -153,7 +158,7 @@
                 }
 
                 scope.$watch('isOpen', function (isOpen) {
-                    if (isOpen() && !step.config('orphan')) {
+                    if (isOpen() && !step.config('orphan') && step.config('scrollIntoView')) {
                         smoothScroll(element[0], {
                             offset: scrollOffset
                         });

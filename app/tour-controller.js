@@ -169,7 +169,7 @@
             }
             stepList.push(step);
             stepList = $filter('orderBy')(stepList, 'order');
-            self.emit('stepAdded', angular.copy(step));
+            self.emit('stepAdded', step);
             if (resumeWhenFound) {
                 resumeWhenFound(step);
             }
@@ -183,7 +183,7 @@
          */
         self.removeStep = function (step) {
             stepList.splice(stepList.indexOf(step), 1);
-            self.emit('stepRemoved', angular.copy(step));
+            self.emit('stepRemoved', step);
         };
 
         /**
@@ -195,7 +195,7 @@
         self.reorderStep = function (step) {
             self.removeStep(step);
             self.addStep(step);
-            self.emit('stepsReordered', angular.copy(step));
+            self.emit('stepsReordered', step);
         };
 
         /**
@@ -224,7 +224,7 @@
             return handleEvent(step.config('onShow')).then(function () {
 
                 if (step.config('backdrop')) {
-                    uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
+                    uiTourBackdrop.createForElement(step.element, step.config('preventScrolling'), step.config('fixed'));
                 }
 
             }).then(function () {
@@ -241,7 +241,7 @@
 
             }).then(function () {
 
-                self.emit('stepShown', angular.copy(step));
+                self.emit('stepShown', step);
                 step.isNext = isNext();
                 step.isPrev = isPrev();
 
@@ -280,7 +280,7 @@
 
             }).then(function () {
 
-                self.emit('stepHidden', angular.copy(step));
+                self.emit('stepHidden', step);
 
             });
         };
@@ -362,7 +362,7 @@
                 var step = getStep(stepOrStepIdOrIndex);
                 setCurrentStep(step);
                 tourStatus = statuses.ON;
-                self.emit('started', angular.copy(step));
+                self.emit('started', step);
                 return self.showStep(getCurrentStep());
 
             });
@@ -399,7 +399,7 @@
                 tourStatus = statuses.PAUSED;
                 return self.hideStep(getCurrentStep());
             }).then(function () {
-                self.emit('paused', angular.copy(getCurrentStep()));
+                self.emit('paused', getCurrentStep());
             });
         };
 
@@ -411,7 +411,7 @@
         self.resume = function () {
             return handleEvent(options.onResume).then(function () {
                 tourStatus = statuses.ON;
-                self.emit('resumed', angular.copy(getCurrentStep()));
+                self.emit('resumed', getCurrentStep());
                 return self.showStep(getCurrentStep());
             });
         };
@@ -473,7 +473,7 @@
                     //this will only be true if no redirect occurred, since the redirect sets current step
                     if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
                         setCurrentStep(actionMap[goTo].getStep());
-                        self.emit('stepChanged', angular.copy(getCurrentStep()));
+                        self.emit('stepChanged', getCurrentStep());
                     }
 
                 }).then(function () {
@@ -496,7 +496,7 @@
             return self.hideStep(getCurrentStep())
                 .then(function () {
                     setCurrentStep(stepToShow);
-                    self.emit('stepChanged', angular.copy(getCurrentStep()));
+                    self.emit('stepChanged', getCurrentStep());
                     return self.showStep(stepToShow);
                 });
         };
@@ -507,7 +507,7 @@
          * @returns {step}
          */
         self.getCurrentStep = function () {
-            return angular.copy(getCurrentStep());
+            return getCurrentStep();
         };
 
         /**

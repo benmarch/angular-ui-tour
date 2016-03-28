@@ -17,6 +17,7 @@
             backdrop: false,
             backdropZIndex: 10000,
             scrollOffset: 100,
+            scrollIntoView: true,
 
             onStart: null,
             onEnd: null,
