@@ -25,7 +25,6 @@ Add the script tags:
 
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-    <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
     <script src="bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js"></script>
     <script src="bower_components/ez-ng/dist/ez-ng.js"></script>
     <script src="bower_components/angular-hotkeys/build/hotkeys.js"></script>
