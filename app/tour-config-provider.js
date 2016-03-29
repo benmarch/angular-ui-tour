@@ -19,6 +19,7 @@
             scrollOffset: 100,
             scrollIntoView: true,
             useUiRouter: false,
+            hotkeys: false,
 
             onStart: null,
             onEnd: null,

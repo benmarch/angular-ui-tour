@@ -28,6 +28,7 @@ Add the script tags:
     <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
     <script src="bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js"></script>
     <script src="bower_components/ez-ng/dist/ez-ng.js"></script>
+    <script src="bower_components/angular-hotkeys/build/hotkeys.js"></script>
     <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
 
 Then add the module to your app:
@@ -58,6 +59,7 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 | backdropZIndex  | number   | 10000                     | Z-index of the backdrop. Popups will be positioned relative to this.                                                                                                                                                                         |
 | templateUrl     | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                                                                                                            |
 | useUiRouter     | boolean  | false                     | When navigating with nextPath and prevPath (see below), use UI Router states instead of Angular paths.                                                                                                                                       |
+| hotkeys         | boolean  | false                     | Allows the use of right/left keyboard keys to navigate through steps, and esc key to end the tour.                                                                                                                                           |
 |                 |          |                           |                                                                                                                                                                                                                                              |    
 | onReady         | function | null                      | Called when tour is initialized and attached to the scope                                                                                                                                                                                    |
 | onStart         | function | null                      | Called when tour is started, before first popup is shown                                                                                                                                                                                     |

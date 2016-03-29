@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', 'uiTourService', 'ezEventEmitter', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop, uiTourService, EventEmitter) {
+    app.controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', 'uiTourService', 'ezEventEmitter', 'hotkeys', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop, uiTourService, EventEmitter, hotkeys) {
 
         var self = this,
             stepList = [],
@@ -154,6 +154,48 @@
          */
         function handleEvent(handler) {
             return (handler || $q.resolve)();
+        }
+
+        /**
+         * Configures hot keys for controlling the tour with the keyboard
+         */
+        function setHotKeys() {
+            hotkeys.add({
+                combo: 'esc',
+                description: 'End tour',
+                callback: function () {
+                    self.end();
+                }
+            });
+
+            hotkeys.add({
+                combo: 'right',
+                description: 'Go to next step',
+                callback: function () {
+                    if (isNext()) {
+                        self.next();
+                    }
+                }
+            });
+
+            hotkeys.add({
+                combo: 'left',
+                description: 'Go to previous step',
+                callback: function () {
+                    if (isPrev()) {
+                        self.prev();
+                    }
+                }
+            });
+        }
+
+        /**
+         * Turns off hot keys for when the tour isn't running
+         */
+        function unsetHotKeys() {
+            hotkeys.del('esc');
+            hotkeys.del('right');
+            hotkeys.del('left');
         }
 
         //---------------- Protected API -------------------
@@ -363,6 +405,9 @@
                 setCurrentStep(step);
                 tourStatus = statuses.ON;
                 self.emit('started', step);
+                if (options.hotkeys) {
+                    setHotKeys();
+                }
                 return self.showStep(getCurrentStep());
 
             });
@@ -385,6 +430,10 @@
                 setCurrentStep(null);
                 self.emit('ended');
                 tourStatus = statuses.OFF;
+
+                if (options.hotkeys) {
+                    unsetHotKeys();
+                }
 
             });
         };
