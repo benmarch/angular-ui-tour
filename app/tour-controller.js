@@ -405,7 +405,7 @@
                 setCurrentStep(step);
                 tourStatus = statuses.ON;
                 self.emit('started', step);
-                if (options.hotkeys) {
+                if (options.useHotkeys) {
                     setHotKeys();
                 }
                 return self.showStep(getCurrentStep());
@@ -431,7 +431,7 @@
                 self.emit('ended');
                 tourStatus = statuses.OFF;
 
-                if (options.hotkeys) {
+                if (options.useHotkeys) {
                     unsetHotKeys();
                 }
 
