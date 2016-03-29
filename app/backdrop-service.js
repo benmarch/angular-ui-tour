@@ -1,12 +1,17 @@
+/*global angular: false*/
 (function (app) {
     'use strict';
 
-    app.factory('uiTourBackdrop', ['TourConfig', '$document', '$uibPosition', '$window', function (TourConfig, $document, $uibPosition, $window) {
+    app.factory('uiTourBackdrop', ['TourConfig', '$document', '$uibPosition', function (TourConfig, $document, $uibPosition) {
 
         var service = {},
             $body = angular.element($document[0].body),
-            $backdrop = angular.element($document[0].createElement('div')),
-            $clone,
+            viewWindow = {
+                top: angular.element($document[0].createElement('div')),
+                bottom: angular.element($document[0].createElement('div')),
+                left: angular.element($document[0].createElement('div')),
+                right: angular.element($document[0].createElement('div'))
+            },
             preventDefault = function (e) {
                 e.preventDefault();
             };
@@ -14,9 +19,9 @@
         (function createNoScrollingClass() {
             var name = '.no-scrolling',
                 rules = 'height: 100%; overflow: hidden;',
-                style = document.createElement('style');
+                style = $document[0].createElement('style');
             style.type = 'text/css';
-            document.getElementsByTagName('head')[0].appendChild(style);
+            $document[0].getElementsByTagName('head')[0].appendChild(style);
 
             if(!style.sheet && !style.sheet.insertRule) {
                 (style.styleSheet || style.sheet).addRule(name, rules);
@@ -24,8 +29,6 @@
                 style.sheet.insertRule(name + '{' + rules + '}', 0);
             }
         }());
-
-
 
         function preventScrolling() {
             $body.addClass('no-scrolling');
@@ -37,44 +40,84 @@
             $body.off('touchmove', preventDefault);
         }
 
-        $backdrop.css({
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            zIndex: TourConfig.get('backdropZIndex'),
-            backgroundColor: 'rgba(0, 0, 0, .5)',
-            display: 'none'
-        });
+        function showBackdrop() {
+            viewWindow.top.css('display', 'block');
+            viewWindow.bottom.css('display', 'block');
+            viewWindow.left.css('display', 'block');
+            viewWindow.right.css('display', 'block');
+        }
+        function hideBackdrop() {
+            viewWindow.top.css('display', 'none');
+            viewWindow.bottom.css('display', 'none');
+            viewWindow.left.css('display', 'none');
+            viewWindow.right.css('display', 'none');
+        }
 
-        $body.append($backdrop);
+        viewWindow.top.addClass('tour-backdrop').css('display', 'none');
+        viewWindow.bottom.addClass('tour-backdrop').css('display', 'none');
+        viewWindow.left.addClass('tour-backdrop').css('display', 'none');
+        viewWindow.right.addClass('tour-backdrop').css('display', 'none');
+        $body.append(viewWindow.top);
+        $body.append(viewWindow.bottom);
+        $body.append(viewWindow.left);
+        $body.append(viewWindow.right);
 
         service.createForElement = function (element, shouldPreventScrolling, isFixedElement) {
-            var position;
-            $clone = element.clone();
-            $backdrop.css('display', 'block');
-            $body.append($clone);
-            $clone.css('zIndex', TourConfig.get('backdropZIndex') + 1);
+            var position,
+                viewportPosition,
+                bodyPosition;
+
+            if (shouldPreventScrolling) {
+                preventScrolling();
+            }
+
             position = $uibPosition.offset(element);
-            $clone.css({
-                position: isFixedElement ? 'fixed': 'absolute',
-                top: position.top + 'px',
-                left: position.left + 'px',
-                height: position.height + 'px',
-                width: position.width + 'px',
-                marginTop: 0,
-                marginLeft: 0,
-                backgroundColor: $body.css('backgroundColor') || '#FFFFFF'
+            viewportPosition = $uibPosition.viewportOffset(element);
+            bodyPosition = $uibPosition.offset($body);
+
+            if (isFixedElement) {
+                angular.extend(position, viewportPosition);
+            }
+
+            console.log(position);
+
+            viewWindow.top.css({
+                position: isFixedElement ? 'fixed' : 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: position.top + 'px'
             });
+            viewWindow.bottom.css({
+                position: isFixedElement ? 'fixed' : 'absolute',
+                left: 0,
+                width: '100%',
+                height: (bodyPosition.top + bodyPosition.height - position.top - position.height) + 'px',
+                top: (position.top + position.height) + 'px'
+            });
+            viewWindow.left.css({
+                position: isFixedElement ? 'fixed' : 'absolute',
+                top: position.top + 'px',
+                width: position.left + 'px',
+                height: position.height + 'px'
+            });
+            viewWindow.right.css({
+                position: isFixedElement ? 'fixed' : 'absolute',
+                top: position.top + 'px',
+                width: (bodyPosition.left + bodyPosition.width - position.left - position.width) + 'px',
+                height: position.height + 'px',
+                left: (position.left + position.width) + 'px'
+            });
+
+            showBackdrop();
+
             if (shouldPreventScrolling) {
                 preventScrolling();
             }
         };
 
         service.hide = function () {
-            $backdrop.css('display', 'none');
-            $clone.remove();
+            hideBackdrop();
             allowScrolling();
         };
 

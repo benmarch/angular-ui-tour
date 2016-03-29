@@ -134,13 +134,14 @@
                     zIndex: TourConfig.get('backdropZIndex') + 2,
                     display: 'block'
                 });
-                if (step.fixed) {
+
+                if (step.config('fixed')) {
                     element.css('position', 'fixed');
                 }
 
                 if (step.config('orphan')) {
                     ch.useStyles(
-                        '.tour-step {' +
+                        ':scope {' +
                         '   position: fixed;' +
                         '   top: 50% !important;' +
                         '   left: 50% !important;' +
