@@ -83,8 +83,6 @@
                 angular.extend(position, viewportPosition);
             }
 
-            console.log(position);
-
             viewWindow.top.css({
                 position: isFixedElement ? 'fixed' : 'absolute',
                 top: 0,
