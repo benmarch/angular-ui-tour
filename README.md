@@ -19,26 +19,34 @@ available through NPM, but I don't believe it works yet.*
  
 Get the package:
 
-    bower install angular-ui-tour
+```sh
+bower install angular-ui-tour
+```
 
 Add the script tags:
 
-    <script src="bower_components/angular/angular.js"></script>
-    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-    <script src="bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js"></script>
-    <script src="bower_components/ez-ng/dist/ez-ng.js"></script>
-    <script src="bower_components/angular-hotkeys/build/hotkeys.js"></script>
-    <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
+```html
+<script src="bower_components/angular/angular.js"></script>
+<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<script src="bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js"></script>
+<script src="bower_components/ez-ng/dist/ez-ng.js"></script>
+<script src="bower_components/angular-hotkeys/build/hotkeys.js"></script>
+<script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
+```
 
 Then add the module to your app:
 
-    angular.module('myApp', ['bm.uiTour']);
+```js
+angular.module('myApp', ['bm.uiTour']);
+``` 
     
-If you plan to use the backdrop feature, add some styles for it:
+Add some styles for the backdrop (feel free to style it however you want):
 
-    .tour-backdrop {
-        background-color: rgba(0, 0, 0, 0.5);
-    }
+```css
+.tour-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+```
     
 ## Tour Configuration
 
