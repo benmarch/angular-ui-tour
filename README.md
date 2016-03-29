@@ -34,6 +34,12 @@ Then add the module to your app:
 
     angular.module('myApp', ['bm.uiTour']);
     
+If you plan to use the backdrop feature, add some styles for it:
+
+    .tour-backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
 ## Tour Configuration
 
 Tours can be configured either programatically in a config block, or declaratively as part of the uiTour directive declaration.
