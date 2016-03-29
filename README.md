@@ -128,14 +128,16 @@ The declaration can be as simple as adding ui-tour to an element, or can include
 
 Examples:
 
-    <body ui-tour>
-        ... <!-- page content and tour steps -->
-    </body>
-    
-    
-    <div ui-tour ui-tour-on-start="onTourStart()" ui-tour-placement="bottom">
-        ... <!-- page content and tour steps -->
-    </div>
+```html
+<body ui-tour>
+    ... <!-- page content and tour steps -->
+</body>
+
+
+<div ui-tour ui-tour-on-start="onTourStart()" ui-tour-placement="bottom">
+    ... <!-- page content and tour steps -->
+</div>
+```
     
 ### tourStep
 
@@ -144,30 +146,32 @@ should be taken when deciding which element on which to declare them.
 
 Examples:
 
-    <body ui-tour>
-        <div id="mainMenu" tour-step tour-step-title="Main Menu" tour-step-content="Navigate the site using this menu." tour-step-order="0" tour-step-placement="right">...</div>
-        ...
-        <div id="settings" tour-step tour-step-title="Settings" tour-step-content="Click here to change your settings." tour-step-order="1">...</div>
-        <div id="finalTourMessage" tour-step tour-step-title="Welcome!" tour-step-content="Enjoy using the app!" tour-step-order="1000" tour-step-orphan="true" tour-step-backdrop="true">...</div>
-    </body>
+```html
+<body ui-tour>
+    <div id="mainMenu" tour-step tour-step-title="Main Menu" tour-step-content="Navigate the site using this menu." tour-step-order="0" tour-step-placement="right">...</div>
+    ...
+    <div id="settings" tour-step tour-step-title="Settings" tour-step-content="Click here to change your settings." tour-step-order="1">...</div>
+    <div id="finalTourMessage" tour-step tour-step-title="Welcome!" tour-step-content="Enjoy using the app!" tour-step-order="1000" tour-step-orphan="true" tour-step-backdrop="true">...</div>
+</body>
 
 
-    <!-- fixed element -->
-    <body ui-tour>
-        <header style="position: fixed;" tour-step tour-step-title="Header" tour-step-content="This header is fixed at the top." tour-step-order="0" tour-step-fixed="true">...</header>
-    </body>
+<!-- fixed element -->
+<body ui-tour>
+    <header style="position: fixed;" tour-step tour-step-title="Header" tour-step-content="This header is fixed at the top." tour-step-order="0" tour-step-fixed="true">...</header>
+</body>
+
+
+<!-- multi-page tour -->
+<!-- layout -->
+<body ui-tour>
+    <!-- page 1: included using ngView (/page1) -->
+    <div tour-step="page1step1" ... tour-step-next-path="page2" tour-step-next-step="page2step1">...</div>
+    <!-- /page 1 -->
     
-    
-    <!-- multi-page tour -->
-    <!-- layout -->
-    <body ui-tour>
-        <!-- page 1: included using ngView (/page1) -->
-        <div tour-step="page1step1" ... tour-step-next-path="page2" tour-step-next-step="page2step1">...</div>
-        <!-- /page 1 -->
-        
-        <!-- page 2: ngView is populated when next step is requested after page1step1 -->
-        <div tour-step="page2step1" ... tour-step-prev-path="page1" tour-step-prev-step="page1step1">...</div>
-    </body>
+    <!-- page 2: ngView is populated when next step is requested after page1step1 -->
+    <div tour-step="page2step1" ... tour-step-prev-path="page1" tour-step-prev-step="page1step1">...</div>
+</body>
+```
 
 ## Tour API
 
@@ -227,12 +231,13 @@ tour.on('<eventName>', function (data) {
 
 Assuming you have Node, grunt, and bower installed:
 
-    npm install
+```sh
+npm install
 
-    bower install
+bower install
 
-    grunt
-    
+grunt
+```    
 
 **Thanks and enjoy!**
 
