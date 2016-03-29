@@ -53,6 +53,14 @@
             $body.off('touchmove', preventDefault);
         }
 
+        function createBackdropComponent(backdrop) {
+            backdrop.addClass('tour-backdrop').css({
+                display: 'none',
+                zIndex: TourConfig.get('backdropZIndex')
+            });
+            $body.append(backdrop);
+        }
+
         function showBackdrop() {
             viewWindow.top.css('display', 'block');
             viewWindow.bottom.css('display', 'block');
@@ -66,14 +74,10 @@
             viewWindow.right.css('display', 'none');
         }
 
-        viewWindow.top.addClass('tour-backdrop').css('display', 'none');
-        viewWindow.bottom.addClass('tour-backdrop').css('display', 'none');
-        viewWindow.left.addClass('tour-backdrop').css('display', 'none');
-        viewWindow.right.addClass('tour-backdrop').css('display', 'none');
-        $body.append(viewWindow.top);
-        $body.append(viewWindow.bottom);
-        $body.append(viewWindow.left);
-        $body.append(viewWindow.right);
+        createBackdropComponent(viewWindow.top);
+        createBackdropComponent(viewWindow.bottom);
+        createBackdropComponent(viewWindow.left);
+        createBackdropComponent(viewWindow.right);
 
         service.createForElement = function (element, shouldPreventScrolling, isFixedElement) {
             var position,
