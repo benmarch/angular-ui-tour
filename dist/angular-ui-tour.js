@@ -96,8 +96,6 @@
                 angular.extend(position, viewportPosition);
             }
 
-            console.log(position);
-
             viewWindow.top.css({
                 position: isFixedElement ? 'fixed' : 'absolute',
                 top: 0,
@@ -165,7 +163,7 @@
             scrollOffset: 100,
             scrollIntoView: true,
             useUiRouter: false,
-            hotkeys: false,
+            useHotkeys: false,
 
             onStart: null,
             onEnd: null,
@@ -621,7 +619,7 @@
                 setCurrentStep(step);
                 tourStatus = statuses.ON;
                 self.emit('started', step);
-                if (options.hotkeys) {
+                if (options.useHotkeys) {
                     setHotKeys();
                 }
                 return self.showStep(getCurrentStep());
@@ -647,7 +645,7 @@
                 self.emit('ended');
                 tourStatus = statuses.OFF;
 
-                if (options.hotkeys) {
+                if (options.useHotkeys) {
                     unsetHotKeys();
                 }
 
@@ -824,7 +822,7 @@
                         name: attrs.uiTour
                     },
                     events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
-                    properties = 'placement animation popupDelay closePopupDelay enable appendToBody tooltipClass orphan backdrop scrollOffset scrollIntoView useUiRouter hotkeys'.split(' ');
+                    properties = 'placement animation popupDelay closePopupDelay enable appendToBody tooltipClass orphan backdrop scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
 
                 //Pass interpolated values through
                 TourHelpers.attachInterpolatedValues(attrs, tour, properties, 'uiTour');
