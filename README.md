@@ -57,6 +57,7 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 | backdrop        | boolean  | false                     | Should there be a backdrop behind the element. **Note** this can be flaky, I recommend using appendToBody with this to prevent unexpected stacking issues.   |
 | backdropZIndex  | number   | 10000                     | Z-index of the backdrop. Popups will be positioned relative to this.                                                                                         |
 | templateUrl     | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                            |
+| useUiRouter     | boolean  | false                     | When navigating with nextPath and prevPath (see below), use UI Router states instead of Angular paths.                                                       |
 |                 |          |                           |                                                                                                                                                              |    
 | onReady         | function | null                      | Called when tour is initialized and attached to the scope                                                                                                    |
 | onStart         | function | null                      | Called when tour is started, before first popup is shown                                                                                                     |
@@ -94,9 +95,9 @@ To configure on a tour step declaration, use `tour-step-<option-name>="optionVal
 | preventScrolling | boolean  | false                     | Should page scrolling be prevented when popup is shown (I don't recommend using this, but there are times when it is useful). Only works with a backdrop.   |
 | scrollIntoView   | boolean  | true                      | Should the tour scroll the page so that the tour step is visible once it is shown. Set to false when you don't want any scrolling to occur.                 |
 | nextStep         | string   | ""                        | If the next step is on a different page, set this to declare the name of the next step.                                                                     |
-| nextPath         | string   | ""                        | If the next step is on a different page, set this to the path of the next page.                                                                             |
+| nextPath         | string   | ""                        | If the next step is on a different page, set this to the path of the next page. If useUiRouter is true, this will be the state name.                        |
 | prevStep         | string   | ""                        | If the previous step is on a different page, set this to declare the name of the previous step.                                                             |
-| prevPath         | string   | ""                        | If the previous step is on a different page, set this to the path of the previous page.                                                                     |
+| prevPath         | string   | ""                        | If the previous step is on a different page, set this to the path of the previous page. If useUiRouter is true, this will be the state name.                |
 | templateUrl      | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                           |
 
 **Best practice:** always set the order so that the steps display in the expected order. Steps with the same order will 

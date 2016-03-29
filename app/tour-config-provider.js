@@ -18,6 +18,7 @@
             backdropZIndex: 10000,
             scrollOffset: 100,
             scrollIntoView: true,
+            useUiRouter: false,
 
             onStart: null,
             onEnd: null,

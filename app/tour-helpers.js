@@ -3,10 +3,15 @@
 (function (app) {
     'use strict';
 
-    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', function ($templateCache, $http, $compile, $location, TourConfig, $q) {
+    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', '$injector', function ($templateCache, $http, $compile, $location, TourConfig, $q, $injector) {
 
         var helpers = {},
-            safeApply;
+            safeApply,
+            $state;
+
+        if ($injector.has('$state')) {
+            $state = $injector.get('$state');
+        }
 
         /**
          * Helper function that calls scope.$apply if a digest is not currently in progress
@@ -124,8 +129,12 @@
                         oldHandler(tour);
                     }
                     ctrl.waitFor(targetName);
-                    $location.path(path);
-                    resolve();
+                    if (step.config('useUiRouter')) {
+                        $state.transitionTo(path).then(resolve);
+                    } else {
+                        $location.path(path);
+                        resolve();
+                    }
                 });
             };
         };
