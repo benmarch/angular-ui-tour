@@ -86,7 +86,7 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 | onHide          | function | null                      | Called just before popup is hidden                                                                                                                                                                                                           |
 | onHidden        | function | null                      | Called just after popup is hidden                                                                                                                                                                                                            |
 
-**Important:** If an event is overridden in a config block, the function **must** return a promise.
+**Important:** If a lifecyle hook event is overridden in a config block, the function **must** return a promise.
  If it is overridden in the directive declaration, it will be wrapped in a promise automatically. If the function returns
  a promise, it will wait until it is resolved before moving on.
 
@@ -100,7 +100,7 @@ To configure on a tour step declaration, use `tour-step-<option-name>="optionVal
 
 ### Additional Options
 
-|      Name        |   Type   | Default Value             |                     Description                                                                                                                             |
+| Name             | Type     | Default Value             | Description                                                                                                                                                 |
 | --------------   | -------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | title            | string   | ""                        | The title of the popup                                                                                                                                      |
 | content          | string   | ""                        | The content of the popup. **Note:** can contain HTML                                                                                                        |
@@ -199,33 +199,33 @@ The `uiTourService` can be used for retrieving a reference to a tour object. The
 | getTourByName(name)       | If you have multiple tours you can name them by supplying a value to the `ui-tour` attribute. This method allows you to retrieve a tour by name.                                                                                         |
 | getTourByElement(element) | If you want to know which tour is available to a specific element (in order to create a tour step, for example) you can pass the element into this method to retrieve the appropriate tour. This can be a DOM element, or jqLite object. |
 
-## Tour Events
+## Tour Notifications
 
-The tour itself is an event emitter that emits the following events. The difference between listening for events and setting
-handlers as shown above is that these events are outside of the lifecycle of the tour. That means that the events are
-emitted and then the tour moves on without waiting for any handlers to finish. By setting an above handler, the tour will
-wait for a handler to complete before moving on. If you simply need to know when something happened, use an event listener,
-but if you need to execute code before the tour moves continues, set an event handler.
+The tour itself is an event emitter that emits the following notifications. The difference between listening for notifications and setting
+lifecycle hook handlers as shown above is that these notifications are outside of the lifecycle of the tour. That means that the notification events are
+emitted, and then the tour moves on without waiting for any handlers to finish. By setting a lifecyle hook handler, the tour will
+wait for a handler to complete before moving on. If you simply need to know when something happened, use an event notification listener,
+but if you need to execute code before the tour moves continues, set an lifecycle hook handler.
 
 Listen for the following events using this pattern:
 
 ```js
-tour.on('<eventName>', function (data) {
+tour.on('<notificationName>', function (data) {
     //your logic here
 });
 ```
 
-| Event Name     | Timing                                                   | Data          |
-| -------------- | -------------------------------------------------------- | ------------- |
-| initialized    | After config is set                                      | null          |
-| started        | Before the first step is shown                           | first step    |
-| paused         | After current step is hidden                             | current step  |
-| resumed        | Before current step is shown                             | current step  |
-| ended          | After last step is hidden                                | null          |
-| stepAdded      | After step is added to step list                         | added step    |
-| stepRemoved    | After step is removed from step list                     | removed step  |
-| stepsReordered | After all steps have been ordered properly               | null          |
-| stepChanged    | After previous step is hidden, before next step is shown | next step     |
+| Notification Name | Timing                                                   | Data          |
+| ----------------- | -------------------------------------------------------- | ------------- |
+| initialized       | After config is set                                      | null          |
+| started           | Before the first step is shown                           | first step    |
+| paused            | After current step is hidden                             | current step  |
+| resumed           | Before current step is shown                             | current step  |
+| ended             | After last step is hidden                                | null          |
+| stepAdded         | After step is added to step list                         | added step    |
+| stepRemoved       | After step is removed from step list                     | removed step  |
+| stepsReordered    | After all steps have been ordered properly               | null          |
+| stepChanged       | After previous step is hidden, before next step is shown | next step     |
 
 ## Build It Yourself
 
