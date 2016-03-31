@@ -1012,7 +1012,7 @@
 (function (module) {
     'use strict';
 
-    module.factory('uiTourService', [function () {
+    module.factory('uiTourService', ['$controller', function ($controller) {
 
         var service = {},
             tours = [];
@@ -1046,6 +1046,26 @@
         };
 
         /**
+         * Creates a tour that is not attached to a DOM element (experimental)
+         *
+         * @param {string} name Name of the tour (required)
+         * @param {{}=} config Options to override defaults
+         */
+        service.createDetachedTour = function (name, config) {
+            if (!name) {
+                throw {
+                    name: 'ParameterMissingError',
+                    message: 'A unique tour name is required for creating a detached tour.'
+                };
+            }
+
+            config = config || {};
+
+            config.name = name;
+            return $controller('uiTourController').init(config);
+        };
+
+        /**
          * Used by uiTourController to register a tour
          *
          * @protected
@@ -1076,7 +1096,7 @@
 (function (app) {
     'use strict';
 
-    app.directive('tourStep', ['TourConfig', 'TourHelpers', '$uibTooltip', '$q', '$sce', function (TourConfig, TourHelpers, $uibTooltip, $q, $sce) {
+    app.directive('tourStep', ['TourConfig', 'TourHelpers', 'uiTourService', '$uibTooltip', '$q', '$sce', function (TourConfig, TourHelpers, TourService, $uibTooltip, $q, $sce) {
 
         var tourStepDef = $uibTooltip('tourStep', 'tourStep', 'uiTourShow', {
             popupDelay: 1 //needs to be non-zero for popping up after navigation
@@ -1085,7 +1105,7 @@
         return {
             restrict: 'EA',
             scope: true,
-            require: '^uiTour',
+            require: '?^uiTour',
             compile: function (tElement, tAttrs) {
 
                 if (!tAttrs.tourStep) {
@@ -1094,7 +1114,22 @@
 
                 var tourStepLinker = tourStepDef.compile(tElement, tAttrs);
 
-                return function (scope, element, attrs, ctrl) {
+                return function (scope, element, attrs, uiTourCtrl) {
+
+                    var ctrl;
+
+                    if (attrs[TourHelpers.getAttrName('belongsTo')]) {
+                        ctrl = TourService.getTourByName(attrs[TourHelpers.getAttrName('belongsTo')]);
+                    } else if (uiTourCtrl) {
+                        ctrl = uiTourCtrl;
+                    }
+
+                    if (!ctrl) {
+                        throw {
+                            name: 'DependencyMissingError',
+                            message: 'No tour provided for tour step.'
+                        };
+                    }
 
                     //Assign required options
                     var step = {

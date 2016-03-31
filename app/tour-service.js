@@ -1,7 +1,7 @@
 (function (module) {
     'use strict';
 
-    module.factory('uiTourService', [function () {
+    module.factory('uiTourService', ['$controller', function ($controller) {
 
         var service = {},
             tours = [];
@@ -32,6 +32,26 @@
          */
         service.getTourByElement = function (element) {
             return angular.element(element).controller('uiTour');
+        };
+
+        /**
+         * Creates a tour that is not attached to a DOM element (experimental)
+         *
+         * @param {string} name Name of the tour (required)
+         * @param {{}=} config Options to override defaults
+         */
+        service.createDetachedTour = function (name, config) {
+            if (!name) {
+                throw {
+                    name: 'ParameterMissingError',
+                    message: 'A unique tour name is required for creating a detached tour.'
+                };
+            }
+
+            config = config || {};
+
+            config.name = name;
+            return $controller('uiTourController').init(config);
         };
 
         /**

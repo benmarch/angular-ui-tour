@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.directive('tourStep', ['TourConfig', 'TourHelpers', '$uibTooltip', '$q', '$sce', function (TourConfig, TourHelpers, $uibTooltip, $q, $sce) {
+    app.directive('tourStep', ['TourConfig', 'TourHelpers', 'uiTourService', '$uibTooltip', '$q', '$sce', function (TourConfig, TourHelpers, TourService, $uibTooltip, $q, $sce) {
 
         var tourStepDef = $uibTooltip('tourStep', 'tourStep', 'uiTourShow', {
             popupDelay: 1 //needs to be non-zero for popping up after navigation
@@ -12,7 +12,7 @@
         return {
             restrict: 'EA',
             scope: true,
-            require: '^uiTour',
+            require: '?^uiTour',
             compile: function (tElement, tAttrs) {
 
                 if (!tAttrs.tourStep) {
@@ -21,7 +21,22 @@
 
                 var tourStepLinker = tourStepDef.compile(tElement, tAttrs);
 
-                return function (scope, element, attrs, ctrl) {
+                return function (scope, element, attrs, uiTourCtrl) {
+
+                    var ctrl;
+
+                    if (attrs[TourHelpers.getAttrName('belongsTo')]) {
+                        ctrl = TourService.getTourByName(attrs[TourHelpers.getAttrName('belongsTo')]);
+                    } else if (uiTourCtrl) {
+                        ctrl = uiTourCtrl;
+                    }
+
+                    if (!ctrl) {
+                        throw {
+                            name: 'DependencyMissingError',
+                            message: 'No tour provided for tour step.'
+                        };
+                    }
 
                     //Assign required options
                     var step = {
