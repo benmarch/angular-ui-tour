@@ -25,7 +25,13 @@ angular.module('uiTourDemo', ['bm.uiTour', 'ngRoute'])
 
     }])
 
-    .controller('TourDemoController', ['$scope', '$q', '$timeout', function ($scope, $q, $timeout) {
+    .run(['uiTourService', function (TourService) {
+
+        TourService.createDetachedTour('detachedDemoTour');
+
+    }])
+
+    .controller('TourDemoController', ['$scope', '$q', '$timeout', 'uiTourService', function ($scope, $q, $timeout, TourService) {
         $scope.isEnabled = true;
 
         $scope.toggleEnabled = function () {
@@ -45,5 +51,9 @@ angular.module('uiTourDemo', ['bm.uiTour', 'ngRoute'])
                 }
             });
         };
+
+        $scope.startDetached = function () {
+            TourService.getTourByName('detachedDemoTour').start();
+        }
 
     }]);

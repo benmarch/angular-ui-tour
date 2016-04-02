@@ -9,17 +9,22 @@
         });
     }]);
 
-}(angular.module('bm.uiTour', ['ngSanitize', 'ui.bootstrap', 'smoothScroll', 'ezNg'])));
+}(angular.module('bm.uiTour', ['ngSanitize', 'ui.bootstrap', 'smoothScroll', 'ezNg', 'cfp.hotkeys'])));
 
+/*global angular: false*/
 (function (app) {
     'use strict';
 
-    app.factory('uiTourBackdrop', ['TourConfig', '$document', '$uibPosition', '$window', function (TourConfig, $document, $uibPosition, $window) {
+    app.factory('uiTourBackdrop', ['TourConfig', '$document', '$uibPosition', function (TourConfig, $document, $uibPosition) {
 
         var service = {},
             $body = angular.element($document[0].body),
-            $backdrop = angular.element($document[0].createElement('div')),
-            $clone,
+            viewWindow = {
+                top: angular.element($document[0].createElement('div')),
+                bottom: angular.element($document[0].createElement('div')),
+                left: angular.element($document[0].createElement('div')),
+                right: angular.element($document[0].createElement('div'))
+            },
             preventDefault = function (e) {
                 e.preventDefault();
             };
@@ -27,9 +32,9 @@
         (function createNoScrollingClass() {
             var name = '.no-scrolling',
                 rules = 'height: 100%; overflow: hidden;',
-                style = document.createElement('style');
+                style = $document[0].createElement('style');
             style.type = 'text/css';
-            document.getElementsByTagName('head')[0].appendChild(style);
+            $document[0].getElementsByTagName('head')[0].appendChild(style);
 
             if(!style.sheet && !style.sheet.insertRule) {
                 (style.styleSheet || style.sheet).addRule(name, rules);
@@ -37,8 +42,6 @@
                 style.sheet.insertRule(name + '{' + rules + '}', 0);
             }
         }());
-
-
 
         function preventScrolling() {
             $body.addClass('no-scrolling');
@@ -50,44 +53,86 @@
             $body.off('touchmove', preventDefault);
         }
 
-        $backdrop.css({
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            zIndex: TourConfig.get('backdropZIndex'),
-            backgroundColor: 'rgba(0, 0, 0, .5)',
-            display: 'none'
-        });
+        function createBackdropComponent(backdrop) {
+            backdrop.addClass('tour-backdrop').css({
+                display: 'none',
+                zIndex: TourConfig.get('backdropZIndex')
+            });
+            $body.append(backdrop);
+        }
 
-        $body.append($backdrop);
+        function showBackdrop() {
+            viewWindow.top.css('display', 'block');
+            viewWindow.bottom.css('display', 'block');
+            viewWindow.left.css('display', 'block');
+            viewWindow.right.css('display', 'block');
+        }
+        function hideBackdrop() {
+            viewWindow.top.css('display', 'none');
+            viewWindow.bottom.css('display', 'none');
+            viewWindow.left.css('display', 'none');
+            viewWindow.right.css('display', 'none');
+        }
+
+        createBackdropComponent(viewWindow.top);
+        createBackdropComponent(viewWindow.bottom);
+        createBackdropComponent(viewWindow.left);
+        createBackdropComponent(viewWindow.right);
 
         service.createForElement = function (element, shouldPreventScrolling, isFixedElement) {
-            var position;
-            $clone = element.clone();
-            $backdrop.css('display', 'block');
-            $body.append($clone);
-            $clone.css('zIndex', TourConfig.get('backdropZIndex') + 1);
+            var position,
+                viewportPosition,
+                bodyPosition;
+
+            if (shouldPreventScrolling) {
+                preventScrolling();
+            }
+
             position = $uibPosition.offset(element);
-            $clone.css({
-                position: isFixedElement ? 'fixed': 'absolute',
-                top: position.top + 'px',
-                left: position.left + 'px',
-                height: position.height + 'px',
-                width: position.width + 'px',
-                marginTop: 0,
-                marginLeft: 0,
-                backgroundColor: $body.css('backgroundColor') || '#FFFFFF'
+            viewportPosition = $uibPosition.viewportOffset(element);
+            bodyPosition = $uibPosition.offset($body);
+
+            if (isFixedElement) {
+                angular.extend(position, viewportPosition);
+            }
+
+            viewWindow.top.css({
+                position: isFixedElement ? 'fixed' : 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: position.top + 'px'
             });
+            viewWindow.bottom.css({
+                position: isFixedElement ? 'fixed' : 'absolute',
+                left: 0,
+                width: '100%',
+                height: (bodyPosition.top + bodyPosition.height - position.top - position.height) + 'px',
+                top: (position.top + position.height) + 'px'
+            });
+            viewWindow.left.css({
+                position: isFixedElement ? 'fixed' : 'absolute',
+                top: position.top + 'px',
+                width: position.left + 'px',
+                height: position.height + 'px'
+            });
+            viewWindow.right.css({
+                position: isFixedElement ? 'fixed' : 'absolute',
+                top: position.top + 'px',
+                width: (bodyPosition.left + bodyPosition.width - position.left - position.width) + 'px',
+                height: position.height + 'px',
+                left: (position.left + position.width) + 'px'
+            });
+
+            showBackdrop();
+
             if (shouldPreventScrolling) {
                 preventScrolling();
             }
         };
 
         service.hide = function () {
-            $backdrop.css('display', 'none');
-            $clone.remove();
+            hideBackdrop();
             allowScrolling();
         };
 
@@ -116,6 +161,9 @@
             backdrop: false,
             backdropZIndex: 10000,
             scrollOffset: 100,
+            scrollIntoView: true,
+            useUiRouter: false,
+            useHotkeys: false,
 
             onStart: null,
             onEnd: null,
@@ -169,7 +217,7 @@
 (function (app) {
     'use strict';
 
-    app.controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', 'uiTourService', 'ezEventEmitter', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop, uiTourService, EventEmitter) {
+    app.controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', 'uiTourService', 'ezEventEmitter', 'hotkeys', function ($timeout, $q, $filter, TourConfig, uiTourBackdrop, uiTourService, EventEmitter, hotkeys) {
 
         var self = this,
             stepList = [],
@@ -233,7 +281,7 @@
          * @param {string | number | step} stepOrStepIdOrIndex Step to retrieve
          * @returns {step}
          */
-        function getStepByIdentityOrIdOrIndex(stepOrStepIdOrIndex) {
+        function getStep(stepOrStepIdOrIndex) {
             //index
             if (angular.isNumber(stepOrStepIdOrIndex)) {
                 return stepList[stepOrStepIdOrIndex];
@@ -246,8 +294,22 @@
                 })[0];
             }
 
-            //step object
-            return ~stepList.indexOf(stepOrStepIdOrIndex) ? stepOrStepIdOrIndex : null;
+            //object
+            if (angular.isObject(stepOrStepIdOrIndex)) {
+                //step identity
+                if (~stepList.indexOf(stepOrStepIdOrIndex)) {
+                    return stepOrStepIdOrIndex;
+                }
+
+                //step copy
+                if (stepOrStepIdOrIndex.stepId) {
+                    return stepList.filter(function (step) {
+                        return step.stepId === stepOrStepIdOrIndex.stepId;
+                    })[0];
+                }
+            }
+
+            return null;
         }
 
         /**
@@ -308,6 +370,48 @@
             return (handler || $q.resolve)();
         }
 
+        /**
+         * Configures hot keys for controlling the tour with the keyboard
+         */
+        function setHotKeys() {
+            hotkeys.add({
+                combo: 'esc',
+                description: 'End tour',
+                callback: function () {
+                    self.end();
+                }
+            });
+
+            hotkeys.add({
+                combo: 'right',
+                description: 'Go to next step',
+                callback: function () {
+                    if (isNext()) {
+                        self.next();
+                    }
+                }
+            });
+
+            hotkeys.add({
+                combo: 'left',
+                description: 'Go to previous step',
+                callback: function () {
+                    if (isPrev()) {
+                        self.prev();
+                    }
+                }
+            });
+        }
+
+        /**
+         * Turns off hot keys for when the tour isn't running
+         */
+        function unsetHotKeys() {
+            hotkeys.del('esc');
+            hotkeys.del('right');
+            hotkeys.del('left');
+        }
+
         //---------------- Protected API -------------------
         /**
          * Adds a step to the tour in order
@@ -321,6 +425,7 @@
             }
             stepList.push(step);
             stepList = $filter('orderBy')(stepList, 'order');
+            self.emit('stepAdded', step);
             if (resumeWhenFound) {
                 resumeWhenFound(step);
             }
@@ -334,6 +439,7 @@
          */
         self.removeStep = function (step) {
             stepList.splice(stepList.indexOf(step), 1);
+            self.emit('stepRemoved', step);
         };
 
         /**
@@ -345,6 +451,7 @@
         self.reorderStep = function (step) {
             self.removeStep(step);
             self.addStep(step);
+            self.emit('stepsReordered', step);
         };
 
         /**
@@ -355,7 +462,7 @@
          * @returns {boolean}
          */
         self.hasStep = function (stepOrStepIdOrIndex) {
-            return !!getStepByIdentityOrIdOrIndex(stepOrStepIdOrIndex);
+            return !!getStep(stepOrStepIdOrIndex);
         };
 
         /**
@@ -373,7 +480,7 @@
             return handleEvent(step.config('onShow')).then(function () {
 
                 if (step.config('backdrop')) {
-                    uiTourBackdrop.createForElement(step.element, step.preventScrolling, step.fixed);
+                    uiTourBackdrop.createForElement(step.element, step.config('preventScrolling'), step.config('fixed'));
                 }
 
             }).then(function () {
@@ -390,6 +497,7 @@
 
             }).then(function () {
 
+                self.emit('stepShown', step);
                 step.isNext = isNext();
                 step.isPrev = isPrev();
 
@@ -425,6 +533,10 @@
             }).then(function () {
 
                 return handleEvent(step.config('onHidden'));
+
+            }).then(function () {
+
+                self.emit('stepHidden', step);
 
             });
         };
@@ -469,7 +581,7 @@
             self.options = options;
             uiTourService._registerTour(self);
             self.initialized = true;
-            self.emit('init');
+            self.emit('initialized');
             return self;
         };
 
@@ -485,19 +597,31 @@
 
 
         //------------------ Public API ------------------
+
         /**
          * starts the tour
          *
-         * @public
+         * @returns {Promise}
          */
         self.start = function () {
+            return self.startAt(0);
+        };
+
+        /**
+         * starts the tour at a specified step, step index, or step ID
+         *
+         * @public
+         */
+        self.startAt = function (stepOrStepIdOrIndex) {
             return handleEvent(options.onStart).then(function () {
 
-                setCurrentStep(stepList[0]);
+                var step = getStep(stepOrStepIdOrIndex);
+                setCurrentStep(step);
                 tourStatus = statuses.ON;
-
-            }).then(function () {
-
+                self.emit('started', step);
+                if (options.useHotkeys) {
+                    setHotKeys();
+                }
                 return self.showStep(getCurrentStep());
 
             });
@@ -518,7 +642,12 @@
             }).then(function () {
 
                 setCurrentStep(null);
+                self.emit('ended');
                 tourStatus = statuses.OFF;
+
+                if (options.useHotkeys) {
+                    unsetHotKeys();
+                }
 
             });
         };
@@ -532,6 +661,8 @@
             return handleEvent(options.onPause).then(function () {
                 tourStatus = statuses.PAUSED;
                 return self.hideStep(getCurrentStep());
+            }).then(function () {
+                self.emit('paused', getCurrentStep());
             });
         };
 
@@ -543,6 +674,7 @@
         self.resume = function () {
             return handleEvent(options.onResume).then(function () {
                 tourStatus = statuses.ON;
+                self.emit('resumed', getCurrentStep());
                 return self.showStep(getCurrentStep());
             });
         };
@@ -575,7 +707,7 @@
          */
         self.goTo = function (goTo) {
             var currentStep = getCurrentStep(),
-                stepToShow = getStepByIdentityOrIdOrIndex(goTo),
+                stepToShow = getStep(goTo),
                 actionMap = {
                     $prev: {
                         getStep: getPrevStep,
@@ -604,6 +736,7 @@
                     //this will only be true if no redirect occurred, since the redirect sets current step
                     if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
                         setCurrentStep(actionMap[goTo].getStep());
+                        self.emit('stepChanged', getCurrentStep());
                     }
 
                 }).then(function () {
@@ -626,18 +759,44 @@
             return self.hideStep(getCurrentStep())
                 .then(function () {
                     setCurrentStep(stepToShow);
+                    self.emit('stepChanged', getCurrentStep());
                     return self.showStep(stepToShow);
                 });
         };
+
+        /**
+         * returns a copy of the current step (copied to avoid breaking internal functions)
+         *
+         * @returns {step}
+         */
+        self.getCurrentStep = function () {
+            return getCurrentStep();
+        };
+
+        /**
+         * @typedef number TourStatus
+         */
+
+        /**
+         * Returns the current status of the tour
+         * @returns {TourStatus}
+         */
+        self.getStatus = function () {
+            return tourStatus;
+        };
+        /**
+         * @enum TourStatus
+         */
+        self.status = statuses;
+
         //------------------ end Public API ------------------
 
         //some debugging functions
-        //all are private
+        //all are private, unsafe, subject to change
+        //strongly not recommended for production code
+
         self._getSteps = function () {
             return stepList;
-        };
-        self._getStatus = function () {
-            return tourStatus;
         };
         self._getCurrentStep = getCurrentStep;
         self._setCurrentStep = setCurrentStep;
@@ -663,7 +822,7 @@
                         name: attrs.uiTour
                     },
                     events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
-                    properties = 'placement animation popupDelay closePopupDelay enable appendToBody tooltipClass orphan backdrop scrollOffset'.split(' ');
+                    properties = 'placement animation popupDelay closePopupDelay enable appendToBody tooltipClass orphan backdrop scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
 
                 //Pass interpolated values through
                 TourHelpers.attachInterpolatedValues(attrs, tour, properties, 'uiTour');
@@ -697,10 +856,15 @@
 (function (app) {
     'use strict';
 
-    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', function ($templateCache, $http, $compile, $location, TourConfig, $q) {
+    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', '$injector', function ($templateCache, $http, $compile, $location, TourConfig, $q, $injector) {
 
         var helpers = {},
-            safeApply;
+            safeApply,
+            $state;
+
+        if ($injector.has('$state')) {
+            $state = $injector.get('$state');
+        }
 
         /**
          * Helper function that calls scope.$apply if a digest is not currently in progress
@@ -818,8 +982,12 @@
                         oldHandler(tour);
                     }
                     ctrl.waitFor(targetName);
-                    $location.path(path);
-                    resolve();
+                    if (step.config('useUiRouter')) {
+                        $state.transitionTo(path).then(resolve);
+                    } else {
+                        $location.path(path);
+                        resolve();
+                    }
                 });
             };
         };
@@ -844,7 +1012,7 @@
 (function (module) {
     'use strict';
 
-    module.factory('uiTourService', [function () {
+    module.factory('uiTourService', ['$controller', function ($controller) {
 
         var service = {},
             tours = [];
@@ -878,6 +1046,26 @@
         };
 
         /**
+         * Creates a tour that is not attached to a DOM element (experimental)
+         *
+         * @param {string} name Name of the tour (required)
+         * @param {{}=} config Options to override defaults
+         */
+        service.createDetachedTour = function (name, config) {
+            if (!name) {
+                throw {
+                    name: 'ParameterMissingError',
+                    message: 'A unique tour name is required for creating a detached tour.'
+                };
+            }
+
+            config = config || {};
+
+            config.name = name;
+            return $controller('uiTourController').init(config);
+        };
+
+        /**
          * Used by uiTourController to register a tour
          *
          * @protected
@@ -908,7 +1096,7 @@
 (function (app) {
     'use strict';
 
-    app.directive('tourStep', ['TourConfig', 'TourHelpers', '$uibTooltip', '$q', '$sce', function (TourConfig, TourHelpers, $uibTooltip, $q, $sce) {
+    app.directive('tourStep', ['TourConfig', 'TourHelpers', 'uiTourService', '$uibTooltip', '$q', '$sce', function (TourConfig, TourHelpers, TourService, $uibTooltip, $q, $sce) {
 
         var tourStepDef = $uibTooltip('tourStep', 'tourStep', 'uiTourShow', {
             popupDelay: 1 //needs to be non-zero for popping up after navigation
@@ -917,7 +1105,7 @@
         return {
             restrict: 'EA',
             scope: true,
-            require: '^uiTour',
+            require: '?^uiTour',
             compile: function (tElement, tAttrs) {
 
                 if (!tAttrs.tourStep) {
@@ -926,11 +1114,25 @@
 
                 var tourStepLinker = tourStepDef.compile(tElement, tAttrs);
 
-                return function (scope, element, attrs, ctrl) {
+                return function (scope, element, attrs, uiTourCtrl) {
+
+                    var ctrl;
+
+                    if (attrs[TourHelpers.getAttrName('belongsTo')]) {
+                        ctrl = TourService.getTourByName(attrs[TourHelpers.getAttrName('belongsTo')]);
+                    } else if (uiTourCtrl) {
+                        ctrl = uiTourCtrl;
+                    }
+
+                    if (!ctrl) {
+                        throw {
+                            name: 'DependencyMissingError',
+                            message: 'No tour provided for tour step.'
+                        };
+                    }
 
                     //Assign required options
                     var step = {
-                            element: element,
                             stepId: attrs.tourStep,
                             enabled: true,
                             config: function (option) {
@@ -941,7 +1143,7 @@
                             }
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
+                        options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
                         tooltipAttrs = 'animation appendToBody placement popupDelay popupCloseDelay'.split(' '),
                         orderWatch,
                         enabledWatch;
@@ -1001,11 +1203,17 @@
                         configureInheritedProperties();
                         ctrl.addStep(step);
                     } else {
-                        ctrl.once('init', function () {
+                        ctrl.once('initialized', function () {
                             configureInheritedProperties();
                             ctrl.addStep(step);
                         });
                     }
+
+                    Object.defineProperties(step, {
+                        element: {
+                            value: element
+                        }
+                    });
 
                     //clean up when element is destroyed
                     scope.$on('$destroy', function () {
@@ -1034,13 +1242,14 @@
                     zIndex: TourConfig.get('backdropZIndex') + 2,
                     display: 'block'
                 });
-                if (step.fixed) {
+
+                if (step.config('fixed')) {
                     element.css('position', 'fixed');
                 }
 
                 if (step.config('orphan')) {
                     ch.useStyles(
-                        '.tour-step {' +
+                        ':scope {' +
                         '   position: fixed;' +
                         '   top: 50% !important;' +
                         '   left: 50% !important;' +
@@ -1058,7 +1267,7 @@
                 }
 
                 scope.$watch('isOpen', function (isOpen) {
-                    if (isOpen() && !step.config('orphan')) {
+                    if (isOpen() && !step.config('orphan') && step.config('scrollIntoView')) {
                         smoothScroll(element[0], {
                             offset: scrollOffset
                         });

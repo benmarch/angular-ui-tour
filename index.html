@@ -5,6 +5,7 @@
     <title>Angular UI Tour by benmarch</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/angular-hotkeys/build/hotkeys.css" />
     <link rel="stylesheet" href="bower_components/bootstrap-css-only/css/bootstrap.css" />
     <link rel="stylesheet" href="bower_components/animate.css/animate.css" />
     <!-- endbower -->
@@ -14,7 +15,7 @@
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/tour-demo.css" media="screen">
 </head>
-<body ng-controller="TourDemoController" ui-tour ui-tour-on-prev="onPrev(tour)">
+<body ng-controller="TourDemoController" ui-tour ui-tour-on-prev="onPrev(tour)" ui-tour-use-hotkeys="true" ui-tour-append-to-body="true">
 <section class="page-header">
     <h1 class="project-name">Angular UI Tour</h1>
     <h2 class="project-tagline">Product tour using Angular UI Bootstrap Tooltips</h2>
@@ -32,7 +33,9 @@
        tour-step-backdrop="true">
 </aside>
 
-<div ng-view></div>
+<section class="main-content">
+    <div ng-view></div>
+</section>
 
 <aside tour-step
        tour-step-title="That's it!"
@@ -75,6 +78,7 @@
 <script src="bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js"></script>
 <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
 <script src="bower_components/ez-ng/dist/ez-ng.js"></script>
+<script src="bower_components/angular-hotkeys/build/hotkeys.js"></script>
 <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
 <script src="bower_components/angular-route/angular-route.js"></script>
 <!-- endbower -->
