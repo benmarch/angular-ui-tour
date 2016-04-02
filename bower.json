@@ -30,6 +30,6 @@
     "angular-route": ">=1.3"
   },
   "resolutions": {
-    "angular": "1.5.1"
+    "angular": "latest"
   }
 }
