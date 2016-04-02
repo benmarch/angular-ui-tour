@@ -193,11 +193,12 @@ scope of the uiTour directive, and can be required as `TourController` in direct
 
 The `uiTourService` can be used for retrieving a reference to a tour object. There are three methods to retrieve the reference (note that they are all synchronous):
 
-| Method                    | Description                                                                                                                                                                                                                              |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| getTour()                 | If you have a single tour on your page, this is the easiest way to get the reference to it from a service or controller.                                                                                                                 |
-| getTourByName(name)       | If you have multiple tours you can name them by supplying a value to the `ui-tour` attribute. This method allows you to retrieve a tour by name.                                                                                         |
-| getTourByElement(element) | If you want to know which tour is available to a specific element (in order to create a tour step, for example) you can pass the element into this method to retrieve the appropriate tour. This can be a DOM element, or jqLite object. |
+| Method                            | Description                                                                                                                                                                                                                                           |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| getTour()                         | If you have a single tour on your page, this is the easiest way to get the reference to it from a service or controller.                                                                                                                              |
+| getTourByName(name)               | If you have multiple tours you can name them by supplying a value to the `ui-tour` attribute. This method allows you to retrieve a tour by name.                                                                                                      |
+| getTourByElement(element)         | If you want to know which tour is available to a specific element (in order to create a tour step, for example) you can pass the element into this method to retrieve the appropriate tour. This can be a DOM element, or jqLite object.              |
+| createDetachedTour(name, config)  | Creates a tour that is not associated with a DOM subtree. Steps can be added the detached tour by setting the `tour-step-belongs-to` attribute to the name of the tour. The config object will override global tour options just like a regular tour. |
 
 ## Tour Notifications
 
@@ -226,6 +227,39 @@ tour.on('<notificationName>', function (data) {
 | stepRemoved       | After step is removed from step list                     | removed step  |
 | stepsReordered    | After all steps have been ordered properly               | null          |
 | stepChanged       | After previous step is hidden, before next step is shown | next step     |
+
+## Multiple Tours
+
+If you need to have separate tours on your site there are a couple ways to achieve it. One way is to use separate `ui-tour` directives, and any tour steps
+defined within each subtree will belong to the respective tour. This is a fairly idealistic approach because it assumes that you can cleanly separate your tours.
+If you need to create multiple tours on the same subtree you have two options: use `tour-step-enabled` and set flags to enable/disable steps when the appropriate
+tour is running, or create one or more detached tours and assign steps to them. A detached tour is not associated with a DOM subtree, and steps must be explicitly
+assigned to it for them to display. Here is an example of how to set up a detached tour and assign steps:
+
+```js
+angular.module('myModule', ['bm.uiTour']).run(['uiTourService', function (uiTourService) {
+    uiTourService.createDetachedTour('myDetachedTour', {backdrop: true});
+    //the second argument is a map that will override individual global tour options
+});
+```
+
+```html
+<body ui-tour="myTour" ui-tour-backdrop="false">
+
+    <div tour-step tour-step-title="Attached Step" tour-step-content="I belong to 'myTour' because I don't have a 'belongsTo' attribute.">
+        This step belongs to it's ancestral tour, not the detached tour.
+    </div>
+    
+    <div tour-step tour-step-belongs-to="myDetachedTour" tour-step-title="Detached Step" tour-step-content="I belong to 'myDetachedTour' because I have specified my tour">
+        This step belongs to "myDetachedTour" because it is specified, otherwise it would also belong to "myTour".
+    </div>
+ 
+</body>
+```
+
+Setting a tour name for detached tours is required, but by adding a name to regular tours you can specify belongsTo for those as well. **Any step that has a belongsTo
+attribute will ignore its ancestral tour, and a step can only belong to one tour.**
+
 
 ## Build It Yourself
 

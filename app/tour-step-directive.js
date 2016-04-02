@@ -25,6 +25,7 @@
 
                     var ctrl;
 
+                    //check if this step belongs to another tour
                     if (attrs[TourHelpers.getAttrName('belongsTo')]) {
                         ctrl = TourService.getTourByName(attrs[TourHelpers.getAttrName('belongsTo')]);
                     } else if (uiTourCtrl) {
