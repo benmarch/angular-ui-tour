@@ -139,12 +139,17 @@
         return {
             restrict: 'EA',
             replace: true,
-            scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
+            scope: { title: '@', uibTitle: '@uibTitle', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
             templateUrl: 'tour-step-popup.html',
             link: function (scope, element) {
                 var step = scope.originScope().tourStep,
                     ch = ezComponentHelpers.apply(null, arguments),
                     scrollOffset = step.config('scrollOffset');
+
+                //UI Bootstrap name changed in 1.3.0
+                if (!scope.title && scope.uibTitle) {
+                    scope.title = scope.uibTitle;
+                }
 
                 element.css({
                     zIndex: TourConfig.get('backdropZIndex') + 2,
