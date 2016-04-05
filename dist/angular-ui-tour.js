@@ -156,7 +156,7 @@
             closePopupDelay: 0,
             enable: true,
             appendToBody: false,
-            tooltipClass: '',
+            popupClass: '',
             orphan: false,
             backdrop: false,
             backdropZIndex: 10000,
@@ -822,7 +822,7 @@
                         name: attrs.uiTour
                     },
                     events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
-                    properties = 'placement animation popupDelay closePopupDelay enable appendToBody tooltipClass orphan backdrop scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
+                    properties = 'placement animation popupDelay closePopupDelay enable appendToBody popupClass orphan backdrop scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
 
                 //Pass interpolated values through
                 TourHelpers.attachInterpolatedValues(attrs, tour, properties, 'uiTour');
@@ -1149,7 +1149,7 @@
                             }
                         },
                         events = 'onShow onShown onHide onHidden onNext onPrev'.split(' '),
-                        options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
+                        options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
                         tooltipAttrs = 'animation appendToBody placement popupDelay popupCloseDelay'.split(' '),
                         orderWatch,
                         enabledWatch;
@@ -1248,6 +1248,8 @@
                     zIndex: TourConfig.get('backdropZIndex') + 2,
                     display: 'block'
                 });
+
+                element.addClass(step.config('popupClass'));
 
                 if (step.config('fixed')) {
                     element.css('position', 'fixed');

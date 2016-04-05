@@ -12,7 +12,7 @@
             closePopupDelay: 0,
             enable: true,
             appendToBody: false,
-            tooltipClass: '',
+            popupClass: '',
             orphan: false,
             backdrop: false,
             backdropZIndex: 10000,
