@@ -830,6 +830,11 @@
                 //Attach event handlers
                 TourHelpers.attachEventHandlers(scope, attrs, tour, events, 'uiTour');
 
+                //override the template url
+                if (attrs[TourHelpers.getAttrName('templateUrl', 'uiTour')]) {
+                    tour.templateUrl = scope.$eval(attrs[TourHelpers.getAttrName('templateUrl', 'uiTour')]);
+                }
+
                 //If there is an options argument passed, just use that instead
                 if (attrs[TourHelpers.getAttrName('options')]) {
                     angular.extend(tour, scope.$eval(attrs[TourHelpers.getAttrName('options')]));
@@ -1118,6 +1123,7 @@
 
                     var ctrl;
 
+                    //check if this step belongs to another tour
                     if (attrs[TourHelpers.getAttrName('belongsTo')]) {
                         ctrl = TourService.getTourByName(attrs[TourHelpers.getAttrName('belongsTo')]);
                     } else if (uiTourCtrl) {
