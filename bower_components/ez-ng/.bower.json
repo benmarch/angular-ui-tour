@@ -1,6 +1,6 @@
 {
   "name": "ez-ng",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A collection of very simple utilities that make developing AngularJS apps much easier",
   "author": {
     "name": "Ben March",
@@ -61,11 +61,11 @@
   "devDependencies": {
     "angular-mocks": ">=1.3"
   },
-  "_release": "0.1.7",
+  "_release": "0.1.8",
   "_resolution": {
     "type": "version",
-    "tag": "0.1.7",
-    "commit": "cf547d3f7346e78814e7498e53b5a6b73ea7ffc3"
+    "tag": "0.1.8",
+    "commit": "e43ba303062d1ff191e7dce8adf42301f2402468"
   },
   "_source": "git://github.com/benmarch/ez-ng.git",
   "_target": "~0.1.7",

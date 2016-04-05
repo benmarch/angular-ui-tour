@@ -1,6 +1,6 @@
 {
   "name": "ez-ng",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A collection of very simple utilities that make developing AngularJS apps much easier",
   "author": {
     "name": "Ben March",
