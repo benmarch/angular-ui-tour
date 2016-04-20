@@ -485,6 +485,7 @@
 
             }).then(function () {
 
+                step.element.addClass('ui-tour-active-step');
                 return dispatchEvent(step, 'uiTourShow');
 
             }).then(function () {
@@ -518,13 +519,8 @@
 
             return handleEvent(step.config('onHide')).then(function () {
 
+                step.element.removeClass('ui-tour-active-step');
                 return dispatchEvent(step, 'uiTourHide');
-
-            }).then(function () {
-
-                if (step.config('backdrop')) {
-                    uiTourBackdrop.hide();
-                }
 
             }).then(function () {
 
@@ -636,6 +632,7 @@
             return handleEvent(options.onEnd).then(function () {
 
                 if (getCurrentStep()) {
+                    uiTourBackdrop.hide();
                     return self.hideStep(getCurrentStep());
                 }
 
@@ -732,6 +729,11 @@
 
                 }).then(function () {
 
+                    //if the next/prev step does not have a backdrop, hide it
+                    if (getCurrentStep().config('backdrop') && !actionMap[goTo].getStep().config('backdrop')) {
+                        uiTourBackdrop.hide();
+                    }
+
                     //if a redirect occurred during onNext or onPrev, getCurrentStep() !== currentStep
                     //this will only be true if no redirect occurred, since the redirect sets current step
                     if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
@@ -758,6 +760,10 @@
             //take action
             return self.hideStep(getCurrentStep())
                 .then(function () {
+                    //if the next/prev step does not have a backdrop, hide it
+                    if (getCurrentStep().config('backdrop') && !stepToShow.config('backdrop')) {
+                        uiTourBackdrop.hide();
+                    }
                     setCurrentStep(stepToShow);
                     self.emit('stepChanged', getCurrentStep());
                     return self.showStep(stepToShow);
@@ -1239,7 +1245,7 @@
             replace: true,
             scope: { title: '@', uibTitle: '@uibTitle', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
             templateUrl: 'tour-step-popup.html',
-            link: function (scope, element) {
+            link: function (scope, element, attrs) {
                 var step = scope.originScope().tourStep,
                     ch = ezComponentHelpers.apply(null, arguments),
                     scrollOffset = step.config('scrollOffset');
@@ -1248,6 +1254,9 @@
                 if (!scope.title && scope.uibTitle) {
                     scope.title = scope.uibTitle;
                 }
+
+                //for arrow styles, unfortunately UI Bootstrap uses attributes for styling
+                attrs.$set('uib-popover-popup', 'uib-popover-popup');
 
                 element.css({
                     zIndex: TourConfig.get('backdropZIndex') + 2,
