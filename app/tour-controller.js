@@ -271,6 +271,7 @@
 
             }).then(function () {
 
+                step.element.addClass('ui-tour-active-step');
                 return dispatchEvent(step, 'uiTourShow');
 
             }).then(function () {
@@ -304,6 +305,7 @@
 
             return handleEvent(step.config('onHide')).then(function () {
 
+                step.element.removeClass('ui-tour-active-step');
                 return dispatchEvent(step, 'uiTourHide');
 
             }).then(function () {
