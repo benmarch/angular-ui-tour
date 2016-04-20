@@ -24,7 +24,7 @@ describe('Tour Controller', function () {
         $timeout = _$timeout_;
 
         simpleStep = {
-            element: [document.body],
+            element: angular.element(document.body),
             stepId: 1,
             enabled: true,
             config: function (option) {

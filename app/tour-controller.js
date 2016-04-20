@@ -310,12 +310,6 @@
 
             }).then(function () {
 
-                if (step.config('backdrop')) {
-                    uiTourBackdrop.hide();
-                }
-
-            }).then(function () {
-
                 return digest();
 
             }).then(function () {
@@ -424,6 +418,7 @@
             return handleEvent(options.onEnd).then(function () {
 
                 if (getCurrentStep()) {
+                    uiTourBackdrop.hide();
                     return self.hideStep(getCurrentStep());
                 }
 
@@ -520,6 +515,11 @@
 
                 }).then(function () {
 
+                    //if the next/prev step does not have a backdrop, hide it
+                    if (getCurrentStep().config('backdrop') && !actionMap[goTo].getStep().config('backdrop')) {
+                        uiTourBackdrop.hide();
+                    }
+
                     //if a redirect occurred during onNext or onPrev, getCurrentStep() !== currentStep
                     //this will only be true if no redirect occurred, since the redirect sets current step
                     if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
@@ -546,6 +546,10 @@
             //take action
             return self.hideStep(getCurrentStep())
                 .then(function () {
+                    //if the next/prev step does not have a backdrop, hide it
+                    if (getCurrentStep().config('backdrop') && !stepToShow.config('backdrop')) {
+                        uiTourBackdrop.hide();
+                    }
                     setCurrentStep(stepToShow);
                     self.emit('stepChanged', getCurrentStep());
                     return self.showStep(stepToShow);
