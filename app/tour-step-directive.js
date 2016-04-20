@@ -141,7 +141,7 @@
             replace: true,
             scope: { title: '@', uibTitle: '@uibTitle', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
             templateUrl: 'tour-step-popup.html',
-            link: function (scope, element) {
+            link: function (scope, element, attrs) {
                 var step = scope.originScope().tourStep,
                     ch = ezComponentHelpers.apply(null, arguments),
                     scrollOffset = step.config('scrollOffset');
@@ -150,6 +150,9 @@
                 if (!scope.title && scope.uibTitle) {
                     scope.title = scope.uibTitle;
                 }
+
+                //for arrow styles, unfortunately UI Bootstrap uses attributes for styling
+                attrs.$set('uib-popover-popup', 'uib-popover-popup');
 
                 element.css({
                     zIndex: TourConfig.get('backdropZIndex') + 2,
