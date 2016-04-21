@@ -1,4 +1,4 @@
-/* global angular: false */
+/* global angular: false, Tether: false */
 
 (function (app) {
     'use strict';
