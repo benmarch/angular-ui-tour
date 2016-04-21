@@ -1239,7 +1239,7 @@
 
     }]);
 
-    app.directive('tourStepPopup', ['TourConfig', 'smoothScroll', 'ezComponentHelpers', function (TourConfig, smoothScroll, ezComponentHelpers) {
+    app.directive('tourStepPopup', ['TourConfig', 'smoothScroll', 'ezComponentHelpers', '$window', function (TourConfig, smoothScroll, ezComponentHelpers, $window) {
         return {
             restrict: 'EA',
             replace: true,
@@ -1248,7 +1248,8 @@
             link: function (scope, element, attrs) {
                 var step = scope.originScope().tourStep,
                     ch = ezComponentHelpers.apply(null, arguments),
-                    scrollOffset = step.config('scrollOffset');
+                    scrollOffset = step.config('scrollOffset'),
+                    $body = angular.element(document.body);
 
                 //UI Bootstrap name changed in 1.3.0
                 if (!scope.title && scope.uibTitle) {
@@ -1258,6 +1259,67 @@
                 //for arrow styles, unfortunately UI Bootstrap uses attributes for styling
                 attrs.$set('uib-popover-popup', 'uib-popover-popup');
 
+                function getAttachments(placement) {
+                    var attachment = '',
+                        tAttachment = '';
+
+                    switch (placement) {
+                    case 'top':
+                        attachment = 'bottom center';
+                        tAttachment = 'top center';
+                        break;
+                    case 'bottom':
+                        attachment = 'top center';
+                        tAttachment = 'bottom center';
+                        break;
+                    case 'left':
+                        attachment = 'middle right';
+                        tAttachment = 'middle left';
+                        break;
+                    case 'right':
+                        attachment = 'middle left';
+                        tAttachment = 'middle right';
+                        break;
+                    case 'top-left':
+                        attachment = 'bottom left';
+                        tAttachment = 'top left';
+                        break;
+                    case 'top-right':
+                        attachment = 'bottom right';
+                        tAttachment = 'top right';
+                        break;
+                    case 'bottom-left':
+                        attachment = 'top left';
+                        tAttachment = 'bottom left';
+                        break;
+                    case 'bottom-right':
+                        attachment = 'top right';
+                        tAttachment = 'bottom right';
+                        break;
+                    case 'left-top':
+                        attachment = 'top right';
+                        tAttachment = 'top left';
+                        break;
+                    case 'left-bottom':
+                        attachment = 'bottom right';
+                        tAttachment = 'bottom left';
+                        break;
+                    case 'right-top':
+                        attachment = 'top left';
+                        tAttachment = 'top right';
+                        break;
+                    case 'right-bottom':
+                        attachment = 'bottom left';
+                        tAttachment = 'bottom right';
+                        break;
+                    }
+
+                    return {
+                        attachment: attachment,
+                        targetAttachment: tAttachment
+                    };
+                }
+
                 element.css({
                     zIndex: TourConfig.get('backdropZIndex') + 2,
                     display: 'block'
@@ -1266,7 +1328,19 @@
                 element.addClass(step.config('popupClass'));
 
                 if (step.config('fixed')) {
-                    element.css('position', 'fixed');
+                    new Tether({
+                        element: element[0],
+                        target: step.element[0],
+                        attachment: getAttachments(scope.placement).attachment,
+                        targetAttachment: getAttachments(scope.placement).targetAttachment,
+                        offset: '-' + scrollOffset + ' 0',
+                        constraints: [
+                            {
+                                to: 'window',
+                                pin: true
+                            }
+                        ]
+                    });
                 }
 
                 if (step.config('orphan')) {
