@@ -275,7 +275,7 @@
                         uiTourBackdrop.createForElement(step.element, step.config('preventScrolling'), step.config('fixed'));
                         resolve();
                     }, delay);
-                })
+                });
 
             }).then(function () {
 
