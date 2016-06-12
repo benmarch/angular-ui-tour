@@ -257,30 +257,30 @@ module Tour {
             onHidden: null
         };
 
+        $get: [string, ($q: ng.IQService) => ITourConfig];
+
         set(option, value) {
             this.config[option] = value;
         }
+        constructor() {
+            this.$get = ['$q', ($q) => {
+                angular.forEach(this.config, function (value, key) {
+                    if (key.indexOf('on') === 0 && angular.isFunction(value)) {
+                        this.config[key] = function () {
+                            return $q.resolve(value());
+                        };
+                    }
+                });
 
-        $get(): ITourConfig {
-
-            return {
-                get: (option) => {
-                    return this.config[option];
-                },
-                getAll: () => {
-                    return angular.copy(this.config);
-                }
-            };
-        }
-
-        constructor($q: ng.IQService) {
-            angular.forEach(this.config, function (value, key) {
-                if (key.indexOf('on') === 0 && angular.isFunction(value)) {
-                    this.config[key] = function () {
-                        return $q.resolve(value());
-                    };
-                }
-            });
+                return {
+                    get: (option) => {
+                        return this.config[option];
+                    },
+                    getAll: () => {
+                        return angular.copy(this.config);
+                    }
+                };
+            }];
         }
     }
 
@@ -302,6 +302,7 @@ module Tour {
         constructor(private $timeout: ng.ITimeoutService, private $q: ng.IQService, private $filter: ng.IFilterService, TourConfig: ITourConfig, private uiTourBackdrop: TourBackdrop, private uiTourService: uiTourService, private EventEmitter, private hotkeys) {
             this.tourStatus = this.statuses.OFF;
             this.options = TourConfig.getAll();
+            this.stepList = [];
             EventEmitter.mixin(this);
         }
 
@@ -642,7 +643,7 @@ module Tour {
          */
         init(opts) {
             this.options = angular.extend(this.options, opts);
-            this.uiTourService._registerTour(self);
+            this.uiTourService._registerTour(this);
             this.initialized = true;
             this.emit('initialized');
             return this;
@@ -759,12 +760,12 @@ module Tour {
                 stepToShow = this.getStep(goTo),
                 actionMap = {
                     $prev: {
-                        getStep: this.getPrevStep,
+                        getStep: () => this.getPrevStep(),
                         preEvent: 'onPrev',
                         navCheck: 'prevStep'
                     },
                     $next: {
-                        getStep: this.getNextStep,
+                        getStep: () => this.getNextStep(),
                         preEvent: 'onNext',
                         navCheck: 'nextStep'
                     }
@@ -1001,7 +1002,9 @@ module Tour {
     export class uiTourService {
         private tours: Array<TourController>
 
-        constructor(private $controller: ng.IControllerService) { }
+        constructor(private $controller: ng.IControllerService) {
+            this.tours = [];
+        }
 
         /**
          * If there is only one tour, returns the tour
@@ -1094,7 +1097,7 @@ module Tour {
     app.factory('uiTourBackdrop', ['TourConfig', '$document', '$uibPosition', '$window', Tour.TourBackdrop.factory])
         .factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', '$injector', Tour.TourHelper.factory])
         .factory('uiTourService', ['$controller', Tour.uiTourService.factory])
-        .provider('TourConfig', ['$q', Tour.TourConfigProvider])
+        .provider('TourConfig', [Tour.TourConfigProvider])
         .controller('uiTourController', ['$timeout', '$q', '$filter', 'TourConfig', 'uiTourBackdrop', 'uiTourService', 'ezEventEmitter', 'hotkeys', Tour.TourController])
         .directive('uiTour', ['TourHelpers', (TourHelpers: Tour.TourHelper) => {
 
@@ -1105,15 +1108,24 @@ module Tour {
                 link: (scope: Tour.ITourScope, element: ng.IRootElementService, attrs, ctrl: Tour.TourController) => {
 
                     //Pass static options through or use defaults
-                    var tour = { onReady: null },
+                    var tour = {
+                        name: attrs.uiTour,
+                        templateUrl: null,
+                        onReady: null
+                    },
                         events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
-                        properties = 'placement animation popupDelay closePopupDelay trigger enable appendToBody tooltipClass orphan backdrop'.split(' ');
+                        properties = 'placement animation popupDelay closePopupDelay enable appendToBody popupClass orphan backdrop scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
 
                     //Pass interpolated values through
                     TourHelpers.attachInterpolatedValues(attrs, tour, properties, 'uiTour');
 
                     //Attach event handlers
                     TourHelpers.attachEventHandlers(scope, attrs, tour, events, 'uiTour');
+
+                    //override the template url
+                    if (attrs[TourHelpers.getAttrName('templateUrl', 'uiTour')]) {
+                        tour.templateUrl = scope.$eval(attrs[TourHelpers.getAttrName('templateUrl', 'uiTour')]);
+                    }
 
                     //If there is an options argument passed, just use that instead
                     if (attrs[TourHelpers.getAttrName('options')]) {
@@ -1187,7 +1199,7 @@ module Tour {
                             enabledWatch;
 
                         //Will add values to pass to $uibTooltip
-                        var configureInheritedProperties = () => {                            
+                        var configureInheritedProperties = () => {
                             TourHelpers.attachTourConfigProperties(scope, attrs, step, tooltipAttrs/*, 'tourStep'*/);
                             tourStepLinker(scope, element, attrs);
                         }
