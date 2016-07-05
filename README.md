@@ -34,6 +34,8 @@ Add the script tags:
 <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
 ```
 
+**Note:** You _must_ use the unminified version of angular smooth scroll since there is a known issue with the minified version.
+
 Then add the module to your app:
 
 ```js
