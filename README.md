@@ -26,12 +26,14 @@ bower install angular-ui-tour
 Add the script tags:
 
 ```html
+<!--bower:js-->
 <script src="bower_components/angular/angular.js"></script>
 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 <script src="bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js"></script>
+<script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
 <script src="bower_components/ez-ng/dist/ez-ng.js"></script>
 <script src="bower_components/angular-hotkeys/build/hotkeys.js"></script>
-<script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
+<!--endbower-->
 ```
 
 **Note:** You _must_ use the unminified version of angular smooth scroll since there is a known issue with the minified version.
