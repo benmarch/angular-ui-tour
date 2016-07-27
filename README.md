@@ -13,6 +13,8 @@ Bootstrap Tour, but plays nicely with Angular, **and does not have any dependenc
 
 Check out the live demo [here](http://benmarch.github.io/angular-ui-tour).
 
+**IMPORTANT!!** This does not yet work with Angular UI Bootstrap 2.0.0 or later! Follow [#66](https://github.com/benmarch/angular-ui-tour/issues/66) for details.
+
 ## Getting Started
 *It is highly recommended that you use Bower and Wiredep to install this plugin for now. I am working on making it (and its dependencies) 
 available through NPM, but I don't believe it works yet.*
