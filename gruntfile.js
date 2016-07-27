@@ -75,14 +75,12 @@ module.exports = function (grunt) {
                 src: 'README.md',
                 fileTypes: {
                     md: {
-                        block: /(([ \t]*)<!--\s*bower:*(\S*)\s*-->)(\n|\r|.)*?(<!--\s*endbower\s*-->)/gi,
+                        block: /(([ \t]*)<!--\s*dependencies:*(\S*)\s*-->)(\n|\r|.)*?(<!--\s*end dependencies\s*-->)/gi,
                         detect: {
-                            js: /<script.*src=['"]([^'"]+)/gi,
-                            css: /<link.*href=['"]([^'"]+)/gi
+                            js: /<script.*src=['"]([^'"]+)/gi
                         },
                         replace: {
-                            js: '<script src="{{filePath}}"></script>',
-                            css: '<link rel="stylesheet" href="{{filePath}}" />'
+                            js: '<script src="{{filePath}}"></script>'
                         }
                     }
                 }
