@@ -1,13 +1,8 @@
-<div class="popover tour-step"
-     tooltip-animation-class="fade"
-     uib-tooltip-classes
-     ng-class="{ in: isOpen() }">
-    <div class="arrow"></div>
+<div class="arrow"></div>
 
-    <div class="popover-inner tour-step-inner">
-        <h3 class="popover-title tour-step-title" ng-bind="title" ng-if="title"></h3>
-        <div class="popover-content tour-step-content"
-             uib-tooltip-template-transclude="originScope().tourStep.config('templateUrl') || 'tour-step-template.html'"
-             tooltip-template-transclude-scope="originScope()"></div>
-    </div>
+<div class="popover-inner tour-step-inner">
+    <h3 class="popover-title tour-step-title" ng-bind="uibTitle" ng-if="uibTitle"></h3>
+    <div class="popover-content tour-step-content"
+         uib-tooltip-template-transclude="originScope().tourStep.config('templateUrl') || 'tour-step-template.html'"
+         tooltip-template-transclude-scope="originScope()"></div>
 </div>
