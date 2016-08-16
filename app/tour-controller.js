@@ -443,6 +443,7 @@
         self.pause = function () {
             return handleEvent(options.onPause).then(function () {
                 tourStatus = statuses.PAUSED;
+                uiTourBackdrop.hide();
                 return self.hideStep(getCurrentStep());
             }).then(function () {
                 self.emit('paused', getCurrentStep());

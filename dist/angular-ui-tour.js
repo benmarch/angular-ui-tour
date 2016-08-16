@@ -657,6 +657,7 @@
         self.pause = function () {
             return handleEvent(options.onPause).then(function () {
                 tourStatus = statuses.PAUSED;
+                uiTourBackdrop.hide();
                 return self.hideStep(getCurrentStep());
             }).then(function () {
                 self.emit('paused', getCurrentStep());
@@ -1239,21 +1240,16 @@
 
     }]);
 
-    app.directive('tourStepPopup', ['TourConfig', 'smoothScroll', 'ezComponentHelpers', function (TourConfig, smoothScroll, ezComponentHelpers) {
+    app.directive('tourStepPopup', ['TourConfig', 'smoothScroll', 'ezComponentHelpers', '$uibPosition', function (TourConfig, smoothScroll, ezComponentHelpers, $uibPostion) {
         return {
-            restrict: 'EA',
-            replace: true,
-            scope: { title: '@', uibTitle: '@uibTitle', content: '@', placement: '@', animation: '&', isOpen: '&', originScope: '&'},
+            restrict: 'A',
+            scope: { uibTitle: '@', contentExp: '&', originScope: '&' },
             templateUrl: 'tour-step-popup.html',
             link: function (scope, element, attrs) {
                 var step = scope.originScope().tourStep,
                     ch = ezComponentHelpers.apply(null, arguments),
-                    scrollOffset = step.config('scrollOffset');
-
-                //UI Bootstrap name changed in 1.3.0
-                if (!scope.title && scope.uibTitle) {
-                    scope.title = scope.uibTitle;
-                }
+                    scrollOffset = step.config('scrollOffset'),
+                    isScrolling = false;
 
                 //for arrow styles, unfortunately UI Bootstrap uses attributes for styling
                 attrs.$set('uib-popover-popup', 'uib-popover-popup');
@@ -1263,7 +1259,7 @@
                     display: 'block'
                 });
 
-                element.addClass(step.config('popupClass'));
+                element.addClass([step.config('popupClass'), 'popover'].join(' '));
 
                 if (step.config('fixed')) {
                     element.css('position', 'fixed');
@@ -1288,10 +1284,16 @@
                     );
                 }
 
-                scope.$watch('isOpen', function (isOpen) {
-                    if (isOpen() && !step.config('orphan') && step.config('scrollIntoView')) {
+                scope.$watch(function () {
+                    var offset = $uibPostion.offset(element),
+                        isOpen = offset.width && offset.height;
+                    if (isOpen && !step.config('orphan') && step.config('scrollIntoView') && !isScrolling) {
+                        isScrolling = true;
                         smoothScroll(element[0], {
-                            offset: scrollOffset
+                            offset: scrollOffset,
+                            callbackAfter: function () {
+                                isScrolling = false;
+                            }
                         });
                     }
                 });
@@ -1303,18 +1305,13 @@
 
 angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
   $templateCache.put("tour-step-popup.html",
-    "<div class=\"popover tour-step\"\n" +
-    "     tooltip-animation-class=\"fade\"\n" +
-    "     uib-tooltip-classes\n" +
-    "     ng-class=\"{ in: isOpen() }\">\n" +
-    "    <div class=\"arrow\"></div>\n" +
+    "<div class=\"arrow\"></div>\n" +
     "\n" +
-    "    <div class=\"popover-inner tour-step-inner\">\n" +
-    "        <h3 class=\"popover-title tour-step-title\" ng-bind=\"title\" ng-if=\"title\"></h3>\n" +
-    "        <div class=\"popover-content tour-step-content\"\n" +
-    "             uib-tooltip-template-transclude=\"originScope().tourStep.config('templateUrl') || 'tour-step-template.html'\"\n" +
-    "             tooltip-template-transclude-scope=\"originScope()\"></div>\n" +
-    "    </div>\n" +
+    "<div class=\"popover-inner tour-step-inner\">\n" +
+    "    <h3 class=\"popover-title tour-step-title\" ng-bind=\"uibTitle\" ng-if=\"uibTitle\"></h3>\n" +
+    "    <div class=\"popover-content tour-step-content\"\n" +
+    "         uib-tooltip-template-transclude=\"originScope().tourStep.config('templateUrl') || 'tour-step-template.html'\"\n" +
+    "         tooltip-template-transclude-scope=\"originScope()\"></div>\n" +
     "</div>\n" +
     "");
   $templateCache.put("tour-step-template.html",
