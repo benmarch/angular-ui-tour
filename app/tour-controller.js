@@ -224,8 +224,11 @@
          * @param step
          */
         self.removeStep = function (step) {
-            stepList.splice(stepList.indexOf(step), 1);
-            self.emit('stepRemoved', step);
+            var index = stepList.indexOf(step);
+            if (index !== -1) {
+                stepList.splice(index, 1);
+                self.emit('stepRemoved', step);
+            }
         };
 
         /**
