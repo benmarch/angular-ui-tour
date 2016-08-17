@@ -3,7 +3,7 @@
 (function (app) {
     'use strict';
 
-    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', '$injector', function ($templateCache, $http, $compile, $location, TourConfig, $q, $injector) {
+    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', '$injector', '$timeout', function ($templateCache, $http, $compile, $location, TourConfig, $q, $injector, $timeout) {
 
         var helpers = {},
             safeApply,
@@ -133,7 +133,7 @@
                         $state.transitionTo(path).then(resolve);
                     } else {
                         $location.path(path);
-                        resolve();
+                        $timeout(resolve);
                     }
                 });
             };

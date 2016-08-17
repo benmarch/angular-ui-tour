@@ -271,6 +271,13 @@
             if (!getCurrentStep()) {
                 return null;
             }
+            if (getCurrentStep().config('nextPath') && offset > 0) {
+                return null;
+            }
+            if (getCurrentStep().config('prevPath') && offset < 0) {
+                return null;
+            }
+
             return stepList[stepList.indexOf(getCurrentStep()) + offset];
         }
 
@@ -334,7 +341,7 @@
          * @returns {boolean}
          */
         function isNext() {
-            return !!(getNextStep() || getCurrentStep().nextPath);
+            return !!(getNextStep() || (getCurrentStep() && getCurrentStep().config('nextPath')));
         }
 
         /**
@@ -343,7 +350,7 @@
          * @returns {boolean}
          */
         function isPrev() {
-            return !!(getPrevStep() || getCurrentStep().prevPath);
+            return !!(getPrevStep() || (getCurrentStep() && getCurrentStep().config('prevPath')));
         }
 
         /**
@@ -499,8 +506,8 @@
             }).then(function () {
 
                 self.emit('stepShown', step);
-                step.isNext = isNext();
-                step.isPrev = isPrev();
+                step.isNext = isNext;
+                step.isPrev = isPrev;
 
             });
         };
@@ -730,16 +737,16 @@
 
                 }).then(function () {
 
-                    //if the next/prev step does not have a backdrop, hide it
-                    if (getCurrentStep().config('backdrop') && !actionMap[goTo].getStep().config('backdrop')) {
-                        uiTourBackdrop.hide();
-                    }
-
                     //if a redirect occurred during onNext or onPrev, getCurrentStep() !== currentStep
                     //this will only be true if no redirect occurred, since the redirect sets current step
                     if (!currentStep[actionMap[goTo].navCheck] || currentStep[actionMap[goTo].navCheck] !== getCurrentStep().stepId) {
                         setCurrentStep(actionMap[goTo].getStep());
                         self.emit('stepChanged', getCurrentStep());
+                    }
+
+                    //if the next/prev step does not have a backdrop, hide it
+                    if (getCurrentStep() && !getCurrentStep().config('backdrop')) {
+                        uiTourBackdrop.hide();
                     }
 
                 }).then(function () {
@@ -868,7 +875,7 @@
 (function (app) {
     'use strict';
 
-    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', '$injector', function ($templateCache, $http, $compile, $location, TourConfig, $q, $injector) {
+    app.factory('TourHelpers', ['$templateCache', '$http', '$compile', '$location', 'TourConfig', '$q', '$injector', '$timeout', function ($templateCache, $http, $compile, $location, TourConfig, $q, $injector, $timeout) {
 
         var helpers = {},
             safeApply,
@@ -998,7 +1005,7 @@
                         $state.transitionTo(path).then(resolve);
                     } else {
                         $location.path(path);
-                        resolve();
+                        $timeout(resolve);
                     }
                 });
             };
@@ -1319,8 +1326,8 @@ angular.module('bm.uiTour').run(['$templateCache', function($templateCache) {
     "    <div class=\"popover-content tour-step-content\" ng-bind-html=\"tourStep.trustedContent\"></div>\n" +
     "    <div class=\"popover-navigation tour-step-navigation\">\n" +
     "        <div class=\"btn-group\">\n" +
-    "            <button class=\"btn btn-sm btn-default\" ng-if=\"tourStep.isPrev\" ng-click=\"tour.prev()\">&laquo; Prev</button>\n" +
-    "            <button class=\"btn btn-sm btn-default\" ng-if=\"tourStep.isNext\" ng-click=\"tour.next()\">Next &raquo;</button>\n" +
+    "            <button class=\"btn btn-sm btn-default\" ng-if=\"tourStep.isPrev()\" ng-click=\"tour.prev()\">&laquo; Prev</button>\n" +
+    "            <button class=\"btn btn-sm btn-default\" ng-if=\"tourStep.isNext()\" ng-click=\"tour.next()\">Next &raquo;</button>\n" +
     "            <button class=\"btn btn-sm btn-default\" data-role=\"pause-resume\" data-pause-text=\"Pause\"\n" +
     "                    data-resume-text=\"Resume\" ng-click=\"tour.pause()\">Pause\n" +
     "            </button>\n" +
