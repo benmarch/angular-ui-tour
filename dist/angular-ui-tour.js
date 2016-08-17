@@ -15,7 +15,7 @@
 (function (app) {
     'use strict';
 
-    app.factory('uiTourBackdrop', ['TourConfig', '$document', '$uibPosition', function (TourConfig, $document, $uibPosition) {
+    app.factory('uiTourBackdrop', ['TourConfig', '$document', '$uibPosition', '$window', function (TourConfig, $document, $uibPosition, $window) {
 
         var service = {},
             $body = angular.element($document[0].body),
@@ -27,7 +27,8 @@
             },
             preventDefault = function (e) {
                 e.preventDefault();
-            };
+            },
+            onResize;
 
         (function createNoScrollingClass() {
             var name = '.no-scrolling',
@@ -74,19 +75,12 @@
             viewWindow.right.css('display', 'none');
         }
 
-        createBackdropComponent(viewWindow.top);
-        createBackdropComponent(viewWindow.bottom);
-        createBackdropComponent(viewWindow.left);
-        createBackdropComponent(viewWindow.right);
-
-        service.createForElement = function (element, shouldPreventScrolling, isFixedElement) {
+        function positionBackdrop(element, isFixedElement) {
             var position,
                 viewportPosition,
-                bodyPosition;
-
-            if (shouldPreventScrolling) {
-                preventScrolling();
-            }
+                bodyPosition,
+                vw = Math.max($document[0].documentElement.clientWidth, $window.innerWidth || 0),
+                vh = Math.max($document[0].documentElement.clientHeight, $window.innerHeight || 0);
 
             position = $uibPosition.offset(element);
             viewportPosition = $uibPosition.viewportOffset(element);
@@ -107,7 +101,7 @@
                 position: isFixedElement ? 'fixed' : 'absolute',
                 left: 0,
                 width: '100%',
-                height: (bodyPosition.top + bodyPosition.height - position.top - position.height) + 'px',
+                height: Math.max(bodyPosition.top + bodyPosition.height - position.top - position.height, vh - position.top - position.height) + 'px',
                 top: (position.top + position.height) + 'px'
             });
             viewWindow.left.css({
@@ -119,12 +113,25 @@
             viewWindow.right.css({
                 position: isFixedElement ? 'fixed' : 'absolute',
                 top: position.top + 'px',
-                width: (bodyPosition.left + bodyPosition.width - position.left - position.width) + 'px',
+                width: Math.max(bodyPosition.left + bodyPosition.width - position.left - position.width, vw - position.left - position.width) + 'px',
                 height: position.height + 'px',
                 left: (position.left + position.width) + 'px'
             });
+        }
 
+        createBackdropComponent(viewWindow.top);
+        createBackdropComponent(viewWindow.bottom);
+        createBackdropComponent(viewWindow.left);
+        createBackdropComponent(viewWindow.right);
+
+        service.createForElement = function (element, shouldPreventScrolling, isFixedElement) {
+            positionBackdrop(element, isFixedElement);
             showBackdrop();
+
+            onResize = function () {
+                positionBackdrop(element, isFixedElement);
+            };
+            angular.element($window).on('resize', onResize);
 
             if (shouldPreventScrolling) {
                 preventScrolling();
@@ -134,6 +141,7 @@
         service.hide = function () {
             hideBackdrop();
             allowScrolling();
+            angular.element($window).off('resize', onResize);
         };
 
         return service;
@@ -445,8 +453,11 @@
          * @param step
          */
         self.removeStep = function (step) {
-            stepList.splice(stepList.indexOf(step), 1);
-            self.emit('stepRemoved', step);
+            var index = stepList.indexOf(step);
+            if (index !== -1) {
+                stepList.splice(index, 1);
+                self.emit('stepRemoved', step);
+            }
         };
 
         /**
