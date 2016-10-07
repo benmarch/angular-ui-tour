@@ -904,7 +904,7 @@
          * @param {Function} fn
          */
         safeApply = helpers.safeApply = function(scope, fn) {
-            var phase = scope.$$phase;
+            var phase = scope.$root.$$phase;
             if (phase === '$apply' || phase === '$digest') {
                 if (fn && (typeof(fn) === 'function')) {
                     fn();
@@ -1013,7 +1013,7 @@
                     }
                     ctrl.waitFor(targetName);
                     if (step.config('useUiRouter')) {
-                        $state.transitionTo(path).then(resolve);
+                        $state.go(path).then(resolve);
                     } else {
                         $location.path(path);
                         $timeout(resolve);
