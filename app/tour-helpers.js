@@ -130,7 +130,7 @@
                     }
                     ctrl.waitFor(targetName);
                     if (step.config('useUiRouter')) {
-                        $state.transitionTo(path).then(resolve);
+                        $state.go(path).then(resolve);
                     } else {
                         $location.path(path);
                         $timeout(resolve);
