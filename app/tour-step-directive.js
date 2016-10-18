@@ -106,7 +106,7 @@
 
                     //Add step to tour
                     scope.tourStep = step;
-                    scope.tour = scope.tour || ctrl;
+                    scope.tour = ctrl;
                     if (ctrl.initialized) {
                         configureInheritedProperties();
                         ctrl.addStep(step);
