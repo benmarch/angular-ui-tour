@@ -366,6 +366,24 @@ describe('Tour Controller', function () {
 
         });
 
+        it('should show the next step if current step was removed', function () {
+            //given
+            var nextStep = angular.copy(simpleStep);
+            nextStep.stepId = 2;
+            nextStep.order = 2;
+            spyOn(TourController, 'showStep').and.callThrough();
+
+            //when
+            TourController.addStep(simpleStep);
+            TourController.addStep(nextStep);
+            digestAfter(TourController.start);
+            TourController.removeStep(simpleStep);
+            digestAfter(TourController.next);
+
+            //then
+            expect(TourController.showStep).toHaveBeenCalledWith(nextStep);
+        });
+
     });
 
     describe('#prev()', function () {
@@ -442,6 +460,34 @@ describe('Tour Controller', function () {
             //then
             expect(TourController.showStep).toHaveBeenCalledWith(simpleStep);
 
+        });
+
+        it('should show the previous step if current step was removed', function () {
+            //given
+
+            var nextStep = angular.copy(simpleStep),
+                prevStep = angular.copy(simpleStep);
+            nextStep.stepId = 2;
+            nextStep.order = 2;
+            prevStep.stepId = 1;
+            prevStep.order = 1;
+            spyOn(TourController, 'showStep');
+
+            //when
+            TourController.addStep(simpleStep);
+            TourController.addStep(prevStep);
+            TourController.addStep(nextStep);
+
+
+            digestAfter(TourController.start);
+            digestAfter(TourController.next);
+            digestAfter(TourController.next);
+            TourController.removeStep(nextStep);
+            TourController.showStep.calls.reset();
+            digestAfter(TourController.prev);
+
+            //then
+            expect(TourController.showStep).toHaveBeenCalledWith(prevStep);
         });
 
     });
