@@ -1,0 +1,42 @@
+{
+    "non-interactive": true,
+    "dry-run": false,
+    "verbose": true,
+    "force": false,
+    "pkgFiles": ["package.json", "bower.json"],
+    "increment": "patch",
+    "prereleaseId": null,
+    "commitMessage": "Bumped version to %s",
+    "tagName": "%s",
+    "tagAnnotation": "Committing release tag %s",
+    "buildCommand": false,
+    "changelogCommand": "git log --pretty=format:'* %s (%h)' [REV_RANGE]",
+    "requireCleanWorkingDir": false,
+    "src": {
+        "pushRepo": "https://github.com/benmarch/angular-ui-tour.git",
+        "beforeStartCommand": false,
+        "beforeStageCommand": false,
+        "afterReleaseCommand": false
+    },
+    "dist": {
+        "repo": false,
+        "stageDir": ".stage",
+        "baseDir": "dist",
+        "files": ["**/*"],
+        "pkgFiles": null,
+        "beforeStageCommand": false,
+        "afterReleaseCommand": false
+    },
+    "npm": {
+        "publish": true,
+        "publishPath": ".",
+        "tag": "latest",
+        "private": false,
+        "forcePublishSourceRepo": false
+    },
+    "github": {
+        "release": false,
+        "releaseName": "Release %s",
+        "tokenRef": ""
+    }
+}

@@ -1,6 +1,4 @@
-/* global jasmine: false, beforeEach: false, inject: false, describe: false, it: false, spyOn: false, angular: false*/
-
-'use strict';
+import angular from 'angular';
 
 describe('Tour Controller', function () {
     var TourController,
@@ -14,11 +12,14 @@ describe('Tour Controller', function () {
         },
         simpleStep;
 
-    beforeEach(module('bm.uiTour', 'test.templates'));
+    beforeEach(angular.mock.module('bm.uiTour'));
 
-    beforeEach(inject(function (_$controller_, _$rootScope_, _$q_, _$timeout_) {
+    beforeEach(angular.mock.inject(function (_$controller_, _$rootScope_, _$q_, _$timeout_) {
         var $scope = _$rootScope_.$new();
-        TourController = _$controller_('uiTourController', {$scope: $scope});
+
+        TourController = _$controller_('uiTourController', {
+            $scope: $scope
+        });
         $q = _$q_;
         $rootScope = _$rootScope_;
         $timeout = _$timeout_;
@@ -99,6 +100,7 @@ describe('Tour Controller', function () {
                 step3 = {
                     order: 3
                 };
+
             TourController.addStep(step1);
             TourController.addStep(step2);
             TourController.addStep(step3);
@@ -125,6 +127,7 @@ describe('Tour Controller', function () {
             var options = {
                 onStart: $q.resolve
             };
+
             spyOn(options, 'onStart').and.callThrough();
             TourController.init(options);
 
@@ -141,6 +144,7 @@ describe('Tour Controller', function () {
 
             //given
             var step = {};
+
             spyOn(TourController, 'showStep');
 
             //when
@@ -161,6 +165,7 @@ describe('Tour Controller', function () {
 
             //given
             var step = {};
+
             spyOn(TourController, 'showStep');
 
             //when
@@ -187,6 +192,7 @@ describe('Tour Controller', function () {
             var options = {
                 onEnd: $q.resolve
             };
+
             spyOn(options, 'onEnd').and.callThrough();
             TourController.init(options);
 
@@ -225,6 +231,7 @@ describe('Tour Controller', function () {
             var options = {
                 onPause: $q.resolve
             };
+
             spyOn(options, 'onPause').and.callThrough();
             TourController.init(options);
 
@@ -264,6 +271,7 @@ describe('Tour Controller', function () {
             var options = {
                 onResume: $q.resolve
             };
+
             spyOn(options, 'onResume').and.callThrough();
             TourController.init(options);
 
@@ -305,6 +313,7 @@ describe('Tour Controller', function () {
             var options = {
                 onNext: $q.resolve
             };
+
             spyOn(options, 'onNext').and.callThrough();
             TourController.init(options);
 
@@ -353,6 +362,7 @@ describe('Tour Controller', function () {
 
             //given
             var nextStep = angular.copy(simpleStep);
+
             spyOn(TourController, 'showStep').and.callThrough();
 
             //when
@@ -376,6 +386,7 @@ describe('Tour Controller', function () {
             var options = {
                 onPrev: $q.resolve
             };
+
             spyOn(options, 'onPrev').and.callThrough();
             TourController.init(options);
 
@@ -395,6 +406,7 @@ describe('Tour Controller', function () {
 
             //given
             var otherStep = angular.copy(simpleStep);
+
             otherStep.onPrev = jasmine.createSpy('onPrev').and.returnValue($q.resolve());
 
             //when
@@ -412,6 +424,7 @@ describe('Tour Controller', function () {
 
             //given
             var otherStep = angular.copy(simpleStep);
+
             spyOn(TourController, 'hideStep');
 
             //when
@@ -429,6 +442,7 @@ describe('Tour Controller', function () {
 
             //given
             var otherStep = angular.copy(simpleStep);
+
             spyOn(TourController, 'showStep');
 
             //when
@@ -452,6 +466,7 @@ describe('Tour Controller', function () {
 
             //given
             var otherStep = angular.copy(simpleStep);
+
             spyOn(TourController, 'showStep').and.callThrough();
 
             //when
@@ -471,6 +486,7 @@ describe('Tour Controller', function () {
 
             //given
             var otherStep = angular.copy(simpleStep);
+
             spyOn(TourController, 'showStep').and.callThrough();
 
             //when
@@ -490,6 +506,7 @@ describe('Tour Controller', function () {
 
             //given
             var otherStep = angular.copy(simpleStep);
+
             spyOn(TourController, 'showStep').and.callThrough();
 
             //when
@@ -509,6 +526,7 @@ describe('Tour Controller', function () {
 
             //given
             var otherStep = angular.copy(simpleStep);
+
             otherStep.stepId = 'other';
             spyOn(TourController, 'showStep').and.callThrough();
 
@@ -528,15 +546,16 @@ describe('Tour Controller', function () {
         it('should reject if no step found', function () {
 
             //given
-            var rejected = false;
-            var otherStep = angular.copy(simpleStep);
+            var rejected = false,
+                otherStep = angular.copy(simpleStep);
+
             spyOn(TourController, 'showStep').and.callThrough();
 
             //when
             TourController.addStep(simpleStep);
             TourController.addStep(otherStep);
             digestAfter(TourController.start);
-            TourController.goTo().catch(function () {
+            TourController.goTo()['catch'](function () {
                 rejected = true;
             });
             $rootScope.$digest();

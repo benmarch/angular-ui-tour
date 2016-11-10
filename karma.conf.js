@@ -1,35 +1,34 @@
-// Karma configuration
-// Generated on Fri Apr 25 2014 13:52:48 GMT-0400 (EDT)
+//import and modify webpack config
+var webpackConfig = require('./webpack.config.babel');
 
-module.exports = function(config) {
+webpackConfig.entry = {};
+webpackConfig.externals = {};
+webpackConfig.devtool = 'inline-source-map';
+webpackConfig.postLoaders = [
+    //delays coverage til after tests are run, fixing transpiled source coverage error
+    {
+        test: /\.js$/,
+        exclude: /(test|node_modules|bower_components)\//,
+        loader: 'istanbul-instrumenter'
+    }
+];
+
+module.exports = function (config) {
     config.set({
 
         // base path that will be used to resolve all patterns (eg. files, exclude)
-        basePath: '',
+        basePath: '.',
 
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['jasmine'],
+        frameworks: ['jasmine', 'source-map-support'],
 
 
         // list of files / patterns to load in the browser
         files: [
-            //bower:js
-            'bower_components/angular/angular.js',
-            'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
-            'bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js',
-            'bower_components/angular-sanitize/angular-sanitize.js',
-            'bower_components/ez-ng/dist/ez-ng.js',
-            'bower_components/angular-hotkeys/build/hotkeys.js',
-            'bower_components/angular-mocks/angular-mocks.js',
-            'bower_components/angular-route/angular-route.js',
-            //endbower
             'app/angular-ui-tour.js',
-            'app/**/*.js',
-            'lib/**/*.js',
-            'test/spec/**/*.js',
-            'tmp/test-templates.js'
+            'test/webpack-test-context.js'
         ],
 
 
@@ -40,14 +39,19 @@ module.exports = function(config) {
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
-            'app/**/*.js': ['coverage']
+            'app/angular-ui-tour.js': ['webpack', 'sourcemap'],
+            'test/webpack-test-context.js': ['webpack', 'sourcemap']
         },
 
+        webpack: webpackConfig,
+        webpackMiddleware: {
+            noInfo: true
+        },
 
         // test results reporter to use
         // possible values: 'dots', 'progress'
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-        reporters: ['dots', 'junit', 'coverage', 'growl'],
+        reporters: ['dots'],
 
         htmlReporter: {
             outputDir: 'test/results',

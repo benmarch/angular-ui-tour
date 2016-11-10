@@ -274,14 +274,10 @@ attribute will ignore its ancestral tour, and a step can only belong to one tour
 
 ## Build It Yourself
 
-Assuming you have Node, grunt, and bower installed:
-
 ```sh
 npm install
 
-bower install
-
-grunt
+npm run build
 ```    
 
 **Thanks and enjoy!**
