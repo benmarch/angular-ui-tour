@@ -54,7 +54,8 @@
                         options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
                         tooltipAttrs = 'animation appendToBody placement popupDelay popupCloseDelay'.split(' '),
                         orderWatch,
-                        enabledWatch;
+                        enabledWatch,
+                        contentWatch;
 
                     //Will add values to pass to $uibTooltip
                     function configureInheritedProperties() {
@@ -76,6 +77,13 @@
                             ctrl.addStep(step);
                         } else {
                             ctrl.removeStep(step);
+                        }
+                    });
+
+                    // watch for content updates
+                    contentWatch = attrs.$observe(TourHelpers.getAttrName('content'), function(content) {
+                        if (content) {
+                            step.trustedContent = $sce.trustAsHtml(step.content);
                         }
                     });
 
@@ -128,6 +136,7 @@
                         ctrl.removeStep(step);
                         orderWatch();
                         enabledWatch();
+                        contentWatch();
                     });
                 };
             }
