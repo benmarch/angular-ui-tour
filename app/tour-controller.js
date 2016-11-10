@@ -15,7 +15,8 @@
                 PAUSED: 2
             },
             tourStatus = statuses.OFF,
-            options = TourConfig.getAll();
+            options = TourConfig.getAll(),
+            currentStepOldIndex = -1;
 
         EventEmitter.mixin(self);
 
@@ -64,7 +65,13 @@
                 return null;
             }
 
-            return stepList[stepList.indexOf(getCurrentStep()) + offset];
+            var stepIndex = stepList.indexOf(getCurrentStep());
+
+            if (stepIndex === -1){ // current step was removed
+                stepIndex = (currentStepOldIndex === 0) ? 0 : (currentStepOldIndex - 1);
+            }
+
+            return stepList[stepIndex + offset];
         }
 
         /**
@@ -233,6 +240,9 @@
         self.removeStep = function (step) {
             var index = stepList.indexOf(step);
             if (index !== -1) {
+                if (getCurrentStep() === step){
+                    currentStepOldIndex = index;
+                }
                 stepList.splice(index, 1);
                 self.emit('stepRemoved', step);
             }
