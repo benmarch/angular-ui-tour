@@ -275,9 +275,17 @@
 
             return handleEvent(step.config('onShow')).then(function () {
 
-                if (step.config('backdrop')) {
-                    uiTourBackdrop.createForElement(step.element, step.config('preventScrolling'), step.config('fixed'));
+                if (!step.config('backdrop')) {
+                    return;
                 }
+
+                var delay = step.config('popupDelay');
+                return $q(function (resolve) {
+                    $timeout(function () {
+                        uiTourBackdrop.createForElement(step.element, step.config('preventScrolling'), step.config('fixed'));
+                        resolve();
+                    }, delay);
+                });
 
             }).then(function () {
 
