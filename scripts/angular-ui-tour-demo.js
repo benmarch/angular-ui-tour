@@ -42,18 +42,24 @@ angular.module('uiTourDemo', ['bm.uiTour', 'ngRoute'])
             console.log('Moving back...', tour);
         };
 
-        $scope.confirmShow = function () {
-            return $q(function (resolve) {
-                if (confirm('Click OK if you don\'t see the popup, and 1 second later you will!')) {
-                    $timeout(resolve, 1000);
-                } else {
+        $scope.shouldMoveOn = function () {
+            return $q(function (resolve, reject) {
+                if (confirm('Click OK to go to the next step. Otherwise you can stay here...if you want.')) {
                     resolve();
+                } else {
+                    reject();
                 }
             });
         };
 
         $scope.startDetached = function () {
             TourService.getTourByName('detachedDemoTour').start();
-        }
+        };
+
+        $scope.goToReviewTour = function() {
+            // DemoState.goToDemo();
+            TourService.getTourByName('demoTour').end();
+            TourService.getTourByName('detachedDemoTour').start();
+        };
 
     }]);

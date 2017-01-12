@@ -170,9 +170,12 @@ available through NPM, but I don't believe it works yet.</em></p>
 </tr>
     <tr tour-step
         tour-step-title="Event Handlers"
-        tour-step-content="You can set event handlers on the tour or tour steps. The content of each option will evaluate on the outer scope so you can define callbacks in higher scopes. They are all async and can return promises."
+        tour-step-content="You can set event handlers on the tour or tour steps.
+                           The content of each option will evaluate on the outer scope so you can define callbacks in higher scopes.
+                           They are all async and can return promises, rejecting a promise generally results in no action
+                           (except with onShown and onHidden since they happen late)."
         tour-step-order="100"
-        tour-step-on-show="confirmShow()">
+        tour-step-on-next="shouldMoveOn()">
         <td></td>
         <td></td>
         <td></td>
@@ -340,7 +343,9 @@ available through NPM, but I don't believe it works yet.</em></p>
         tour-step-content="You can navigate to other views using the ngRouter. Just specify the next/previous path(s) and the corresponding step ID (value of the tour-step attribute)."
         tour-step-order="150"
         tour-step-next-path="other"
-        tour-step-next-step="some-other-step">
+        tour-step-next-step="some-other-step"
+        tour-step-backdrop="true"
+    >
         <td>nextStep</td>
         <td>string</td>
         <td>""</td>

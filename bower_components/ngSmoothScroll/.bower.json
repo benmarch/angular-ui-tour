@@ -33,7 +33,7 @@
     "tag": "v2.0.0",
     "commit": "0af06cec6ffb30f21ed2dcae85bdbd934a6b75d4"
   },
-  "_source": "git://github.com/d-oliveros/angular-smooth-scroll.git",
-  "_target": "~2.0.0",
+  "_source": "https://github.com/d-oliveros/angular-smooth-scroll.git",
+  "_target": "2.0.0",
   "_originalSource": "ngSmoothScroll"
 }

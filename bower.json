@@ -17,9 +17,14 @@
     "angular-ui-tour": "master",
     "angular-route": "~1.4.8",
     "bootstrap-css-only": "~3.3.6",
-    "animate.css": "~3.5.1"
+    "animate.css": "~3.5.1",
+    "angular": "1.5.7"
   },
   "resolutions": {
-    "angular": "1.5.0"
+    "angular": "1.5.7",
+    "angular-route": "1.5.7"
+  },
+  "devDependencies": {
+    "angular-route": "1.5.7"
   }
 }

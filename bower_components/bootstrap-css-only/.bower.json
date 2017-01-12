@@ -31,7 +31,7 @@
     "tag": "v3.3.6",
     "commit": "32aeb07f02dae31414d7e547d98f2aeaf40bd47e"
   },
-  "_source": "git://github.com/fyockm/bootstrap-css-only.git",
+  "_source": "https://github.com/fyockm/bootstrap-css-only.git",
   "_target": "~3.3.6",
   "_originalSource": "bootstrap-css-only"
 }

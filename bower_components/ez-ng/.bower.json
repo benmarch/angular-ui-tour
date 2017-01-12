@@ -67,7 +67,7 @@
     "tag": "0.1.8",
     "commit": "e43ba303062d1ff191e7dce8adf42301f2402468"
   },
-  "_source": "git://github.com/benmarch/ez-ng.git",
-  "_target": "~0.1.7",
+  "_source": "https://github.com/benmarch/ez-ng.git",
+  "_target": "0.1.8",
   "_originalSource": "ez-ng"
 }
