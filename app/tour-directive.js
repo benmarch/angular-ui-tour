@@ -13,7 +13,7 @@ export default function uiTourDirective(TourHelpers) {
             var tour = {
                     name: attrs.uiTour
                 },
-                events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume'.split(' '),
+                events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume onBackdropClick'.split(' '),
                 properties = 'placement animation popupDelay closePopupDelay enable appendToBody popupClass orphan backdrop scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
 
             //Pass interpolated values through

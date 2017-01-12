@@ -5,6 +5,7 @@ export default function uiTourBackdrop(TourConfig, $document, $uibPosition, $win
 
     var service = {},
         $body = angular.element($document[0].body),
+        $backdrop = angular.element($document[0].createElement('div')),
         viewWindow = {
             top: angular.element($document[0].createElement('div')),
             bottom: angular.element($document[0].createElement('div')),
@@ -46,7 +47,7 @@ export default function uiTourBackdrop(TourConfig, $document, $uibPosition, $win
             display: 'none',
             zIndex: TourConfig.get('backdropZIndex')
         });
-        $body.append(backdrop);
+        $backdrop.append(backdrop);
     }
 
     function showBackdrop() {
@@ -110,8 +111,9 @@ export default function uiTourBackdrop(TourConfig, $document, $uibPosition, $win
     createBackdropComponent(viewWindow.bottom);
     createBackdropComponent(viewWindow.left);
     createBackdropComponent(viewWindow.right);
+    $body.append($backdrop);
 
-    service.createForElement = function (element, shouldPreventScrolling, isFixedElement) {
+    service.createForElement = function (element, shouldPreventScrolling, isFixedElement, onClick) {
         positionBackdrop(element, isFixedElement);
         showBackdrop();
 
@@ -122,12 +124,21 @@ export default function uiTourBackdrop(TourConfig, $document, $uibPosition, $win
 
         if (shouldPreventScrolling) {
             service.shouldPreventScrolling(true);
+        } else {
+            service.shouldPreventScrolling(false);
+        }
+
+        if (onClick) {
+            angular.element($backdrop).on('click', onClick);
+        } else {
+            angular.element($backdrop).off('click');
         }
     };
 
     service.hide = function () {
         hideBackdrop();
         service.shouldPreventScrolling(false);
+        angular.element($backdrop).off('click');
         angular.element($window).off('resize', onResize);
     };
 

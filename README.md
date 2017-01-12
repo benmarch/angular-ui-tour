@@ -96,6 +96,7 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 | onShown         | function | null                      | Called just after popup is shown                                                                                                                                                                                                             |
 | onHide          | function | null                      | Called just before popup is hidden                                                                                                                                                                                                           |
 | onHidden        | function | null                      | Called just after popup is hidden                                                                                                                                                                                                            |
+| onBackdropClick | function | null                      | Called when user clicks on the backdrop. Useful for ending the tour early.                                                                                                                                                                   |
 
 **Important:** If a lifecycle hook event is overridden in a config block, the function **must** return a promise.
  If it is overridden in the directive declaration, it will be wrapped in a promise automatically. If the function returns
