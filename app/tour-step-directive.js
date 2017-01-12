@@ -36,7 +36,7 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
                         }
                     },
                     events = 'onShow onShown onHide onHidden onNext onPrev onBackdropClick'.split(' '),
-                    options = 'content title animation placement backdrop orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
+                    options = 'content title animation placement backdrop backdropBorderRadius orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
                     tooltipAttrs = 'animation appendToBody placement popupDelay popupCloseDelay'.split(' '),
                     orderWatch,
                     enabledWatch;

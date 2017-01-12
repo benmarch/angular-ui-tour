@@ -6,30 +6,40 @@ export default function uiTourBackdrop(TourConfig, $document, $uibPosition, $win
     var service = {},
         $body = angular.element($document[0].body),
         $backdrop = angular.element($document[0].createElement('div')),
-        viewWindow = {
-            top: angular.element($document[0].createElement('div')),
-            bottom: angular.element($document[0].createElement('div')),
-            left: angular.element($document[0].createElement('div')),
-            right: angular.element($document[0].createElement('div'))
-        },
+        viewWindow = {},
         preventDefault = function (e) {
             e.preventDefault();
         },
         onResize;
 
-    (function createNoScrollingClass() {
-        var name = '.no-scrolling',
-            rules = 'height: 100%; overflow: hidden;',
-            style = $document[0].createElement('style');
+    function createStyles(styles) {
+        const styleElement = document.createElement('style');
 
-        style.type = 'text/css';
-        $document[0].getElementsByTagName('head')[0].appendChild(style);
+        styleElement.type = 'text/css';
+        styleElement.innerHTML = styles;
 
-        if (!style.sheet && !style.sheet.insertRule) {
-            (style.styleSheet || style.sheet).addRule(name, rules);
-        } else {
-            style.sheet.insertRule(name + '{' + rules + '}', 0);
-        }
+        angular.element($document[0].head).append(styleElement);
+
+        return function cleanup() {
+            angular.element(styleElement).remove();
+        };
+    }
+
+    (function createSvgClipPath() {
+        var element = angular.element(`
+            <svg width="0" height="0">
+                <defs>
+                    <clipPath id="invertedCorner" clipPathUnits="objectBoundingBox">
+                        <path d="M1 0
+                                 Q 0 0 0 1
+                                 L0 0
+                                 Z"/>
+                    </clipPath>
+                </defs>
+            </svg>
+        `);
+
+        $document[0].body.appendChild(element[0]);
     }());
 
     function preventScrolling() {
@@ -42,28 +52,26 @@ export default function uiTourBackdrop(TourConfig, $document, $uibPosition, $win
         $body.off('touchmove', preventDefault);
     }
 
-    function createBackdropComponent(backdrop) {
-        backdrop.addClass('tour-backdrop').css({
+    function createBackdropComponent(name) {
+        const backdrop = angular.element($document[0].createElement('div'));
+
+        backdrop.addClass(`tour-backdrop tour-backdrop-${name}`).css({
             display: 'none',
             zIndex: TourConfig.get('backdropZIndex')
         });
+
+        viewWindow[name] = backdrop;
         $backdrop.append(backdrop);
     }
 
     function showBackdrop() {
-        viewWindow.top.css('display', 'block');
-        viewWindow.bottom.css('display', 'block');
-        viewWindow.left.css('display', 'block');
-        viewWindow.right.css('display', 'block');
+        angular.forEach(viewWindow, component => component.css('display', 'block'));
     }
     function hideBackdrop() {
-        viewWindow.top.css('display', 'none');
-        viewWindow.bottom.css('display', 'none');
-        viewWindow.left.css('display', 'none');
-        viewWindow.right.css('display', 'none');
+        angular.forEach(viewWindow, component => component.css('display', 'none'));
     }
 
-    function positionBackdrop(element, isFixedElement) {
+    function positionBackdrop(element, isFixedElement, borderRadius = 0) {
         var position,
             viewportPosition,
             bodyPosition,
@@ -105,20 +113,60 @@ export default function uiTourBackdrop(TourConfig, $document, $uibPosition, $win
             height: position.height + 'px',
             left: position.left + position.width + 'px'
         });
+
+        viewWindow.cornerTL.css({
+            position: isFixedElement ? 'fixed' : 'absolute',
+            top: position.top + 'px',
+            left: position.left + 'px',
+            height: borderRadius + 'px',
+            width: borderRadius + 'px',
+            '-webkit-clip-path': 'url(#invertedCorner)',
+            clipPath: 'url(#invertedCorner)'
+        });
+        viewWindow.cornerBL.css({
+            position: isFixedElement ? 'fixed' : 'absolute',
+            top: position.top + position.height - borderRadius + 'px',
+            left: position.left + 'px',
+            height: borderRadius + 'px',
+            width: borderRadius + 'px',
+            transform: 'rotate(-90deg)',
+            '-webkit-clip-path': 'url(#invertedCorner)',
+            clipPath: 'url(#invertedCorner)'
+        });
+        viewWindow.cornerTR.css({
+            position: isFixedElement ? 'fixed' : 'absolute',
+            top: position.top + 'px',
+            left: position.left + position.width - borderRadius + 'px',
+            height: borderRadius + 'px',
+            width: borderRadius + 'px',
+            transform: 'rotate(90deg)',
+            '-webkit-clip-path': 'url(#invertedCorner)',
+            clipPath: 'url(#invertedCorner)'
+        });
+        viewWindow.cornerBR.css({
+            position: isFixedElement ? 'fixed' : 'absolute',
+            top: position.top + position.height - borderRadius + 'px',
+            left: position.left + position.width - borderRadius + 'px',
+            height: borderRadius + 'px',
+            width: borderRadius + 'px',
+            transform: 'rotate(180deg)',
+            '-webkit-clip-path': 'url(#invertedCorner)',
+            clipPath: 'url(#invertedCorner)'
+        });
     }
 
-    createBackdropComponent(viewWindow.top);
-    createBackdropComponent(viewWindow.bottom);
-    createBackdropComponent(viewWindow.left);
-    createBackdropComponent(viewWindow.right);
+    angular.forEach('top right bottom left cornerTL cornerTR cornerBR cornerBL'.split(' '), component => {
+        createBackdropComponent(component);
+    });
     $body.append($backdrop);
+    createStyles('.no-scrolling { height: 100%; overflow: hidden; }');
 
-    service.createForElement = function (element, shouldPreventScrolling, isFixedElement, onClick) {
-        positionBackdrop(element, isFixedElement);
+    service.createForElement = function (element, shouldPreventScrolling, isFixedElement, onClick, borderRadius) {
+        positionBackdrop(element, isFixedElement, borderRadius);
         showBackdrop();
 
         onResize = function () {
-            positionBackdrop(element, isFixedElement);
+            positionBackdrop(element, isFixedElement, borderRadius);
         };
         angular.element($window).on('resize', onResize);
 
