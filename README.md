@@ -97,7 +97,7 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 | onHide          | function | null                      | Called just before popup is hidden                                                                                                                                                                                                           |
 | onHidden        | function | null                      | Called just after popup is hidden                                                                                                                                                                                                            |
 
-**Important:** If a lifecyle hook event is overridden in a config block, the function **must** return a promise.
+**Important:** If a lifecycle hook event is overridden in a config block, the function **must** return a promise.
  If it is overridden in the directive declaration, it will be wrapped in a promise automatically. If the function returns
  a promise, it will wait until it is resolved before moving on.
 
@@ -106,6 +106,9 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 Tour steps are extensions of [Angular UI's Tooltips](https://angular-ui.github.io/bootstrap/#/tooltip) and therefore all
 options are available. Although there are 3 types of Tooltips, there is only one type of Tour Step. In addition, almost
 all of the Tour options can be overridden by individual tour steps, as well as additional options that can be changed.
+
+As a convenience for developers, tour steps can be given IDs by supplying a value to the `tour-step` attribute: `tour-step="myStep"`.
+Please note that the element ID will **not** be used as the step ID. See the multi-page tour example below for example.
 
 To configure on a tour step declaration, use `tour-step-<option-name>="optionValue"`
 
