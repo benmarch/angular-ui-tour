@@ -125,7 +125,7 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
      * @returns {boolean}
      */
     function isNext() {
-        return !!(getNextStep() || getCurrentStep()) && getCurrentStep().config('nextPath');
+        return !!(getNextStep() || (getCurrentStep() && getCurrentStep().config('nextPath')));
     }
 
     /**
@@ -134,7 +134,7 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
      * @returns {boolean}
      */
     function isPrev() {
-        return !!(getPrevStep() || getCurrentStep()) && getCurrentStep().config('prevPath');
+        return !!(getPrevStep() || (getCurrentStep() && getCurrentStep().config('prevPath')));
     }
 
     /**
@@ -538,6 +538,11 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
                     uiTourBackdrop.hide();
                 }
 
+                //if the next/prev step does not prevent scrolling, allow it
+                if (getCurrentStep() && !getCurrentStep().config('preventScrolling')) {
+                    uiTourBackdrop.shouldPreventScrolling(false);
+                }
+
             }).then(function () {
 
                 if (getCurrentStep()) {
@@ -560,6 +565,10 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
                 //if the next/prev step does not have a backdrop, hide it
                 if (getCurrentStep().config('backdrop') && !stepToShow.config('backdrop')) {
                     uiTourBackdrop.hide();
+                }
+                //if the next/prev step does not prevent scrolling, allow it
+                if (getCurrentStep().config('backdrop') && !stepToShow.config('preventScrolling')) {
+                    uiTourBackdrop.shouldPreventScrolling(false);
                 }
                 setCurrentStep(stepToShow);
                 self.emit('stepChanged', getCurrentStep());

@@ -121,14 +121,22 @@ export default function uiTourBackdrop(TourConfig, $document, $uibPosition, $win
         angular.element($window).on('resize', onResize);
 
         if (shouldPreventScrolling) {
-            preventScrolling();
+            service.shouldPreventScrolling(true);
         }
     };
 
     service.hide = function () {
         hideBackdrop();
-        allowScrolling();
+        service.shouldPreventScrolling(false);
         angular.element($window).off('resize', onResize);
+    };
+
+    service.shouldPreventScrolling = function (shouldPreventScrolling = true) {
+        if (shouldPreventScrolling) {
+            preventScrolling();
+        } else {
+            allowScrolling();
+        }
     };
 
     return service;
