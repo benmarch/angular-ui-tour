@@ -134,7 +134,8 @@ available through NPM, but I don't believe it works yet.</em></p>
         tour-step-title="Backdrop"
         tour-step-content="Highlight your element! This technically creates a clone and positions it on top of the defining element, so watch for CSS that might be too specific."
         tour-step-order="80"
-        tour-step-backdrop="true">
+        tour-step-backdrop="true"
+        tour-step-backdrop-border-radius="10">
         <td>backdrop</td>
         <td>boolean</td>
         <td>false</td>
@@ -342,8 +343,7 @@ available through NPM, but I don't believe it works yet.</em></p>
         tour-step-title="Navigation"
         tour-step-content="You can navigate to other views using the ngRouter. Just specify the next/previous path(s) and the corresponding step ID (value of the tour-step attribute)."
         tour-step-order="150"
-        tour-step-next-path="other"
-        tour-step-next-step="some-other-step"
+        tour-step-on-next="navigateToAndWaitFor(tour, 'other', 'some-other-step')"
         tour-step-backdrop="true"
     >
         <td>nextStep</td>
@@ -361,8 +361,7 @@ available through NPM, but I don't believe it works yet.</em></p>
         tour-step-title="Navigation"
         tour-step-content="And we're baaaaaack!"
         tour-step-order="160"
-        tour-step-prev-path="other"
-        tour-step-prev-step="some-other-step">
+        tour-step-on-prev="navigateToAndWaitFor(tour, 'other', 'some-other-step')">
         <td>prevStep</td>
         <td>string</td>
         <td>""</td>

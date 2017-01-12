@@ -3,8 +3,6 @@
      tour-step-content="Notice how we navigated to another view and then showed this step."
      tour-step-order="155"
      tour-step-placement="top"
-     tour-step-prev-path="docs"
-     tour-step-prev-step="navigation-next-step"
-     tour-step-next-path="docs"
-     tour-step-next-step="navigation-prev-step"
+     tour-step-on-prev="navigateToAndWaitFor(tour, 'docs', 'navigation-next-step')"
+     tour-step-on-next="navigateToAndWaitFor(tour, 'docs', 'navigation-prev-step')"
      tour-step-backdrop="true">This is the other view I was telling you about!</div>
