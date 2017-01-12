@@ -123,13 +123,14 @@ To configure on a tour step declaration, use `tour-step-<option-name>="optionVal
 | order            | number   | null                      | The order in which the step will be displayed. Although it is optional, the behavior is undefined if this is not explicitly set.                            |
 | enabled          | boolean  | true                      | This will enable or disable the tour step.                                                                                                                  |
 | fixed            | boolean  | false                     | Is the element fixed (does not discover automatically ATM).                                                                                                 |      
-| preventScrolling | boolean  | false                     | Should page scrolling be prevented when popup is shown (I don't recommend using this, but there are times when it is useful). Only works with a backdrop.   |
 | scrollIntoView   | boolean  | true                      | Should the tour scroll the page so that the tour step is visible once it is shown. Set to false when you don't want any scrolling to occur.                 |
+| templateUrl      | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                           |
+| **Deprecated:**  |          |                           | Will be removed in 1.0                                                                                                                                      |
+| preventScrolling | boolean  | false                     | Should page scrolling be prevented when popup is shown (Deprecated, far too buggy. Feel free to implement this yourself). Only works with a backdrop.       |
 | nextStep         | string   | ""                        | If the next step is on a different page, set this to declare the name of the next step.                                                                     |
 | nextPath         | string   | ""                        | If the next step is on a different page, set this to the path of the next page. If useUiRouter is true, this will be the state name.                        |
 | prevStep         | string   | ""                        | If the previous step is on a different page, set this to declare the name of the previous step.                                                             |
 | prevPath         | string   | ""                        | If the previous step is on a different page, set this to the path of the previous page. If useUiRouter is true, this will be the state name.                |
-| templateUrl      | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                           |
 
 **Best practice:** always set the order so that the steps display in the expected order. Steps with the same order will 
 display consecutively, but the order among them is unpredictable. At first, use increments of 10 so that if you need to add steps
@@ -177,6 +178,7 @@ Examples:
 </body>
 
 
+<!-- THIS EXAMPLE IS DEPRECATED AS OF 0.7.0. PLEASE SEE MULTI-PAGE TOURS SECTION BELOW -->
 <!-- multi-page tour -->
 <!-- layout -->
 <body ui-tour>
@@ -201,6 +203,7 @@ scope of the uiTour directive, and can be required as `TourController` in direct
 | end()     | Ends the tour, calling start() again will start from the beginning. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                |
 | pause()   | Pauses the tour by hiding the current step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                                        |
 | resume()  | Resumes the tour from the last shown step if it is paused. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                          |
+| waitFor() | Pauses the tour and resumes it once the provided step is registered. <br> **Parameters:** _stepId_ ID of the awaited step.  <br> **Returns:** _Promise_ Rejects immediately so that execution stops.                                        |
 | next()    | Hides the current step and shows the next one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after next step is shown.                                                                                                 |
 | prev()    | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
 | goTo()    | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
@@ -243,6 +246,46 @@ tour.on('<notificationName>', function (data) {
 | stepRemoved       | After step is removed from step list                     | removed step  |
 | stepsReordered    | After all steps have been ordered properly               | null          |
 | stepChanged       | After previous step is hidden, before next step is shown | next step     |
+
+## Multi-page Tours
+
+As of 0.7.0, the strong integration with ngRoute and UIRouter is deprecated, and the navigation API has been significantly simplified.
+If you want to create a tour that spans multiple pages (in reality these are multiple _views_ as there is no built-in way to
+resume a tour after a page reload) there is a very simple API. In fact, this API can be used to asynchronously load more tour
+steps on demand, even if no navigation occurs.
+
+Using a step's onNext or onPrev lifecycle hook, you can implement your navigation logic, and just return `tour.waitFor('stepOnAnotherPage')'`.
+
+Example:
+```js
+function MyTourController($scope, $location) {
+    $scope.navigateToAndWaitFor = function (tour, path, stepId) {
+        $location.path(path);
+        return tour.waitFor(stepId);
+    }
+}
+```
+```html
+<!-- index.html -->
+<body ui-tour ng-controller="MyTourController">
+    <ng-view></ng-view>
+</body>
+
+<!-- page1.html -->
+<div tour-step="stepOne" tour-step-on-next="navigateToAndWaitFor(tour, 'page2', 'stepTwo')"></div>
+
+<!-- page2.html -->
+<div tour-step="stepTwo" tour-step-on-prev="navigateToAndWaitFor(tour, 'page1', 'stepOne')"></div>
+```
+
+If you are using UIRouter, you would just replace `$location.path()` with `$state.go()` (or whatever works best).
+
+Effectively, this pauses the tour and waits for a step with the provided step ID to be registered, and then resumes the
+tour starting at that step. It does not care where the step comes from or how it is loaded, as long as it is loaded _after_
+`tour.waitFor()` is called.
+
+It is important to either return `tour.waitFor()` or return `$q.reject()`, otherwise, if there is another step on the current
+page, it will show instead of the intended one.
 
 ## Multiple Tours
 
