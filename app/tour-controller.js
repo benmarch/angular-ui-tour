@@ -125,7 +125,8 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
      * @returns {boolean}
      */
     function isNext() {
-        return !!(getNextStep() || getCurrentStep()) && getCurrentStep().config('nextPath');
+        //not using .config('onNext') because we are looking only for config on the step and not the tour
+        return !!(getNextStep() || (getCurrentStep() && (getCurrentStep().config('nextPath') || getCurrentStep().onNext)));
     }
 
     /**
@@ -134,7 +135,8 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
      * @returns {boolean}
      */
     function isPrev() {
-        return !!(getPrevStep() || getCurrentStep()) && getCurrentStep().config('prevPath');
+        //not using .config('onPrev') because we are looking only for config on the step and not the tour
+        return !!(getPrevStep() || (getCurrentStep() && (getCurrentStep().config('prevPath') || getCurrentStep().onPrev)));
     }
 
     /**
@@ -275,7 +277,7 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
         return handleEvent(step.config('onShow')).then(function () {
 
             if (step.config('backdrop')) {
-                uiTourBackdrop.createForElement(step.element, step.config('preventScrolling'), step.config('fixed'));
+                uiTourBackdrop.createForElement(step.element, step.config('preventScrolling'), step.config('fixed'), step.config('onBackdropClick'), step.config('backdropBorderRadius'));
             }
 
         }).then(function () {
@@ -330,23 +332,6 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
             self.emit('stepHidden', step);
 
         });
-    };
-
-    /**
-     * Tells the tour to pause while ngView loads
-     *
-     * @protected
-     * @param waitForStep
-     */
-    self.waitFor = function (waitForStep) {
-        self.pause();
-        resumeWhenFound = function (step) {
-            if (step.stepId === waitForStep) {
-                setCurrentStep(stepList[stepList.indexOf(step)]);
-                self.resume();
-                resumeWhenFound = null;
-            }
-        };
     };
 
     /**
@@ -538,6 +523,11 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
                     uiTourBackdrop.hide();
                 }
 
+                //if the next/prev step does not prevent scrolling, allow it
+                if (getCurrentStep() && !getCurrentStep().config('preventScrolling')) {
+                    uiTourBackdrop.shouldPreventScrolling(false);
+                }
+
             }).then(function () {
 
                 if (getCurrentStep()) {
@@ -561,10 +551,32 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
                 if (getCurrentStep().config('backdrop') && !stepToShow.config('backdrop')) {
                     uiTourBackdrop.hide();
                 }
+                //if the next/prev step does not prevent scrolling, allow it
+                if (getCurrentStep().config('backdrop') && !stepToShow.config('preventScrolling')) {
+                    uiTourBackdrop.shouldPreventScrolling(false);
+                }
                 setCurrentStep(stepToShow);
                 self.emit('stepChanged', getCurrentStep());
                 return self.showStep(stepToShow);
             });
+    };
+
+    /**
+     * Tells the tour to pause until a specific step is added
+     *
+     * @public
+     * @param waitForStep
+     */
+    self.waitFor = function (waitForStep) {
+        resumeWhenFound = function (step) {
+            if (step.stepId === waitForStep) {
+                setCurrentStep(stepList[stepList.indexOf(step)]);
+                self.resume();
+                resumeWhenFound = null;
+            }
+        };
+        //must reject so that when used in a lifecycle hook the execution stops
+        return self.pause().then($q.reject);
     };
 
     /**

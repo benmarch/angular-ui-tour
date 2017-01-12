@@ -56,8 +56,10 @@ Add some styles for the backdrop (feel free to style it however you want):
 ```css
 .tour-backdrop {
     background-color: rgba(0, 0, 0, 0.5);
+    fill: rgba(0, 0, 0, 0.5);
 }
 ```
+**Note:** if you give the backdrop a background color, also give it a fill color because it uses SVG for rounded corners
     
 ## Tour Configuration
 
@@ -69,35 +71,37 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 
 ### Options
 
-|      Name       |   Type   | Default Value             |                     Description                                                                                                                                                                                                              |
-| --------------  | -------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| placement       | string   | "top"                     | Where the popup should display relative to the element.                                                                                                                                                                                      |
-| animation       | boolean  | true                      | Should the popup fade in/out.                                                                                                                                                                                                                |
-| popupDelay      | number   | 1                         | Time to delay (in ms) between when the popup is requested to show and when it is shown. **Note** must be positive for multi-page tours to work.                                                                                              |
-| closePopupDelay | number   | 0                         | Time to delay (in ms) between when the popup is requested to hide and when it is hidden.                                                                                                                                                     |
-| appendToBody    | boolean  | false                     | Should popups be appended to body (true) or the parent element (false).                                                                                                                                                                      |
-| scrollOffset    | number   | 100                       | Number of pixels between the top of the viewport and the top of tour step after scrolling                                                                                                                                                    |
-| popupClass      | string   | ""                        | Adds additional classes to the popup.                                                                                                                                                                                                        |
-| orphan          | boolean  | false                     | Should the popup display in the center of the viewport (true) or by the element (false).                                                                                                                                                     |
-| backdrop        | boolean  | false                     | Should there be a backdrop behind the element. **Note** this can be flaky, I recommend using appendToBody with this to prevent unexpected stacking issues. As of 0.5.0, it is up to you to style the backdrop (class name "tour-backdrop")   |
-| backdropZIndex  | number   | 10000                     | Z-index of the backdrop. Popups will be positioned relative to this.                                                                                                                                                                         |
-| templateUrl     | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                                                                                                            |
-| useUiRouter     | boolean  | false                     | When navigating with nextPath and prevPath (see below), use UI Router states instead of Angular paths.                                                                                                                                       |
-| useHotkeys      | boolean  | false                     | Allows the use of right/left keyboard keys to navigate through steps, and esc key to end the tour.                                                                                                                                           |
-|                 |          |                           |                                                                                                                                                                                                                                              |    
-| onReady         | function | null                      | Called when tour is initialized and attached to the scope                                                                                                                                                                                    |
-| onStart         | function | null                      | Called when tour is started, before first popup is shown                                                                                                                                                                                     |
-| onEnd           | function | null                      | Called when tour is ended, after last popup is hidden                                                                                                                                                                                        |
-| onPause         | function | null                      | Called when tour is paused, before current popup is hidden                                                                                                                                                                                   |
-| onResume        | function | null                      | Called when tour is resumed, before current popup is shown                                                                                                                                                                                   |
-| onNext          | function | null                      | Called when next step is requested, before current popup is hidden                                                                                                                                                                           |
-| onPrev          | function | null                      | Called when previous step is requested, before current popup is hidden                                                                                                                                                                       |
-| onShow          | function | null                      | Called just before popup is shown                                                                                                                                                                                                            |
-| onShown         | function | null                      | Called just after popup is shown                                                                                                                                                                                                             |
-| onHide          | function | null                      | Called just before popup is hidden                                                                                                                                                                                                           |
-| onHidden        | function | null                      | Called just after popup is hidden                                                                                                                                                                                                            |
+|      Name            |   Type   | Default Value             |                     Description                                                                                                                                                                                                              |
+| -------------------  | -------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| placement            | string   | "top"                     | Where the popup should display relative to the element.                                                                                                                                                                                      |
+| animation            | boolean  | true                      | Should the popup fade in/out.                                                                                                                                                                                                                |
+| popupDelay           | number   | 1                         | Time to delay (in ms) between when the popup is requested to show and when it is shown. **Note** must be positive for multi-page tours to work.                                                                                              |
+| closePopupDelay      | number   | 0                         | Time to delay (in ms) between when the popup is requested to hide and when it is hidden.                                                                                                                                                     |
+| appendToBody         | boolean  | false                     | Should popups be appended to body (true) or the parent element (false).                                                                                                                                                                      |
+| scrollOffset         | number   | 100                       | Number of pixels between the top of the viewport and the top of tour step after scrolling                                                                                                                                                    |
+| popupClass           | string   | ""                        | Adds additional classes to the popup.                                                                                                                                                                                                        |
+| orphan               | boolean  | false                     | Should the popup display in the center of the viewport (true) or by the element (false).                                                                                                                                                     |
+| backdrop             | boolean  | false                     | Should there be a backdrop behind the element. **Note** this can be flaky, I recommend using appendToBody with this to prevent unexpected stacking issues. As of 0.5.0, it is up to you to style the backdrop (class name "tour-backdrop")   |
+| backdropZIndex       | number   | 10000                     | Z-index of the backdrop. Popups will be positioned relative to this.                                                                                                                                                                         |
+| backdropBorderRadius | number   | 0                         | If your target element has a border radius, add it here so that the backdrop conforms to it.                                                                                                                                                 |
+| templateUrl          | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                                                                                                            |
+| useUiRouter          | boolean  | false                     | When navigating with nextPath and prevPath (see below), use UI Router states instead of Angular paths.                                                                                                                                       |
+| useHotkeys           | boolean  | false                     | Allows the use of right/left keyboard keys to navigate through steps, and esc key to end the tour.                                                                                                                                           |
+|                      |          |                           |                                                                                                                                                                                                                                              |    
+| onReady              | function | null                      | Called when tour is initialized and attached to the scope                                                                                                                                                                                    |
+| onStart              | function | null                      | Called when tour is started, before first popup is shown                                                                                                                                                                                     |
+| onEnd                | function | null                      | Called when tour is ended, after last popup is hidden                                                                                                                                                                                        |
+| onPause              | function | null                      | Called when tour is paused, before current popup is hidden                                                                                                                                                                                   |
+| onResume             | function | null                      | Called when tour is resumed, before current popup is shown                                                                                                                                                                                   |
+| onNext               | function | null                      | Called when next step is requested, before current popup is hidden                                                                                                                                                                           |
+| onPrev               | function | null                      | Called when previous step is requested, before current popup is hidden                                                                                                                                                                       |
+| onShow               | function | null                      | Called just before popup is shown                                                                                                                                                                                                            |
+| onShown              | function | null                      | Called just after popup is shown                                                                                                                                                                                                             |
+| onHide               | function | null                      | Called just before popup is hidden                                                                                                                                                                                                           |
+| onHidden             | function | null                      | Called just after popup is hidden                                                                                                                                                                                                            |
+| onBackdropClick      | function | null                      | Called when user clicks on the backdrop. Useful for ending the tour early.                                                                                                                                                                   |
 
-**Important:** If a lifecyle hook event is overridden in a config block, the function **must** return a promise.
+**Important:** If a lifecycle hook event is overridden in a config block, the function **must** return a promise.
  If it is overridden in the directive declaration, it will be wrapped in a promise automatically. If the function returns
  a promise, it will wait until it is resolved before moving on.
 
@@ -106,6 +110,9 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 Tour steps are extensions of [Angular UI's Tooltips](https://angular-ui.github.io/bootstrap/#/tooltip) and therefore all
 options are available. Although there are 3 types of Tooltips, there is only one type of Tour Step. In addition, almost
 all of the Tour options can be overridden by individual tour steps, as well as additional options that can be changed.
+
+As a convenience for developers, tour steps can be given IDs by supplying a value to the `tour-step` attribute: `tour-step="myStep"`.
+Please note that the element ID will **not** be used as the step ID. See the multi-page tour example below for example.
 
 To configure on a tour step declaration, use `tour-step-<option-name>="optionValue"`
 
@@ -118,13 +125,14 @@ To configure on a tour step declaration, use `tour-step-<option-name>="optionVal
 | order            | number   | null                      | The order in which the step will be displayed. Although it is optional, the behavior is undefined if this is not explicitly set.                            |
 | enabled          | boolean  | true                      | This will enable or disable the tour step.                                                                                                                  |
 | fixed            | boolean  | false                     | Is the element fixed (does not discover automatically ATM).                                                                                                 |      
-| preventScrolling | boolean  | false                     | Should page scrolling be prevented when popup is shown (I don't recommend using this, but there are times when it is useful). Only works with a backdrop.   |
 | scrollIntoView   | boolean  | true                      | Should the tour scroll the page so that the tour step is visible once it is shown. Set to false when you don't want any scrolling to occur.                 |
+| templateUrl      | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                           |
+| **Deprecated:**  |          |                           | Will be removed in 1.0                                                                                                                                      |
+| preventScrolling | boolean  | false                     | Should page scrolling be prevented when popup is shown (Deprecated, far too buggy. Feel free to implement this yourself). Only works with a backdrop.       |
 | nextStep         | string   | ""                        | If the next step is on a different page, set this to declare the name of the next step.                                                                     |
 | nextPath         | string   | ""                        | If the next step is on a different page, set this to the path of the next page. If useUiRouter is true, this will be the state name.                        |
 | prevStep         | string   | ""                        | If the previous step is on a different page, set this to declare the name of the previous step.                                                             |
 | prevPath         | string   | ""                        | If the previous step is on a different page, set this to the path of the previous page. If useUiRouter is true, this will be the state name.                |
-| templateUrl      | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                           |
 
 **Best practice:** always set the order so that the steps display in the expected order. Steps with the same order will 
 display consecutively, but the order among them is unpredictable. At first, use increments of 10 so that if you need to add steps
@@ -172,6 +180,7 @@ Examples:
 </body>
 
 
+<!-- THIS EXAMPLE IS DEPRECATED AS OF 0.7.0. PLEASE SEE MULTI-PAGE TOURS SECTION BELOW -->
 <!-- multi-page tour -->
 <!-- layout -->
 <body ui-tour>
@@ -196,6 +205,7 @@ scope of the uiTour directive, and can be required as `TourController` in direct
 | end()     | Ends the tour, calling start() again will start from the beginning. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                |
 | pause()   | Pauses the tour by hiding the current step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                                        |
 | resume()  | Resumes the tour from the last shown step if it is paused. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                          |
+| waitFor() | Pauses the tour and resumes it once the provided step is registered. <br> **Parameters:** _stepId_ ID of the awaited step.  <br> **Returns:** _Promise_ Rejects immediately so that execution stops.                                        |
 | next()    | Hides the current step and shows the next one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after next step is shown.                                                                                                 |
 | prev()    | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
 | goTo()    | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
@@ -238,6 +248,46 @@ tour.on('<notificationName>', function (data) {
 | stepRemoved       | After step is removed from step list                     | removed step  |
 | stepsReordered    | After all steps have been ordered properly               | null          |
 | stepChanged       | After previous step is hidden, before next step is shown | next step     |
+
+## Multi-page Tours
+
+As of 0.7.0, the strong integration with ngRoute and UIRouter is deprecated, and the navigation API has been significantly simplified.
+If you want to create a tour that spans multiple pages (in reality these are multiple _views_ as there is no built-in way to
+resume a tour after a page reload) there is a very simple API. In fact, this API can be used to asynchronously load more tour
+steps on demand, even if no navigation occurs.
+
+Using a step's onNext or onPrev lifecycle hook, you can implement your navigation logic, and just return `tour.waitFor('stepOnAnotherPage')'`.
+
+Example:
+```js
+function MyTourController($scope, $location) {
+    $scope.navigateToAndWaitFor = function (tour, path, stepId) {
+        $location.path(path);
+        return tour.waitFor(stepId);
+    }
+}
+```
+```html
+<!-- index.html -->
+<body ui-tour ng-controller="MyTourController">
+    <ng-view></ng-view>
+</body>
+
+<!-- page1.html -->
+<div tour-step="stepOne" tour-step-on-next="navigateToAndWaitFor(tour, 'page2', 'stepTwo')"></div>
+
+<!-- page2.html -->
+<div tour-step="stepTwo" tour-step-on-prev="navigateToAndWaitFor(tour, 'page1', 'stepOne')"></div>
+```
+
+If you are using UIRouter, you would just replace `$location.path()` with `$state.go()` (or whatever works best).
+
+Effectively, this pauses the tour and waits for a step with the provided step ID to be registered, and then resumes the
+tour starting at that step. It does not care where the step comes from or how it is loaded, as long as it is loaded _after_
+`tour.waitFor()` is called.
+
+It is important to either return `tour.waitFor()` or return `$q.reject()`, otherwise, if there is another step on the current
+page, it will show instead of the intended one.
 
 ## Multiple Tours
 

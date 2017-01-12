@@ -15,7 +15,7 @@ module.exports = {
         "array-bracket-spacing": ["error", "never"],
         "array-callback-return": "error",
         "arrow-body-style": "error",
-        "arrow-parens": "error",
+        "arrow-parens": "off",
         "arrow-spacing": "error",
         "block-scoped-var": "error",
         "block-spacing": [
@@ -111,7 +111,7 @@ module.exports = {
         "no-extra-bind": "error",
         "no-extra-boolean-cast": "off",
         "no-extra-label": "error",
-        "no-extra-parens": "error",
+        "no-extra-parens": "off",
         "no-floating-decimal": "error",
         "no-implicit-globals": "error",
         "no-implied-eval": "error",
