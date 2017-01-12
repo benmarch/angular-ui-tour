@@ -56,8 +56,10 @@ Add some styles for the backdrop (feel free to style it however you want):
 ```css
 .tour-backdrop {
     background-color: rgba(0, 0, 0, 0.5);
+    fill: rgba(0, 0, 0, 0.5);
 }
 ```
+**Note:** if you give the backdrop a background color, also give it a fill color because it uses SVG for rounded corners
     
 ## Tour Configuration
 
