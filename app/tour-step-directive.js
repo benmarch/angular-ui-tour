@@ -46,8 +46,7 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
                 //check if this step belongs to another tour
                 if (attrs[TourHelpers.getAttrName('belongsTo')]) {
                     ctrl = uiTourService.getTourByName(attrs[TourHelpers.getAttrName('belongsTo')]);
-                }
-                else if (uiTourCtrl) {
+                } else if (uiTourCtrl) {
                     ctrl = uiTourCtrl;
                 }
 
@@ -76,8 +75,7 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
                     step.enabled = isEnabled !== 'false';
                     if (step.enabled) {
                         ctrl.addStep(step);
-                    }
-                    else {
+                    } else {
                         ctrl.removeStep(step);
                     }
                 });
@@ -120,8 +118,7 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
                 if (ctrl.initialized) {
                     configureInheritedProperties();
                     ctrl.addStep(step);
-                }
-                else {
+                } else {
                     ctrl.once('initialized', function () {
                         configureInheritedProperties();
                         ctrl.addStep(step);
