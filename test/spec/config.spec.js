@@ -1,34 +1,37 @@
-/* global jasmine: false, inject: false, angular: false*/
-
-'use strict';
+import angular from 'angular';
 
 describe('Tour Config', function () {
     var $compile,
         $templateCache,
         $rootScope,
+        $q,
         TourConfig,
         digestAfter = function (fn, argumentArray) {
             fn.apply(null, argumentArray || []);
             $rootScope.$digest();
         };
 
-    beforeEach(module('bm.uiTour', 'test.templates'));
+    beforeEach(angular.mock.module('bm.uiTour'));
 
-    beforeEach(inject(function (_$compile_, _$templateCache_, _$rootScope_, _TourConfig_) {
+    beforeEach(angular.mock.inject(function (_$compile_, _$templateCache_, _$rootScope_, _$q_, _TourConfig_) {
         $compile = _$compile_;
         $templateCache = _$templateCache_;
         $rootScope = _$rootScope_;
+        $q = _$q_;
         TourConfig = _TourConfig_;
     }));
 
     it('should initialize a new tour with default options when no options are passed', function () {
         //given
-        var scope = $rootScope.$new();
+        var scope = $rootScope.$new(),
+            config;
+
         $compile($templateCache.get('tour-with-no-config.html'))(scope);
 
         //when
         $rootScope.$digest();
-        var config = TourConfig.getAll();
+        config = TourConfig.getAll();
+
         config.name = '';
 
         //then
@@ -37,13 +40,15 @@ describe('Tour Config', function () {
 
     it('should initialize a new tour with onStart overridden', function () {
         //given
-        var scope = $rootScope.$new();
-        var started = false;
+        var scope = $rootScope.$new(),
+            started = false,
+            tour;
+
         scope.onStart = function () {
             started = true;
         };
         $compile($templateCache.get('tour-with-on-start-function.html'))(scope);
-        var tour = scope.$$childTail.tour;
+        tour = scope.$$childTail.tour;
 
         //when
         digestAfter(tour.start);
@@ -54,9 +59,11 @@ describe('Tour Config', function () {
 
     it('should initialize a new tour with placement overridden', function () {
         //given
-        var scope = $rootScope.$new();
+        var scope = $rootScope.$new(),
+            tour;
+
         $compile($templateCache.get('tour-with-placement-override.html'))(scope);
-        var tour = scope.$$childTail.tour;
+        tour = scope.$$childTail.tour;
 
         //when
         $rootScope.$digest();
@@ -65,16 +72,18 @@ describe('Tour Config', function () {
         expect(tour.options.placement).toEqual('bottom');
     });
 
-    it('should initialize a new tour step with onNext overridden', inject(function ($q) {
+    it('should initialize a new tour step with onNext overridden', function () {
         //given
-        var scope = $rootScope.$new();
-        var called = false;
+        var scope = $rootScope.$new(),
+            called = false,
+            tour;
+
         scope.onNext = function () {
             called = true;
             return $q.resolve();
         };
         $compile($templateCache.get('tour-step-with-on-next-function.html'))(scope);
-        var tour = scope.$$childTail.tour;
+        tour = scope.$$childTail.tour;
 
         //when
         digestAfter(tour.start);
@@ -82,11 +91,12 @@ describe('Tour Config', function () {
 
         //then
         expect(called).toBe(true);
-    }));
+    });
 
     it('should initialize a new tour step with placement overridden', function () {
         //given
         var scope = $rootScope.$new();
+
         $compile($templateCache.get('tour-step-with-placement-override.html'))(scope);
 
         //when

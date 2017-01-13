@@ -1,6 +1,4 @@
-/* global jasmine: false, inject: false, angular: false*/
-
-'use strict';
+import angular from 'angular';
 
 describe('Tour Config', function () {
     var tourScope,
@@ -11,9 +9,9 @@ describe('Tour Config', function () {
             tourScope.$digest();
         };
 
-    beforeEach(module('bm.uiTour', 'test.templates'));
+    beforeEach(angular.mock.module('bm.uiTour'));
 
-    beforeEach(inject(function ($compile, $templateCache, $rootScope, $q, _$timeout_) {
+    beforeEach(angular.mock.inject(function ($compile, $templateCache, $rootScope, $q, _$timeout_) {
         tourScope = $rootScope.$new();
         $timeout = _$timeout_;
 

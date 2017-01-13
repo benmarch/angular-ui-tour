@@ -1,6 +1,4 @@
-/* global jasmine: false, inject: false, angular: false*/
-
-'use strict';
+import angular from 'angular';
 
 describe('Tour Service', function () {
     var uiTourService,
@@ -12,9 +10,9 @@ describe('Tour Service', function () {
             }
         };
 
-    beforeEach(module('bm.uiTour', 'test.templates'));
+    beforeEach(angular.mock.module('bm.uiTour'));
 
-    beforeEach(inject(function (_uiTourService_, _$compile_, _$rootScope_) {
+    beforeEach(angular.mock.inject(function (_uiTourService_, _$compile_, _$rootScope_) {
 
         uiTourService = _uiTourService_;
         $compile = _$compile_;
@@ -56,16 +54,18 @@ describe('Tour Service', function () {
     it('should return a tour by element', function () {
 
         //given
-        var scope = $rootScope.$new();
-        var innerTemplate = '<div></div>';
-        var outerTemplate = '<div ui-tour="third"></div>';
-        var outerElement = $compile(outerTemplate)(scope);
-        var innerElement = $compile(innerTemplate)(scope);
+        var scope = $rootScope.$new(),
+            innerTemplate = '<div></div>',
+            outerTemplate = '<div ui-tour="third"></div>',
+            outerElement = $compile(outerTemplate)(scope),
+            innerElement = $compile(innerTemplate)(scope),
+            tour;
+
         outerElement.append(innerElement);
         scope.$digest();
 
         //when
-        var tour = uiTourService.getTourByElement(innerElement);
+        tour = uiTourService.getTourByElement(innerElement);
 
         //then
         expect(tour.options.name).toBe('third');
