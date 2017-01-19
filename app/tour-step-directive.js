@@ -24,7 +24,7 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
             return function (scope, element, attrs, uiTourCtrl) {
 
                 var ctrl,
-                //Assign required options
+                    //Assign required options
                     step = {
                         stepId: attrs.tourStep,
                         enabled: true,
@@ -39,7 +39,8 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
                     options = 'content title animation placement backdrop backdropBorderRadius orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
                     tooltipAttrs = 'animation appendToBody placement popupDelay popupCloseDelay'.split(' '),
                     orderWatch,
-                    enabledWatch;
+                    enabledWatch,
+                    contentWatch;
 
                 //check if this step belongs to another tour
                 if (attrs[TourHelpers.getAttrName('belongsTo')]) {
@@ -75,6 +76,13 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
                         ctrl.addStep(step);
                     } else {
                         ctrl.removeStep(step);
+                    }
+                });
+
+                // watch for content updates
+                contentWatch = attrs.$observe(TourHelpers.getAttrName('content'), function (content) {
+                    if (content) {
+                        step.trustedContent = $sce.trustAsHtml(step.content);
                     }
                 });
 
@@ -127,6 +135,7 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
                     ctrl.removeStep(step);
                     orderWatch();
                     enabledWatch();
+                    contentWatch();
                 });
             };
         }
