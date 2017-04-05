@@ -2,13 +2,20 @@
 var webpackConfig = require('./webpack.config.babel');
 
 webpackConfig.entry = {};
-webpackConfig.externals = {};
+webpackConfig.externals = [];
 webpackConfig.devtool = 'inline-source-map';
-webpackConfig.postLoaders = [
+webpackConfig.module.loaders.push({
+    //properly export angular since we are using an old version
+    test: /node_modules.*\/angular\.js$/,
+    loaders: [
+        'exports?angular'
+    ]
+});
+webpackConfig.module.postLoaders = [
     //delays coverage til after tests are run, fixing transpiled source coverage error
     {
         test: /\.js$/,
-        exclude: /(test|node_modules|bower_components)\//,
+        exclude: /(test|node_modules)\//,
         loader: 'istanbul-instrumenter'
     }
 ];
@@ -28,7 +35,8 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             'app/angular-ui-tour.js',
-            'test/webpack-test-context.js'
+            'test/webpack-test-context.js',
+            './node_modules/phantomjs-polyfill-object-assign/object-assign-polyfill.js' //phantom is missing Object.assign
         ],
 
 

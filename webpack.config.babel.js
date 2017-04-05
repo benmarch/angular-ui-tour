@@ -5,14 +5,12 @@ const path = require('path'),
     webpack = require('webpack'),
     CleanPlugin = require('clean-webpack-plugin'),
     nodeExternals = require('webpack-node-externals'),
-    bowerExternals = require('webpack-bower-externals'),
     moduleName = 'bm.uiTour',
     libraryName = 'uiTour';
 
 //GENERAL CONFIG
 let config = {
     context: `${__dirname}`,
-    devtool: 'source-map',
     entry: __dirname + '/app/angular-ui-tour.js',
     output: {
         path: `${__dirname}/dist`,
@@ -21,16 +19,13 @@ let config = {
         libraryTarget: 'umd',
         umdNamedDefine: true
     },
-    resolve: {
-        modulesDirectories: ['node_modules', 'bower_components']
-    },
-    externals: [bowerExternals(), nodeExternals()],
+    externals: [nodeExternals()],
     module: {
         loaders: [
             {
                 //Load all JavaScript modules except external dependencies
                 test: /\.js$/,
-                exclude: /node_modules|bower_components/,
+                exclude: /node_modules/,
                 loaders: [
                     'ng-annotate?' + JSON.stringify({
                         add: true,
@@ -48,16 +43,12 @@ let config = {
         preLoaders: [
             {
                 test: /\.js$/,
-                exclude: /node_modules|bower_components|dist/,
+                exclude: /node_modules|dist/,
                 loaders: ['eslint']
             }
         ]
     },
     plugins: [
-        //allow external dependencies from Bower
-        new webpack.ResolverPlugin(
-            new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin('bower.json', ['main'])
-        ),
         //clean dist directory
         new CleanPlugin([
             `${__dirname}/dist`,

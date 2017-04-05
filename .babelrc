@@ -1,6 +1,6 @@
 {
     "presets": [
-        "es2017"
+        "es2015"
     ],
     "plugins": [
         "add-module-exports"

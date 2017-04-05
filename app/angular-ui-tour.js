@@ -1,6 +1,6 @@
 import angular from 'angular';
 import 'angular-sanitize';
-import 'angular-bootstrap';
+import 'angular-ui-bootstrap';
 import 'ngSmoothScroll';
 import 'ez-ng';
 import 'angular-hotkeys';
