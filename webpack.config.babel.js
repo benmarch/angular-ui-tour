@@ -56,7 +56,7 @@ let config = {
     plugins: [
         //allow external dependencies from Bower
         new webpack.ResolverPlugin(
-            new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin('.bower.json', ['main'])
+            new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin('bower.json', ['main'])
         ),
         //clean dist directory
         new CleanPlugin([

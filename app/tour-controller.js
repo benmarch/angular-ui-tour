@@ -277,7 +277,15 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
         return handleEvent(step.config('onShow')).then(function () {
 
             if (step.config('backdrop')) {
-                uiTourBackdrop.createForElement(step.element, step.config('preventScrolling'), step.config('fixed'), step.config('onBackdropClick'), step.config('backdropBorderRadius'));
+                uiTourBackdrop.createForElement(step.element, {
+                    preventScrolling: step.config('preventScrolling'),
+                    fixed: step.config('fixed'),
+                    borderRadius: step.config('backdropBorderRadius'),
+                    fullScreen: step.config('orphan'),
+                    events: {
+                        click: step.config('onBackdropClick')
+                    }
+                });
             }
 
         }).then(function () {
