@@ -10,3 +10,24 @@
     margin: 0;
     transform: translateX(-50%) translateY(-50%);
 }
+
+/*improve popover arrows:*/
+.popover.bottom-left > .arrow,
+.popover.top-left > .arrow {
+    left: 25px;
+}
+
+.popover.bottom-right > .arrow,
+.popover.top-right > .arrow {
+    right: 25px;
+}
+
+.popover.right-top > .arrow,
+.popover.left-top > .arrow {
+    top: 25px;
+}
+
+.popover.left-bottom > .arrow,
+.popover.right-bottom > .arrow {
+    bottom: 25px;
+}

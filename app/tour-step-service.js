@@ -6,32 +6,8 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
     const service = {};
 
     function createPopup(step) {
-        const popupStub = angular.element($document[0].createElement('div')),
-            parent = step.config('appendToBody') ? angular.element($document[0].body) : step.element.parent(),
-            scope = $rootScope.$new();
-        let popup;
-
-        scope.originScope = () => step.scope;
-        scope.uibTitle = step.config('title');
-
-        popup = $compile(popupStub.html($templateCache.get('tour-step-popup.html')))(scope);
-        popup.addClass(`tourStep ui-tour-popup popover ${step.config('popupClass')}`);
-        //for arrow styles, unfortunately UI Bootstrap uses attributes for styling
-        popup.attr('uib-popover-popup', 'uib-popover-popup');
-        popup.css({
-            visibility: 'hidden',
-            zIndex: step.config('backdropZIndex') + 2
-        });
-
-        //fixed
-        if (step.config('fixed')) {
-            popup.css('position', 'fixed');
-        }
-
-        //orphan
-        if (!step.config('orphan')) {
-            popup.addClass(step.config('placement'));
-        }
+        const popup = $compile($templateCache.get('tour-step-popup.html'))(step.scope),
+            parent = step.config('appendToBody') ? angular.element($document[0].body) : step.element.parent();
 
         parent.append(popup);
         return popup;
@@ -41,22 +17,27 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
         if (!step.popup) {
             step.popup = createPopup(step);
         }
-        //first timeout to make sure popup content loads
+
+        //activate Tether
+        service.positionPopup(step);
+
+        //nudge the screen to ensure that Tether is positioned properly
+        $window.scrollTo($window.scrollX, $window.scrollY + 1);
+
+        //wait until next digest
         $timeout(() => {
-            service.positionPopup(step);
-            $window.scrollTo($window.scrollX, $window.scrollY + 1);
-            //second timeout to make sure Tether is positioned
-            $timeout(() => {
-                step.popup.css({
-                    visibility: 'visible',
-                    display: 'block'
-                });
-                if (!step.config('orphan') && step.config('scrollIntoView')) {
-                    $document.duScrollToElementAnimated(step.popup, step.config('scrollOffset'), 500, t => t<.5 ? 2*t*t : -1+(4-2*t)*t )
-                        .catch(m => 'Failed to scroll.');
-                }
-            }, 100);
-        });
+            //show the popup
+            step.popup.css({
+                visibility: 'visible',
+                display: 'block'
+            });
+
+            //scroll to popup
+            if (!step.config('orphan') && step.config('scrollIntoView')) {
+                $document.duScrollToElementAnimated(step.popup, step.config('scrollOffset'), 500, t => t<.5 ? 2*t*t : -1+(4-2*t)*t )
+                    .catch(m => 'Failed to scroll.');
+            }
+        }, 100); //ensures size and position are correct
     };
 
     service.hidePopup = function (step) {
@@ -70,10 +51,13 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
     };
 
     service.positionPopup = function (step) {
-        //center an orphan
+        //orphans are positioned via css
         if (step.config('orphan')) {
-            step.popup.addClass('tour-step-orphan');
-        } else if (!step.tether) {
+            return;
+        }
+
+        //otherwise create or reposition the Tether
+        if (!step.tether) {
             //create a tether
             step.tether = new Tether({
                 element: step.popup[0],

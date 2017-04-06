@@ -2,12 +2,8 @@ import angular from 'angular';
 import './templates/tour-step-popup.html';
 import './templates/tour-step-template.html';
 
-export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTooltip, $q, $sce) {
+export default function tourStepDirective(TourHelpers, uiTourService, $sce) {
     'ngInject';
-
-    var tourStepDef = $uibTooltip('tourStep', 'tourStep', 'uiTourShow', {
-        popupDelay: 1 //needs to be non-zero for popping up after navigation
-    });
 
     return {
         restrict: 'EA',
@@ -18,8 +14,6 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
             if (!tAttrs.tourStep) {
                 tAttrs.$set('tourStep', '\'PH\''); //a placeholder so popup will show
             }
-
-            var tourStepLinker = tourStepDef.compile(tElement, tAttrs);
 
             return function (scope, element, attrs, uiTourCtrl) {
 
@@ -58,7 +52,6 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
                 //Will add values to pass to $uibTooltip
                 function configureInheritedProperties() {
                     TourHelpers.attachTourConfigProperties(scope, attrs, step, tooltipAttrs, 'tourStep');
-                    tourStepLinker(scope, element, attrs);
                 }
 
                 //Pass interpolated values through
@@ -135,22 +128,4 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
         }
     };
 
-}
-
-export function tourStepPopupDirective() {
-    'ngInject';
-
-    return {
-        restrict: 'A',
-        scope: {
-            uibTitle: '@',
-            contentExp: '&',
-            originScope: '&'
-        },
-        templateUrl: 'tour-step-popup.html',
-        link: function (scope, element, attrs) {
-            //for arrow styles, unfortunately UI Bootstrap uses attributes for styling
-            attrs.$set('uib-popover-popup', 'uib-popover-popup');
-        }
-    };
 }
