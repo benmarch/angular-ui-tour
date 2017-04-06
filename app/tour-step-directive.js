@@ -119,6 +119,9 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
                 Object.defineProperties(step, {
                     element: {
                         value: element
+                    },
+                    scope: {
+                        value: scope
                     }
                 });
 
@@ -134,7 +137,7 @@ export function tourStepDirective(TourConfig, TourHelpers, uiTourService, $uibTo
 
 }
 
-export function tourStepPopupDirective(TourConfig, smoothScroll, ezComponentHelpers, $uibPosition) {
+export function tourStepPopupDirective() {
     'ngInject';
 
     return {
@@ -146,58 +149,8 @@ export function tourStepPopupDirective(TourConfig, smoothScroll, ezComponentHelp
         },
         templateUrl: 'tour-step-popup.html',
         link: function (scope, element, attrs) {
-            var step = scope.originScope().tourStep,
-                ch = ezComponentHelpers.apply(null, arguments),
-                scrollOffset = step.config('scrollOffset'),
-                isScrolling = false;
-
             //for arrow styles, unfortunately UI Bootstrap uses attributes for styling
             attrs.$set('uib-popover-popup', 'uib-popover-popup');
-
-            element.css({
-                zIndex: TourConfig.get('backdropZIndex') + 2,
-                display: 'block'
-            });
-
-            element.addClass([step.config('popupClass'), 'popover'].join(' '));
-
-            if (step.config('fixed')) {
-                element.css('position', 'fixed');
-            }
-
-            if (step.config('orphan')) {
-                ch.useStyles(
-                    ':scope {' +
-                    '   position: fixed;' +
-                    '   top: 50% !important;' +
-                    '   left: 50% !important;' +
-                    '   margin: 0 !important;' +
-                    '   -ms-transform: translateX(-50%) translateY(-50%);' +
-                    '   -moz-transform: translateX(-50%) translateY(-50%);' +
-                    '   -webkit-transform: translateX(-50%) translateY(-50%);' +
-                    '   transform: translateX(-50%) translateY(-50%);' +
-                    '}' +
-                    '' +
-                    '.arrow {' +
-                    '   display: none;' +
-                    '}'
-                );
-            }
-
-            scope.$watch(function () {
-                var offset = $uibPosition.offset(element),
-                    isOpen = offset.width && offset.height;
-
-                if (isOpen && !step.config('orphan') && step.config('scrollIntoView') && !isScrolling) {
-                    isScrolling = true;
-                    smoothScroll(element[0], {
-                        offset: scrollOffset,
-                        callbackAfter: function () {
-                            isScrolling = false;
-                        }
-                    });
-                }
-            });
         }
     };
 }

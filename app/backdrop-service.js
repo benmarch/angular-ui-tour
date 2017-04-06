@@ -11,19 +11,6 @@ export default function uiTourBackdrop(TourConfig, $document) {
         },
         hone = new Hone();
 
-    function createStyles(styles) {
-        const styleElement = document.createElement('style');
-
-        styleElement.type = 'text/css';
-        styleElement.innerHTML = styles;
-
-        angular.element($document[0].head).append(styleElement);
-
-        return function cleanup() {
-            angular.element(styleElement).remove();
-        };
-    }
-
     function preventScrolling() {
         $body.addClass('no-scrolling');
         $body.on('touchmove', preventDefault);
@@ -34,17 +21,10 @@ export default function uiTourBackdrop(TourConfig, $document) {
         $body.off('touchmove', preventDefault);
     }
 
-    function showBackdrop() {
-        hone.show();
-    }
-    function hideBackdrop() {
-        hone.hide();
-    }
-
     service.createForElement = function (element, backdropOptions) {
         hone.setOptions(backdropOptions);
         hone.position(element[0]);
-        showBackdrop();
+        hone.show();
 
         if (backdropOptions.preventScrolling) {
             service.shouldPreventScrolling(true);
@@ -54,7 +34,7 @@ export default function uiTourBackdrop(TourConfig, $document) {
     };
 
     service.hide = function () {
-        hideBackdrop();
+        hone.hide();
         service.shouldPreventScrolling(false);
     };
 
@@ -65,8 +45,6 @@ export default function uiTourBackdrop(TourConfig, $document) {
             allowScrolling();
         }
     };
-
-    createStyles('.no-scrolling { height: 100%; overflow: hidden; }');
 
     return service;
 

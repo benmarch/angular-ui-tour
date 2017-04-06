@@ -1,6 +1,6 @@
 import angular from 'angular';
 
-export default function TourHelpers($templateCache, $http, $compile, $location, TourConfig, $q, $injector, $timeout) {
+export default function TourHelpers($http, $compile, $location, TourConfig, $q, $injector, $timeout) {
     'ngInject';
 
     var helpers = {},

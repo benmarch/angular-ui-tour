@@ -10,6 +10,11 @@ webpackConfig.module.loaders.push({
     loaders: [
         'exports?angular'
     ]
+}, {
+    test: /node_modules.*tether.*\.js/,
+    loaders: [
+        'expose?Tether'
+    ]
 });
 webpackConfig.module.postLoaders = [
     //delays coverage til after tests are run, fixing transpiled source coverage error
@@ -34,9 +39,11 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
+            //phantomjs is lacking features:
+            './node_modules/phantomjs-polyfill-object-assign/object-assign-polyfill.js',
+            './node_modules/es6-promise/dist/es6-promise.js',
             'app/angular-ui-tour.js',
-            'test/webpack-test-context.js',
-            './node_modules/phantomjs-polyfill-object-assign/object-assign-polyfill.js' //phantom is missing Object.assign
+            'test/webpack-test-context.js'
         ],
 
 

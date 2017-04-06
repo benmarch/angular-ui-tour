@@ -8,7 +8,11 @@ module.exports = {
     },
     "extends": "eslint:recommended",
     "parserOptions": {
+        "ecmaVersion": 2017,
         "sourceType": "module"
+    },
+    "globals": {
+        "Tether": false
     },
     "rules": {
         "accessor-pairs": "error",
@@ -212,7 +216,7 @@ module.exports = {
         "prefer-rest-params": "off",
         "prefer-spread": "off",
         "prefer-template": "off",
-        "quote-props": ["error", "as-needed"],
+        "quote-props": ["error", "consistent-as-needed"],
         "quotes": [
             "error",
             "single"

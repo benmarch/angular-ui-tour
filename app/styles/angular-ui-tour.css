@@ -1,0 +1,12 @@
+.no-scrolling {
+    height: 100%;
+    overflow: hidden;
+}
+
+.tour-step-orphan {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin: 0;
+    transform: translateX(-50%) translateY(-50%);
+}

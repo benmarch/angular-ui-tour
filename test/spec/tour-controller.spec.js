@@ -26,6 +26,7 @@ describe('Tour Controller', function () {
 
         simpleStep = {
             element: angular.element(document.body),
+            scope: $rootScope.$new(),
             stepId: 1,
             enabled: true,
             config: function (option) {
@@ -41,25 +42,19 @@ describe('Tour Controller', function () {
 
         it('should add a new step to the step list', function () {
 
-            //given
-            var step = {};
-
             //when
-            TourController.addStep(step);
+            TourController.addStep(simpleStep);
 
             //then
-            expect(TourController.hasStep(step)).toBe(true);
+            expect(TourController.hasStep(simpleStep)).toBe(true);
 
         });
 
         it('should not add an existing step to the step list', function () {
 
-            //given
-            var step = {};
-
             //when
-            TourController.addStep(step);
-            TourController.addStep(step);
+            TourController.addStep(simpleStep);
+            TourController.addStep(simpleStep);
 
             //then
             expect(TourController._getSteps().length).toBe(1);
@@ -72,15 +67,12 @@ describe('Tour Controller', function () {
 
         it('should remove a new step to the step list', function () {
 
-            //given
-            var step = {};
-
             //when
-            TourController.addStep(step);
-            TourController.removeStep(step);
+            TourController.addStep(simpleStep);
+            TourController.removeStep(simpleStep);
 
             //then
-            expect(TourController.hasStep(step)).toBe(false);
+            expect(TourController.hasStep(simpleStep)).toBe(false);
 
         });
 
@@ -132,8 +124,8 @@ describe('Tour Controller', function () {
             TourController.init(options);
 
             //when
-            TourController.addStep({});
-            TourController.start();
+            TourController.addStep(simpleStep);
+            digestAfter(TourController.start);
 
             //then
             expect(options.onStart).toHaveBeenCalled();
@@ -361,7 +353,7 @@ describe('Tour Controller', function () {
         it('should show the next step', function () {
 
             //given
-            var nextStep = angular.copy(simpleStep);
+            var nextStep = Object.create(simpleStep);
 
             spyOn(TourController, 'showStep').and.callThrough();
 
@@ -392,7 +384,7 @@ describe('Tour Controller', function () {
 
             //when
             TourController.addStep(simpleStep);
-            TourController.addStep(angular.copy(simpleStep));
+            TourController.addStep(Object.create(simpleStep));
             digestAfter(TourController.start);
             digestAfter(TourController.next);
             digestAfter(TourController.prev);
@@ -405,7 +397,7 @@ describe('Tour Controller', function () {
         it('should call onPrev if it is defined on the step', function () {
 
             //given
-            var otherStep = angular.copy(simpleStep);
+            var otherStep = Object.create(simpleStep);
 
             otherStep.onPrev = jasmine.createSpy('onPrev').and.returnValue($q.resolve());
 
@@ -423,7 +415,7 @@ describe('Tour Controller', function () {
         it('should hide the current step', function () {
 
             //given
-            var otherStep = angular.copy(simpleStep);
+            var otherStep = Object.create(simpleStep);
 
             spyOn(TourController, 'hideStep');
 
@@ -441,7 +433,7 @@ describe('Tour Controller', function () {
         it('should show the previous step', function () {
 
             //given
-            var otherStep = angular.copy(simpleStep);
+            var otherStep = Object.create(simpleStep);
 
             spyOn(TourController, 'showStep');
 
@@ -465,7 +457,7 @@ describe('Tour Controller', function () {
         it('should hide the current step', function () {
 
             //given
-            var otherStep = angular.copy(simpleStep);
+            var otherStep = Object.create(simpleStep);
 
             spyOn(TourController, 'showStep').and.callThrough();
 
@@ -485,7 +477,7 @@ describe('Tour Controller', function () {
         it('should show the provided step', function () {
 
             //given
-            var otherStep = angular.copy(simpleStep);
+            var otherStep = Object.create(simpleStep);
 
             spyOn(TourController, 'showStep').and.callThrough();
 
@@ -505,7 +497,7 @@ describe('Tour Controller', function () {
         it('should show the step with index', function () {
 
             //given
-            var otherStep = angular.copy(simpleStep);
+            var otherStep = Object.create(simpleStep);
 
             spyOn(TourController, 'showStep').and.callThrough();
 
@@ -525,7 +517,7 @@ describe('Tour Controller', function () {
         it('should show the step with ID', function () {
 
             //given
-            var otherStep = angular.copy(simpleStep);
+            var otherStep = Object.create(simpleStep);
 
             otherStep.stepId = 'other';
             spyOn(TourController, 'showStep').and.callThrough();
@@ -547,7 +539,7 @@ describe('Tour Controller', function () {
 
             //given
             var rejected = false,
-                otherStep = angular.copy(simpleStep);
+                otherStep = Object.create(simpleStep);
 
             spyOn(TourController, 'showStep').and.callThrough();
 
