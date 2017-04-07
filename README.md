@@ -15,16 +15,22 @@ Check out the live demo [here](http://benmarch.github.io/angular-ui-tour).
 
 ## Versions 
 
-If you are using **Angular Bootstrap 1.x**, please use **Angular UI Tour 0.5.x**. If you are using **Angular Bootstrap 2.x**, please use **Angular UI Tour 0.6.x or later**. Older versions of Angular Bootstrap are no longer supported, sorry.
+**Breaking changes in 0.8.0:**
+- Dependencies have changed. If you are not using NPM or Bower, please take note of the changes.
+- Backdrop class changed from `.tour-backdrop` to `.ui-tour-backdrop`
+- `Tour#status` changed to `Tour#Status`
 
 ## Getting Started
-*It is highly recommended that you use Bower and Wiredep to install this plugin for now. I am working on making it (and its dependencies) 
-available through NPM, but I don't believe it works yet.*
+*It is highly recommended that you use a package manager like NPM or Bower to install Angular UI Tour in order to ensure that its dependencies are installed correctly.*
  
 Get the package:
 
 ```sh
-bower install angular-ui-tour
+npm i -S angular-ui-tour
+
+# or
+
+bower i -S angular-ui-tour
 ```
 
 Add the script tags:
@@ -32,18 +38,17 @@ Add the script tags:
 ```html
 <!--dependencies:js-->
 <script src="bower_components/angular/angular.js"></script>
-<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-<script src="bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js"></script>
 <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
 <script src="bower_components/ez-ng/dist/ez-ng.js"></script>
 <script src="bower_components/angular-hotkeys/build/hotkeys.js"></script>
+<script src="bower_components/hone/dist/hone.js"></script>
+<script src="bower_components/tether/dist/js/tether.js"></script>
+<script src="bower_components/angular-scroll/angular-scroll.js"></script>
 <!--end dependencies-->
 
 <!--Angular UI Tour-->
 <script src="bower_components/angular-ui-tour/dist/angular-ui-tour.js"></script>
 ```
-
-**Note:** You _must_ use the unminified version of angular smooth scroll since there is a known issue with the minified version.
 
 Then add the module to your app:
 
@@ -54,7 +59,7 @@ angular.module('myApp', ['bm.uiTour']);
 Add some styles for the backdrop (feel free to style it however you want):
 
 ```css
-.tour-backdrop {
+.ui-tour-backdrop {
     background-color: rgba(0, 0, 0, 0.5);
     fill: rgba(0, 0, 0, 0.5);
 }
@@ -199,17 +204,18 @@ Examples:
 The tour itself has a small API that can be used to control the flow of the tour. The tour object is available on the
 scope of the uiTour directive, and can be required as `TourController` in directives on or in the uiTour's subtree.
 
-| Method    | Description                                                                                                                                                                                                                                 |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| start()   | Starts the tour by showing the first tour step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                                     |
-| startAt() | Starts the tour by showing the provided step. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolves after step is shown.                                                       |
-| end()     | Ends the tour, calling start() again will start from the beginning. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                |
-| pause()   | Pauses the tour by hiding the current step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                                        |
-| resume()  | Resumes the tour from the last shown step if it is paused. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                          |
-| waitFor() | Pauses the tour and resumes it once the provided step is registered. <br> **Parameters:** _stepId_ ID of the awaited step.  <br> **Returns:** _Promise_ Rejects immediately so that execution stops.                                        |
-| next()    | Hides the current step and shows the next one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after next step is shown.                                                                                                 |
-| prev()    | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
-| goTo()    | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
+| Method      | Description                                                                                                                                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| start()     | Starts the tour by showing the first tour step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                                     |
+| startAt()   | Starts the tour by showing the provided step. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolves after step is shown.                                                       |
+| end()       | Ends the tour, calling start() again will start from the beginning. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                |
+| pause()     | Pauses the tour by hiding the current step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                                        |
+| resume()    | Resumes the tour from the last shown step if it is paused. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                          |
+| waitFor()   | Pauses the tour and resumes it once the provided step is registered. <br> **Parameters:** _stepId_ ID of the awaited step.  <br> **Returns:** _Promise_ Rejects immediately so that execution stops.                                        |
+| next()      | Hides the current step and shows the next one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after next step is shown.                                                                                                 |
+| prev()      | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
+| goTo()      | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
+| getStatus() | Returns the current status of the tour based on TourStatus enum. <br> **Parameters:** \<none\> <br> **Returns:** TourStatus (ON, OFF, PAUSED, WAITING). Usage example: after tour starts: `tour.getStatus() === tour.Status.ON; //true`     |
 
 ## Tour Service
 
@@ -221,6 +227,8 @@ The `uiTourService` can be used for retrieving a reference to a tour object. The
 | getTourByName(name)               | If you have multiple tours you can name them by supplying a value to the `ui-tour` attribute. This method allows you to retrieve a tour by name.                                                                                                      |
 | getTourByElement(element)         | If you want to know which tour is available to a specific element (in order to create a tour step, for example) you can pass the element into this method to retrieve the appropriate tour. This can be a DOM element, or jqLite object.              |
 | createDetachedTour(name, config)  | Creates a tour that is not associated with a DOM subtree. Steps can be added the detached tour by setting the `tour-step-belongs-to` attribute to the name of the tour. The config object will override global tour options just like a regular tour. |
+| isTourWaiting()                   | Returns `true` if any tour has the WAITING status, otherwise `false`. To check if a specific tour is waiting, use `tour.getStatus() === tour.Status.WAITING`.                                                                                         |
+| endAllTours()                     | Calls `tour.end()` for all tours and returns a promise that resolves once all tours end.                                                                                                                                                              |
 
 ## Tour Notifications
 

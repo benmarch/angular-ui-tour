@@ -1,7 +1,7 @@
 import angular from 'angular';
 import Hone from 'hone';
 
-export default function uiTourBackdrop(TourConfig, $document) {
+export default function uiTourBackdrop($document) {
     'ngInject';
 
     var service = {},
@@ -9,7 +9,9 @@ export default function uiTourBackdrop(TourConfig, $document) {
         preventDefault = function (e) {
             e.preventDefault();
         },
-        hone = new Hone();
+        hone = new Hone({
+            classPrefix: 'ui-tour-backdrop'
+        });
 
     function preventScrolling() {
         $body.addClass('no-scrolling');
