@@ -18,6 +18,7 @@ export default function TourConfig() {
         scrollIntoView: true,
         useUiRouter: false,
         useHotkeys: false,
+        scrollParentId: '$document',
 
         onStart: null,
         onEnd: null,

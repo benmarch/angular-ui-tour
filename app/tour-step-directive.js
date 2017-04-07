@@ -30,7 +30,7 @@ export default function tourStepDirective(TourHelpers, uiTourService, $sce) {
                         }
                     },
                     events = 'onShow onShown onHide onHidden onNext onPrev onBackdropClick'.split(' '),
-                    options = 'content title animation placement backdrop backdropBorderRadius orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset'.split(' '),
+                    options = 'content title animation placement backdrop backdropBorderRadius orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset scrollParentId'.split(' '),
                     tooltipAttrs = 'animation appendToBody placement popupDelay popupCloseDelay'.split(' '),
                     orderWatch,
                     enabledWatch;

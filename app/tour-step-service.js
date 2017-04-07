@@ -3,7 +3,8 @@ import angular from 'angular';
 export default function (Tether, $compile, $document, $templateCache, $rootScope, $window, $q, $timeout, positionMap) {
     'ngInject';
 
-    const service = {};
+    const service = {},
+        easeInOutQuad = t => t<.5 ? 2*t*t : -1+(4-2*t)*t;
 
     function createPopup(step) {
         const popup = $compile($templateCache.get('tour-step-popup.html'))(step.scope),
@@ -34,7 +35,8 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
 
             //scroll to popup
             if (!step.config('orphan') && step.config('scrollIntoView')) {
-                $document.duScrollToElementAnimated(step.popup, step.config('scrollOffset'), 500, t => t<.5 ? 2*t*t : -1+(4-2*t)*t )
+                const scrollParent = step.config('scrollParentId') === '$document' ? $document : angular.element($document[0].getElementById(step.config('scrollParentId')));
+                scrollParent.duScrollToElementAnimated(step.popup, step.config('scrollOffset'), 500, easeInOutQuad)
                     .catch(m => 'Failed to scroll.');
             }
         }, 100); //ensures size and position are correct
