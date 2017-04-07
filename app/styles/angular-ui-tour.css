@@ -3,7 +3,12 @@
     overflow: hidden;
 }
 
-.tour-step-orphan {
+/*this might be an accessibility issue*/
+.ui-tour-popup:focus {
+    outline: none;
+}
+
+.ui-tour-popup-orphan {
     position: fixed;
     top: 50%;
     left: 50%;

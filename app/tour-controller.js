@@ -10,7 +10,8 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
         TourStatus = {
             OFF: 0,
             ON: 1,
-            PAUSED: 2
+            PAUSED: 2,
+            WAITING: 3
         },
         tourStatus = TourStatus.OFF,
         options = TourConfig.getAll();
@@ -404,6 +405,7 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
         setCurrentStep(null);
         self.emit('ended');
         tourStatus = TourStatus.OFF;
+        resumeWhenFound = null;
 
         if (options.useHotkeys) {
             unsetHotKeys();
@@ -552,6 +554,7 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
         };
         //must reject so that when used in a lifecycle hook the execution stops
         await self.pause();
+        tourStatus = TourStatus.WAITING;
         return $q.reject();
     };
 
@@ -578,7 +581,7 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
     /**
      * @enum TourStatus
      */
-    self.status = TourStatus;
+    self.Status = TourStatus;
 
     //------------------ end Public API ------------------
 

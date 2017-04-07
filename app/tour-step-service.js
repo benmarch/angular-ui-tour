@@ -37,7 +37,11 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
             if (!step.config('orphan') && step.config('scrollIntoView')) {
                 const scrollParent = step.config('scrollParentId') === '$document' ? $document : angular.element($document[0].getElementById(step.config('scrollParentId')));
                 scrollParent.duScrollToElementAnimated(step.popup, step.config('scrollOffset'), 500, easeInOutQuad)
-                    .catch(m => 'Failed to scroll.');
+                    .then(() => {
+                        step.popup[0].focus();
+                    }, m => 'Failed to scroll.');
+            } else {
+                step.popup[0].focus();
             }
         }, 100); //ensures size and position are correct
     };
