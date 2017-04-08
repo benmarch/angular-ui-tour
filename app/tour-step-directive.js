@@ -16,7 +16,8 @@ export default function tourStepDirective(TourHelpers, uiTourService, $sce) {
                 events = 'onShow onShown onHide onHidden onNext onPrev onBackdropClick'.split(' '),
                 options = 'content title animation placement backdrop backdropBorderRadius orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset scrollParentId'.split(' '),
                 orderWatch,
-                enabledWatch;
+                enabledWatch,
+                contentWatch;
 
             //check if this step belongs to another tour
             if (attrs[TourHelpers.getAttrName('belongsTo')]) {
@@ -52,6 +53,13 @@ export default function tourStepDirective(TourHelpers, uiTourService, $sce) {
                     ctrl.addStep(step);
                 } else {
                     ctrl.removeStep(step);
+                }
+            });
+
+            // watch for content updates
+            contentWatch = attrs.$observe(TourHelpers.getAttrName('content'), function (content) {
+                if (content) {
+                    step.trustedContent = $sce.trustAsHtml(step.content);
                 }
             });
 
@@ -98,6 +106,7 @@ export default function tourStepDirective(TourHelpers, uiTourService, $sce) {
                 ctrl.removeStep(step);
                 orderWatch();
                 enabledWatch();
+                contentWatch();
             });
         }
     };
