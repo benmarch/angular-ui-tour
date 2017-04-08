@@ -10,11 +10,6 @@ webpackConfig.module.loaders.push({
     loaders: [
         'exports?angular'
     ]
-}, {
-    test: /node_modules.*tether.*\.js/,
-    loaders: [
-        'expose?Tether'
-    ]
 });
 webpackConfig.module.postLoaders = [
     //delays coverage til after tests are run, fixing transpiled source coverage error

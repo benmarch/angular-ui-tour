@@ -1,7 +1,6 @@
 import angular from 'angular';
-import Hone from 'hone';
 
-export default function uiTourBackdrop($document) {
+export default function uiTourBackdrop($document, Hone) {
     'ngInject';
 
     var service = {},

@@ -3,10 +3,13 @@ import 'angular-sanitize';
 import 'angular-scroll';
 import 'ez-ng';
 import 'angular-hotkeys';
-import 'tether';
+import Tether from 'tether';
+import Hone from 'hone';
 import './styles/angular-ui-tour.css';
 
 function run(TourConfig, uiTourService, $rootScope, $injector) {
+    'ngInject';
+
     //when the user navigates via browser button, kill tours
     function checkAndKillToursOnNavigate() {
         if (!uiTourService.isTourWaiting()) {
@@ -32,7 +35,8 @@ export default angular.module('bm.uiTour', [
     'cfp.hotkeys'
 ])
     .run(run)
-    .value('Tether', window.Tether)
+    .value('Tether', Tether || window.Tether)
+    .value('Hone', Hone || window.Hone)
     .constant('positionMap', require('./tether-position-map'))
     .provider('TourConfig', require('./tour-config-provider'))
     .factory('uiTourBackdrop', require('./backdrop-service'))

@@ -548,7 +548,7 @@ describe('Tour Controller', function () {
             TourController.addStep(simpleStep);
             TourController.addStep(otherStep);
             digestAfter(TourController.start);
-            TourController.goTo()['catch'](function () {
+            TourController.goTo().catch(function () {
                 rejected = true;
             });
             $rootScope.$digest();

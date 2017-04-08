@@ -49,12 +49,7 @@ module.exports = {
             "error",
             "property"
         ],
-        "dot-notation": [
-            "error",
-            {
-                "allowKeywords": false
-            }
-        ],
+        "dot-notation": "error",
         "eol-last": "error",
         "eqeqeq": "error",
         "func-call-spacing": "error",
