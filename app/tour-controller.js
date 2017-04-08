@@ -1,6 +1,6 @@
 import angular from 'angular';
 
-export default function uiTourController($timeout, $q, $filter, TourConfig, uiTourBackdrop, uiTourService, TourStepService, ezEventEmitter, hotkeys) {
+export default function uiTourController($timeout, $q, $filter, $document, TourConfig, uiTourBackdrop, uiTourService, TourStepService, ezEventEmitter, hotkeys) {
     'ngInject';
 
     var self = this,
@@ -139,18 +139,6 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
     }
 
     /**
-     * Used by showStep and hideStep to trigger popover events
-     *
-     * @param step
-     * @param eventName
-     * @returns {*}
-     */
-    /*async function dispatchEvent(step, eventName) {
-        step.element[0].dispatchEvent(new CustomEvent(eventName));
-        digest();
-    }*/
-
-    /**
      * A safe way to invoke a possibly null event handler
      *
      * @param handler
@@ -272,6 +260,10 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
         }
 
         await handleEvent(step.config('onShow'));
+
+        if (!step.element && step.elementId) {
+            step.element = angular.element($document[0].getElementById(step.elementId));
+        }
 
         if (step.config('backdrop')) {
             uiTourBackdrop.createForElement(step.element, {
@@ -556,6 +548,25 @@ export default function uiTourController($timeout, $q, $filter, TourConfig, uiTo
         await self.pause();
         tourStatus = TourStatus.WAITING;
         return $q.reject();
+    };
+
+    /**
+     * Creates a step from a configuration object
+     *
+     * @param {{}} options - Step options, all are static
+     */
+    self.createStep = function (options) {
+        const step = TourStepService.createStep(options, self);
+
+        if (self.initialized) {
+            self.addStep(step);
+        } else {
+            self.once('initialized', function () {
+                self.addStep(step);
+            });
+        }
+
+        return step;
     };
 
     /**

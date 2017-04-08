@@ -6,7 +6,7 @@ import 'angular-hotkeys';
 import 'tether';
 import './styles/angular-ui-tour.css';
 
-function run(uiTourService, $rootScope, $injector) {
+function run(TourConfig, uiTourService, $rootScope, $injector) {
     //when the user navigates via browser button, kill tours
     function checkAndKillToursOnNavigate() {
         if (!uiTourService.isTourWaiting()) {
@@ -14,18 +14,19 @@ function run(uiTourService, $rootScope, $injector) {
         }
     }
 
-    $rootScope.$on('$locationChangeStart', checkAndKillToursOnNavigate);
-    $rootScope.$on('$stateChangeStart', checkAndKillToursOnNavigate);
+    if (TourConfig.areNavigationInterceptorsEnabled()) {
+        $rootScope.$on('$locationChangeStart', checkAndKillToursOnNavigate);
+        $rootScope.$on('$stateChangeStart', checkAndKillToursOnNavigate);
 
-    //for UIRouter 1.0, not sure if it works
-    if ($injector.has('$transitions')) {
-        $injector.get('$transitions').onStart({}, checkAndKillToursOnNavigate);
+        //for UIRouter 1.0, not sure if it works
+        if ($injector.has('$transitions')) {
+            $injector.get('$transitions').onStart({}, checkAndKillToursOnNavigate);
+        }
     }
 }
 
 export default angular.module('bm.uiTour', [
     'ngSanitize',
-    'ui.bootstrap',
     'duScroll',
     'ezNg',
     'cfp.hotkeys'

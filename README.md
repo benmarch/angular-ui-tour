@@ -11,7 +11,7 @@ originally inspired by [Bootstrap Tour](http://www.bootstraptour.com) as [Angula
 but after much feedback to remove the jQuery dependency, Angular UI Tour was born. It uses many of the features from
 Bootstrap Tour, but plays nicely with Angular, **and does not have any dependency on Twitter Bootstrap or jQuery!**
 
-Check out the live demo [here](http://benmarch.github.io/angular-ui-tour).
+Check out the live demo [here](http://benmarch.github.io/angular-ui-tour). (The demo is _not_ up-to-date documentation)
 
 ## Versions 
 
@@ -19,6 +19,7 @@ Check out the live demo [here](http://benmarch.github.io/angular-ui-tour).
 - Dependencies have changed. If you are not using NPM or Bower, please take note of the changes.
 - Backdrop class changed from `.tour-backdrop` to `.ui-tour-backdrop`
 - `Tour#status` changed to `Tour#Status`
+- The following tour step options have been removed: `popupDelay`, `popupCloseDelay`, `animation`
 
 ## Getting Started
 *It is highly recommended that you use a package manager like NPM or Bower to install Angular UI Tour in order to ensure that its dependencies are installed correctly.*
@@ -65,6 +66,19 @@ Add some styles for the backdrop (feel free to style it however you want):
 }
 ```
 **Note:** if you give the backdrop a background color, also give it a fill color because it uses SVG for rounded corners
+
+If your app is a SPA, tours will not end by default when the user clicks the forward or back buttons of the browser
+because tours are allowed to span multiple views. To fix this behavior (and still allow tours to span multiple views)
+enable the navigation interceptors:
+
+```js
+module.config(function (TourConfigProvider) {
+    TourConfigProvider.enableNavigationInterceptors();
+});
+```
+
+That will listen for navigation events from ngRoute and UIRouter, and if the event was not caused by Angular UI Tour,
+it will end any active tours.
     
 ## Tour Configuration
 
@@ -79,9 +93,6 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 |      Name            |   Type   | Default Value             |                     Description                                                                                                                                                                                                              |
 | -------------------  | -------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | placement            | string   | "top"                     | Where the popup should display relative to the element.                                                                                                                                                                                      |
-| animation            | boolean  | true                      | Should the popup fade in/out.                                                                                                                                                                                                                |
-| popupDelay           | number   | 1                         | Time to delay (in ms) between when the popup is requested to show and when it is shown. **Note** must be positive for multi-page tours to work.                                                                                              |
-| closePopupDelay      | number   | 0                         | Time to delay (in ms) between when the popup is requested to hide and when it is hidden.                                                                                                                                                     |
 | appendToBody         | boolean  | false                     | Should popups be appended to body (true) or the parent element (false).                                                                                                                                                                      |
 | scrollOffset         | number   | 100                       | Number of pixels between the top of the viewport and the top of tour step after scrolling                                                                                                                                                    |
 | popupClass           | string   | ""                        | Adds additional classes to the popup.                                                                                                                                                                                                        |
@@ -204,18 +215,38 @@ Examples:
 The tour itself has a small API that can be used to control the flow of the tour. The tour object is available on the
 scope of the uiTour directive, and can be required as `TourController` in directives on or in the uiTour's subtree.
 
-| Method      | Description                                                                                                                                                                                                                                 |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| start()     | Starts the tour by showing the first tour step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                                     |
-| startAt()   | Starts the tour by showing the provided step. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolves after step is shown.                                                       |
-| end()       | Ends the tour, calling start() again will start from the beginning. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                |
-| pause()     | Pauses the tour by hiding the current step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                                        |
-| resume()    | Resumes the tour from the last shown step if it is paused. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                          |
-| waitFor()   | Pauses the tour and resumes it once the provided step is registered. <br> **Parameters:** _stepId_ ID of the awaited step.  <br> **Returns:** _Promise_ Rejects immediately so that execution stops.                                        |
-| next()      | Hides the current step and shows the next one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after next step is shown.                                                                                                 |
-| prev()      | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
-| goTo()      | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
-| getStatus() | Returns the current status of the tour based on TourStatus enum. <br> **Parameters:** \<none\> <br> **Returns:** TourStatus (ON, OFF, PAUSED, WAITING). Usage example: after tour starts: `tour.getStatus() === tour.Status.ON; //true`     |
+| Method       | Description                                                                                                                                                                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| start()      | Starts the tour by showing the first tour step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                                     |
+| startAt()    | Starts the tour by showing the provided step. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolves after step is shown.                                                       |
+| end()        | Ends the tour, calling start() again will start from the beginning. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                |
+| pause()      | Pauses the tour by hiding the current step. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is hidden.                                                                                                        |
+| resume()     | Resumes the tour from the last shown step if it is paused. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after step is shown.                                                                                          |
+| waitFor()    | Pauses the tour and resumes it once the provided step is registered. <br> **Parameters:** _stepId_ ID of the awaited step.  <br> **Returns:** _Promise_ Rejects immediately so that execution stops.                                        |
+| next()       | Hides the current step and shows the next one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after next step is shown.                                                                                                 |
+| prev()       | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
+| goTo()       | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
+| getStatus()  | Returns the current status of the tour based on TourStatus enum. <br> **Parameters:** \<none\> <br> **Returns:** TourStatus (ON, OFF, PAUSED, WAITING). Usage example: after tour starts: `tour.getStatus() === tour.Status.ON; //true`     |
+| createStep() | Adds a step via a step configuration object. <br> **Parameters:** _step_ - a step config object: must contain an `element` (jQLite object) or `elementId` (string) attribute. `elementId` is resolved the first time a step is shown.       |
+
+### `createStep()` Example
+
+```js
+
+//somewhere that you have access to a `tour`:
+
+tour.createStep({
+    elementId: 'adHocStepTarget',
+    stepId: 'optionalUniqueId',
+    order: 15,
+    title: 'Ad Hoc Step!',
+    content: 'Only plain text allowed here',
+    trustedContent: $sce.trustAsHtml('<strong>This can contain HTML, and will override `step.content` if set.</strong>')
+});
+
+//...all other tour step options can be set, but none of them are dynamic!
+
+```
 
 ## Tour Service
 

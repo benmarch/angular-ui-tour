@@ -29,6 +29,7 @@ describe('Tour Controller', function () {
             scope: $rootScope.$new(),
             stepId: 1,
             enabled: true,
+            popup: angular.element(document.body),
             config: function (option) {
                 if (angular.isDefined(this[option])) {
                     return this[option];
