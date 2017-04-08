@@ -12,7 +12,6 @@ const path = require('path'),
 //GENERAL CONFIG
 let config = {
     context: `${__dirname}`,
-    devtool: 'source-map',
     entry: __dirname + '/app/angular-ui-tour.js',
     output: {
         path: `${__dirname}/dist`,
@@ -24,7 +23,7 @@ let config = {
     resolve: {
         modulesDirectories: ['node_modules', 'bower_components']
     },
-    externals: [bowerExternals(), nodeExternals()],
+    externals: [bowerExternals()],
     module: {
         loaders: [
             {
@@ -32,6 +31,11 @@ let config = {
                 test: /\.js$/,
                 exclude: /node_modules|bower_components/,
                 loaders: [
+                    'string-replace?' + JSON.stringify({
+                        search: 'Promise\\.resolve\\(\\)',
+                        replace: '$q.resolve()',
+                        flags: 'g'
+                    }),
                     'ng-annotate?' + JSON.stringify({
                         add: true,
                         map: false
@@ -43,6 +47,10 @@ let config = {
                 //Load all templates into $templateCache
                 test: /(\.html)$/,
                 loaders: [`ng-cache?module=${moduleName}`]
+            },
+            {
+                test: /(\.css)$/,
+                loaders: ['style', 'css']
             }
         ],
         preLoaders: [
@@ -56,7 +64,7 @@ let config = {
     plugins: [
         //allow external dependencies from Bower
         new webpack.ResolverPlugin(
-            new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin('.bower.json', ['main'])
+            new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin('bower.json', ['main'])
         ),
         //clean dist directory
         new CleanPlugin([

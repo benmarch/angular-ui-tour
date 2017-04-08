@@ -1,33 +1,49 @@
 import angular from 'angular';
 import 'angular-sanitize';
-import 'angular-bootstrap';
-import 'ngSmoothScroll';
+import 'angular-scroll';
 import 'ez-ng';
 import 'angular-hotkeys';
-import '../lib/custom-event-polyfill';
+import Tether from 'tether';
+import Hone from 'hone';
+import './styles/angular-ui-tour.css';
 
-function config($uibTooltipProvider) {
+function run(TourConfig, uiTourService, $rootScope, $injector) {
     'ngInject';
 
-    $uibTooltipProvider.setTriggers({
-        uiTourShow: 'uiTourHide'
-    });
+    //when the user navigates via browser button, kill tours
+    function checkAndKillToursOnNavigate() {
+        if (!uiTourService.isTourWaiting()) {
+            uiTourService.endAllTours();
+        }
+    }
+
+    if (TourConfig.areNavigationInterceptorsEnabled()) {
+        $rootScope.$on('$locationChangeStart', checkAndKillToursOnNavigate);
+        $rootScope.$on('$stateChangeStart', checkAndKillToursOnNavigate);
+
+        //for UIRouter 1.0, not sure if it works
+        if ($injector.has('$transitions')) {
+            $injector.get('$transitions').onStart({}, checkAndKillToursOnNavigate);
+        }
+    }
 }
 
 export default angular.module('bm.uiTour', [
     'ngSanitize',
-    'ui.bootstrap',
-    'smoothScroll',
+    'duScroll',
     'ezNg',
     'cfp.hotkeys'
 ])
-    .config(config)
+    .run(run)
+    .value('Tether', Tether || window.Tether)
+    .value('Hone', Hone || window.Hone)
+    .constant('positionMap', require('./tether-position-map'))
     .provider('TourConfig', require('./tour-config-provider'))
     .factory('uiTourBackdrop', require('./backdrop-service'))
     .factory('TourHelpers', require('./tour-helpers'))
     .factory('uiTourService', require('./tour-service'))
+    .factory('TourStepService', require('./tour-step-service'))
     .controller('uiTourController', require('./tour-controller'))
     .directive('uiTour', require('./tour-directive'))
-    .directive('tourStep', require('./tour-step-directive').tourStepDirective)
-    .directive('tourStepPopup', require('./tour-step-directive').tourStepPopupDirective)
+    .directive('tourStep', require('./tour-step-directive'))
     .name;

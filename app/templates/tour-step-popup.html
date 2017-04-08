@@ -1,8 +1,21 @@
-<div class="arrow"></div>
+<div class="tourStep
+            ui-tour-popup
+            popover
+            {{ tourStep.config('popupClass') }}
+            {{ tourStep.config('orphan') ? 'ui-tour-popup-orphan' : tourStep.config('placement').split('-')[0] + ' ' + tourStep.config('placement') }}"
+     ng-style="{
+        visibility: 'hidden',
+        display: 'block',
+        position: tourStep.config('fixed') || tourStep.config('orphan') ? 'fixed' : 'absolute',
+        zIndex: tourStep.config('backdropZIndex') + 2
+     }"
+     tabindex="0"
+     aria-hidden="{{ tour._getCurrentStep() !== tourStep }}">
 
-<div class="popover-inner tour-step-inner">
-    <h3 class="popover-title tour-step-title" ng-bind="uibTitle" ng-if="uibTitle"></h3>
-    <div class="popover-content tour-step-content"
-         uib-tooltip-template-transclude="originScope().tourStep.config('templateUrl') || 'tour-step-template.html'"
-         tooltip-template-transclude-scope="originScope()"></div>
+    <div class="arrow"></div>
+    <div class="popover-inner tour-step-inner">
+        <h3 class="popover-title tour-step-title" ng-bind="tourStep.config('title')" ng-if="tourStep.config('title')"></h3>
+        <div class="popover-content tour-step-content"
+             ng-include="tourStep.config('templateUrl') || 'tour-step-template.html'"></div>
+    </div>
 </div>
