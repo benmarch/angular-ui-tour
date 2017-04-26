@@ -1,5 +1,6 @@
-**I am using the _exact_ versions of the following libraries:**
+**I am using the _exact_ versions of the following:**
 
+* Browser: [Chome|Firefox|IE|Safari] Version: x.x
 * AngularJS: x.x.x
 * Angular Bootstrap: x.x.x
 * Angular UI Tour: x.x.x
