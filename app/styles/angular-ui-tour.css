@@ -17,22 +17,24 @@
 }
 
 /*improve popover arrows:*/
-.popover.bottom-left > .arrow,
-.popover.top-left > .arrow {
+.ui-tour-popup.popover.bottom-left > .arrow,
+.ui-tour-popup.popover.top-left > .arrow {
     left: 25px;
 }
 
-.popover.bottom-right > .arrow,
-.popover.top-right > .arrow {
+.ui-tour-popup.popover.bottom-right > .arrow,
+.ui-tour-popup.popover.top-right > .arrow {
+    left: auto;
     right: 25px;
 }
 
-.popover.right-top > .arrow,
-.popover.left-top > .arrow {
+.ui-tour-popup.popover.right-top > .arrow,
+.ui-tour-popup.popover.left-top > .arrow {
     top: 25px;
 }
 
-.popover.left-bottom > .arrow,
-.popover.right-bottom > .arrow {
+.ui-tour-popup.popover.left-bottom > .arrow,
+.ui-tour-popup.popover.right-bottom > .arrow {
+    top: auto;
     bottom: 25px;
 }
