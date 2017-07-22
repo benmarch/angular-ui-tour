@@ -3,6 +3,7 @@ import 'angular-sanitize';
 import 'angular-scroll';
 import 'ez-ng';
 import 'angular-hotkeys';
+import 'angular-bind-html-compile';
 import Tether from 'tether';
 import Hone from 'hone';
 import './styles/angular-ui-tour.css';
@@ -32,7 +33,8 @@ export default angular.module('bm.uiTour', [
     'ngSanitize',
     'duScroll',
     'ezNg',
-    'cfp.hotkeys'
+    'cfp.hotkeys',
+    'angular-bind-html-compile'
 ])
     .run(run)
     .value('Tether', Tether || window.Tether)

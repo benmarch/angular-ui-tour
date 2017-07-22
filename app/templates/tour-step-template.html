@@ -1,5 +1,5 @@
 <div>
-    <div class="popover-content tour-step-content" ng-bind-html="tourStep.trustedContent || tourStep.content"></div>
+    <div class="popover-content tour-step-content" bind-html-compile="tourStep.trustedContent || tourStep.content"></div>
     <div class="popover-navigation tour-step-navigation">
         <div class="btn-group">
             <button type="button" class="btn btn-sm btn-default" ng-if="tourStep.isPrev()" ng-click="tour.prev()">&laquo; Prev</button>

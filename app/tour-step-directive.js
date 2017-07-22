@@ -85,7 +85,10 @@ export default function tourStepDirective(TourHelpers, uiTourService, $sce) {
                 TourHelpers.setRedirect(step, ctrl, 'onPrev', step.prevPath, step.prevStep);
             }
 
-            //for HTML content
+            /**
+             * for HTML content
+             * @deprecated use `step.content` instead
+             */
             step.trustedContent = $sce.trustAsHtml(step.content);
 
             //Add step and tour to scope
