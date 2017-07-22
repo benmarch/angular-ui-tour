@@ -263,6 +263,10 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
 
         if (!step.element && step.elementId) {
             step.element = angular.element($document[0].getElementById(step.elementId));
+
+            if (!step.element) {
+                throw `No element with ID '${step.elementId}' exists.`;
+            }
         }
 
         if (step.config('backdrop')) {
