@@ -21,6 +21,9 @@ Check out the live demo [here](http://benmarch.github.io/angular-ui-tour). (The 
 - `Tour#status` changed to `Tour#Status`
 - The following tour step options have been removed: `popupDelay`, `popupCloseDelay`, `animation`
 
+**Deprecated in 0.8.2 (will be removed in 1.0.0):**
+- `tourStep.trustedContent` is deprecated. If you created your own popup template, please use `bind-html-compile="tourStep.content"` instead.
+
 ## Getting Started
 *It is highly recommended that you use a package manager like NPM or Bower to install Angular UI Tour in order to ensure that its dependencies are installed correctly.*
  
@@ -45,6 +48,7 @@ Add the script tags:
 <script src="bower_components/hone/dist/hone.js"></script>
 <script src="bower_components/tether/dist/js/tether.js"></script>
 <script src="bower_components/angular-scroll/angular-scroll.js"></script>
+<script src="bower_components/angular-bind-html-compile/angular-bind-html-compile.js"></script>
 <!--end dependencies-->
 
 <!--Angular UI Tour-->
