@@ -79,6 +79,13 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
             return tour.config(option);
         };
 
+        //forces Tether to reposition
+        step.reposition = function () {
+            if (step.tether) {
+                step.tether.position();
+            }
+        };
+
         //ensure it is enabled by default
         if (!angular.isDefined(step.enabled)) {
             step.enabled = true;

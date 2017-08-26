@@ -583,6 +583,16 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
     };
 
     /**
+     * Forces the popover and backdrop to reposition
+     */
+    self.reposition = function () {
+        if (getCurrentStep()) {
+            getCurrentStep().reposition();
+            uiTourBackdrop.reposition();
+        }
+    };
+
+    /**
      * @typedef number TourStatus
      */
 

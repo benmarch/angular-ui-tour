@@ -109,7 +109,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	}
 
-	exports.default = _angular2.default.module('bm.uiTour', ['ngSanitize', 'duScroll', 'ezNg', 'cfp.hotkeys', 'angular-bind-html-compile']).run(run).value('Tether', _tether2.default || window.Tether).value('Hone', _hone2.default || window.Hone.default).constant('positionMap', __webpack_require__(18).default).provider('TourConfig', __webpack_require__(19).default).factory('uiTourBackdrop', __webpack_require__(20).default).factory('TourHelpers', __webpack_require__(21).default).factory('uiTourService', __webpack_require__(22).default).factory('TourStepService', __webpack_require__(23).default).controller('uiTourController', __webpack_require__(24).default).directive('uiTour', __webpack_require__(25).default).directive('tourStep', __webpack_require__(26).default).name;
+	exports.default = _angular2.default.module('bm.uiTour', ['ngSanitize', 'duScroll', 'ezNg', 'cfp.hotkeys', 'angular-bind-html-compile']).run(run).value('Tether', _tether2.default || window.Tether).value('Hone', _hone2.default || window.Hone).constant('positionMap', __webpack_require__(18).default).provider('TourConfig', __webpack_require__(19).default).factory('uiTourBackdrop', __webpack_require__(20).default).factory('TourHelpers', __webpack_require__(21).default).factory('uiTourService', __webpack_require__(22).default).factory('TourStepService', __webpack_require__(23).default).controller('uiTourController', __webpack_require__(24).default).directive('uiTour', __webpack_require__(25).default).directive('tourStep', __webpack_require__(26).default).name;
 
 /***/ },
 /* 1 */
@@ -2905,6 +2905,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 
+	    service.reposition = function () {
+	        if (hone.status === Hone.status.VISIBLE) {
+	            hone.position();
+	        }
+	    };
+
 	    return service;
 	}
 
@@ -3288,6 +3294,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return step[option];
 	            }
 	            return tour.config(option);
+	        };
+
+	        //forces Tether to reposition
+	        step.reposition = function () {
+	            if (step.tether) {
+	                step.tether.position();
+	            }
 	        };
 
 	        //ensure it is enabled by default
@@ -3984,6 +3997,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    self.getCurrentStep = function () {
 	        return getCurrentStep();
+	    };
+
+	    /**
+	     * Forces the popover and backdrop to reposition
+	     */
+	    self.reposition = function () {
+	        if (getCurrentStep()) {
+	            getCurrentStep().reposition();
+	            uiTourBackdrop.reposition();
+	        }
 	    };
 
 	    /**
