@@ -54,11 +54,11 @@ let config = {
             }
         ],
         preLoaders: [
-            {
+            /*{
                 test: /\.js$/,
                 exclude: /node_modules|bower_components|dist/,
                 loaders: ['eslint']
-            }
+            }*/
         ]
     },
     plugins: [
