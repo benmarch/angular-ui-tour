@@ -261,11 +261,16 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
 
         await handleEvent(step.config('onShow'));
 
-        if (!step.element && step.elementId) {
-            step.element = angular.element($document[0].getElementById(step.elementId));
+        if (!step.element) {
+            if (step.elementId) {
+                step.element = angular.element($document[0].getElementById(step.elementId));
+            }
+            if (step.selector) {
+                step.element = angular.element($document[0].querySelector(step.selector));
+            }
 
             if (!step.element) {
-                throw `No element with ID '${step.elementId}' exists.`;
+                throw `No element found for step: '${step}'.`;
             }
         }
 
