@@ -30,7 +30,8 @@
     "test": "karma start",
     "prebuild": "bower install",
     "build": "webpack --progress",
-    "release": "npm test && npm run build && release-it"
+    "release": "npm test && npm run build && release-it",
+    "lint": "eslint app/**/*.js test/**/*.js"
   },
   "keywords": [
     "angular",
