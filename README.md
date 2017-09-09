@@ -231,7 +231,8 @@ scope of the uiTour directive, and can be required as `TourController` in direct
 | prev()       | Hides the current step and shows the previous one. <br> **Parameters:** \<none\> <br> **Returns:** _Promise_ Resolves after previous step is shown.                                                                                         |
 | goTo()       | Hides the current step and jumps to the provided one. <br> **Parameters:** _step_ Can be step object, step ID string, or step index <br> **Returns:** _Promise_ Resolved when provided step is shown, rejects if no step provided or found. |
 | getStatus()  | Returns the current status of the tour based on TourStatus enum. <br> **Parameters:** \<none\> <br> **Returns:** TourStatus (ON, OFF, PAUSED, WAITING). Usage example: after tour starts: `tour.getStatus() === tour.Status.ON; //true`     |
-| createStep() | Adds a step via a step configuration object. <br> **Parameters:** _step_ - a step config object: must contain an `element` (jQLite object) or `elementId` (string) attribute. `elementId` is resolved the first time a step is shown.       |
+| createStep() | Adds a step via a step configuration object. <br> **Parameters:** _step_ - a step config object: must contain an `element` (jQLite object) or `selector` (string) attribute. `selector` is resolved the first time a step is shown.         |
+| reposition() | Forces the active step popover and backdrop (if visible) to reposition around the step target. This is useful when the size of the target changes dynamically after the step is activated.                                                  |
 
 ### `createStep()` Example
 
@@ -240,7 +241,7 @@ scope of the uiTour directive, and can be required as `TourController` in direct
 //somewhere that you have access to a `tour`:
 
 tour.createStep({
-    elementId: 'adHocStepTarget',
+    selector: '#adHocStepTarget',
     stepId: 'optionalUniqueId',
     order: 15,
     title: 'Ad Hoc Step!',
