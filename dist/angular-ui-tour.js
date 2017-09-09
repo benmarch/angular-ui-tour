@@ -3281,10 +3281,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @returns {*} configured step
 	     */
 	    service.createStep = function (step, tour) {
-	        if (!step.element && !step.elementId) {
+	        if (!step.element && !step.elementId && !step.selector) {
 	            throw {
 	                name: 'PropertyMissingError',
-	                message: 'Steps require an element or element ID to be specified'
+	                message: 'Steps require an element, ID, or selector to be specified'
 	            };
 	        }
 
@@ -3641,11 +3641,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return handleEvent(step.config('onShow'));
 	        }).then(function () {
 
-	            if (!step.element && step.elementId) {
-	                step.element = _angular2.default.element($document[0].getElementById(step.elementId));
+	            if (!step.element) {
+	                if (step.elementId) {
+	                    step.element = _angular2.default.element($document[0].getElementById(step.elementId));
+	                }
+	                if (step.selector) {
+	                    step.element = _angular2.default.element($document[0].querySelector(step.selector));
+	                }
 
 	                if (!step.element) {
-	                    throw 'No element with ID \'' + step.elementId + '\' exists.';
+	                    throw 'No element found for step: \'' + step + '\'.';
 	                }
 	            }
 
