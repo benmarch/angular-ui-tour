@@ -47,6 +47,12 @@ export default function uiTourBackdrop($document, Hone) {
         }
     };
 
+    service.reposition = function () {
+        if (hone.status === Hone.status.VISIBLE) {
+            hone.position();
+        }
+    };
+
     return service;
 
 }

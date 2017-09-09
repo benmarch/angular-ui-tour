@@ -64,10 +64,10 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
      * @returns {*} configured step
      */
     service.createStep = function (step, tour) {
-        if (!step.element && !step.elementId) {
+        if (!step.element && !step.elementId && !step.selector) {
             throw {
                 name: 'PropertyMissingError',
-                message: 'Steps require an element or element ID to be specified'
+                message: 'Steps require an element, ID, or selector to be specified'
             };
         }
 
@@ -77,6 +77,13 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
                 return step[option];
             }
             return tour.config(option);
+        };
+
+        //forces Tether to reposition
+        step.reposition = function () {
+            if (step.tether) {
+                step.tether.position();
+            }
         };
 
         //ensure it is enabled by default
