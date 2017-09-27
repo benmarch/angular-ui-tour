@@ -279,6 +279,7 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
                 preventScrolling: step.config('preventScrolling'),
                 fixed: step.config('fixed'),
                 borderRadius: step.config('backdropBorderRadius'),
+                padding: step.config('backdropPadding'),
                 fullScreen: step.config('orphan'),
                 events: {
                     click: step.config('onBackdropClick')
