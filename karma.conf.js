@@ -1,24 +1,21 @@
 //import and modify webpack config
 var webpackConfig = require('./webpack.config.babel');
 
-webpackConfig.entry = {};
 webpackConfig.externals = [];
 webpackConfig.devtool = 'inline-source-map';
-webpackConfig.module.loaders.push({
+webpackConfig.module.rules.push({
     //properly export angular since we are using an old version
     test: /node_modules.*\/angular\.js$/,
-    loaders: [
-        'exports?angular'
+    use: [
+        'exports-loader?angular'
     ]
-});
-webpackConfig.module.postLoaders = [
+}, {
     //delays coverage til after tests are run, fixing transpiled source coverage error
-    {
-        test: /\.js$/,
-        exclude: /(test|node_modules)\//,
-        loader: 'istanbul-instrumenter'
-    }
-];
+    test: /\.js$/,
+    enforce: 'post',
+    exclude: /(test|node_modules)\//,
+    use: ['istanbul-instrumenter-loader']
+});
 
 module.exports = function (config) {
     config.set({
