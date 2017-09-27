@@ -2781,6 +2781,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        orphan: false,
 	        backdrop: false,
 	        backdropZIndex: 10000,
+	        backdropPadding: '0px',
 	        scrollOffset: 100,
 	        scrollIntoView: true,
 	        useUiRouter: false,
@@ -3659,6 +3660,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    preventScrolling: step.config('preventScrolling'),
 	                    fixed: step.config('fixed'),
 	                    borderRadius: step.config('backdropBorderRadius'),
+	                    padding: step.config('backdropPadding'),
 	                    fullScreen: step.config('orphan'),
 	                    events: {
 	                        click: step.config('onBackdropClick')
@@ -4075,7 +4077,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                name: attrs.uiTour
 	            },
 	                events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume onBackdropClick'.split(' '),
-	                properties = 'placement animation popupDelay closePopupDelay enable appendToBody popupClass orphan backdrop backdropBorderRadius scrollParentId scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
+	                properties = 'placement animation popupDelay closePopupDelay enable appendToBody popupClass orphan backdrop backdropBorderRadius backdropPadding scrollParentId scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
 
 	            //Pass interpolated values through
 	            TourHelpers.attachInterpolatedValues(attrs, tour, properties, 'uiTour');
@@ -4141,7 +4143,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            //Assign required options
 	            step,
 	                events = 'onShow onShown onHide onHidden onNext onPrev onBackdropClick'.split(' '),
-	                options = 'content title animation placement backdrop backdropBorderRadius orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset scrollParentId'.split(' '),
+	                options = 'content title animation placement backdrop backdropBorderRadius backdropPadding orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset scrollParentId'.split(' '),
 	                orderWatch,
 	                enabledWatch,
 	                contentWatch;
