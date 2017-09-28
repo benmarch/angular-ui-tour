@@ -1,12 +1,16 @@
 import angular from 'angular';
 
-export default function (Tether, $compile, $document, $templateCache, $rootScope, $window, $q, $timeout, positionMap) {
+export default function (Tether, $compile, $document, $templateCache, $rootScope, $window, $q, $timeout, positionMap, uiTourBackdrop) {
     'ngInject';
 
     const service = {},
         /* eslint-disable */
         easeInOutQuad = t => t<.5 ? 2*t*t : -1+(4-2*t)*t;
         /* eslint-enable */
+
+    function isInDOM(element) {
+        return $document[0].documentElement.contains(element);
+    }
 
     function createPopup(step, tour) {
         const scope = angular.extend($rootScope.$new(), {
@@ -91,9 +95,6 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
             step.enabled = true;
         }
 
-        //create the popup
-        step.popup = createPopup(step, tour);
-
         return step;
     };
 
@@ -102,9 +103,51 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
      *
      * @param step
      */
-    service.showPopup = function (step) {
+    service.showPopup = function (step, tour) {
+        //select the element
+        if (!step.element || !isInDOM(step.element[0])) {
+            if (step.elementId) {
+                step.element = angular.element($document[0].getElementById(step.elementId));
+            }
+            if (step.selector) {
+                step.element = angular.element($document[0].querySelector(step.selector));
+            }
+
+            //no step target found
+            if (!step.element) {
+                throw `No element found for step: '${step}'.`;
+            }
+        }
+
+        //create the popup
+        if (!step.popup) {
+            step.popup = createPopup(step, tour);
+        }
+
+        //create the backdrop
+        if (step.config('backdrop')) {
+            uiTourBackdrop.createForElement(step.element, {
+                preventScrolling: step.config('preventScrolling'),
+                fixed: step.config('fixed'),
+                borderRadius: step.config('backdropBorderRadius'),
+                padding: step.config('backdropPadding'),
+                fullScreen: step.config('orphan'),
+                events: {
+                    click: step.config('onBackdropClick')
+                }
+            });
+        } else {
+            uiTourBackdrop.hide();
+        }
+
+        //set prevent scrolling (deprecated)
+        uiTourBackdrop.shouldPreventScrolling(step.config('preventScrolling') || false);
+
         //activate Tether
         positionPopup(step);
+
+        //activate step
+        step.element.addClass('ui-tour-active-step');
 
         //nudge the screen to ensure that Tether is positioned properly
         $window.scrollTo($window.scrollX, $window.scrollY + 1);
@@ -129,9 +172,15 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
      * @param step
      */
     service.hidePopup = function (step) {
+        //deactivate Tether
         if (step.tether) {
             step.tether.disable();
         }
+
+        //deactivate step
+        step.element.removeClass('ui-tour-active-step');
+
+        //hide the popup
         step.popup[0].style.setProperty('display', 'none', 'important');
     };
 

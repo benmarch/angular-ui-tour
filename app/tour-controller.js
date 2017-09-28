@@ -261,35 +261,8 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
 
         await handleEvent(step.config('onShow'));
 
-        if (!step.element) {
-            if (step.elementId) {
-                step.element = angular.element($document[0].getElementById(step.elementId));
-            }
-            if (step.selector) {
-                step.element = angular.element($document[0].querySelector(step.selector));
-            }
+        TourStepService.showPopup(step, self);
 
-            if (!step.element) {
-                throw `No element found for step: '${step}'.`;
-            }
-        }
-
-        if (step.config('backdrop')) {
-            uiTourBackdrop.createForElement(step.element, {
-                preventScrolling: step.config('preventScrolling'),
-                fixed: step.config('fixed'),
-                borderRadius: step.config('backdropBorderRadius'),
-                padding: step.config('backdropPadding'),
-                fullScreen: step.config('orphan'),
-                events: {
-                    click: step.config('onBackdropClick')
-                }
-            });
-        }
-
-        step.element.addClass('ui-tour-active-step');
-
-        TourStepService.showPopup(step);
         await digest();
         await handleEvent(step.config('onShown'));
 
@@ -311,8 +284,6 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
         }
 
         await handleEvent(step.config('onHide'));
-
-        step.element.removeClass('ui-tour-active-step');
 
         TourStepService.hidePopup(step);
         await digest();
@@ -500,16 +471,6 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
                 self.emit('stepChanged', getCurrentStep());
             }
 
-            //if the next/prev step does not have a backdrop, hide it
-            if (getCurrentStep() && !getCurrentStep().config('backdrop')) {
-                uiTourBackdrop.hide();
-            }
-
-            //if the next/prev step does not prevent scrolling, allow it
-            if (getCurrentStep() && !getCurrentStep().config('preventScrolling')) {
-                uiTourBackdrop.shouldPreventScrolling(false);
-            }
-
             if (getCurrentStep()) {
                 return self.showStep(getCurrentStep());
             }
@@ -524,17 +485,6 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
 
         //take action
         await self.hideStep(getCurrentStep());
-
-        //if the next/prev step does not have a backdrop, hide it
-        if (getCurrentStep().config('backdrop') && !stepToShow.config('backdrop')) {
-            uiTourBackdrop.hide();
-        }
-
-        //if the next/prev step does not prevent scrolling, allow it
-        if (getCurrentStep().config('backdrop') && !stepToShow.config('preventScrolling')) {
-            uiTourBackdrop.shouldPreventScrolling(false);
-        }
-
         setCurrentStep(stepToShow);
         self.emit('stepChanged', getCurrentStep());
         return self.showStep(stepToShow);
