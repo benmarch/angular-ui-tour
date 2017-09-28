@@ -580,6 +580,21 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
     };
 
     /**
+    * Destroy a step with destroying the created popup as well
+    *
+    * @protected
+    * @param step
+    */
+    self.destroyStep = function (step) {
+        var index = stepList.indexOf(step);
+
+        if (index !== -1) {
+            TourStepService.destroyPopup(stepList[index]);
+            self.removeStep(step);
+        }
+    };
+
+    /**
      * returns a copy of the current step (copied to avoid breaking internal functions)
      *
      * @returns {step}

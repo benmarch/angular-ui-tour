@@ -3275,12 +3275,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    /**
-	     * Initializes a step from a config object
+	     * Destroy a step's popover
 	     *
 	     * @param {{}} step - Step options
-	     * @param {{}} tour - The tour to which the step belongs
-	     * @returns {*} configured step
 	     */
+	    service.destroyPopup = function (step) {
+	        step.popup.remove();
+	    };
+
+	    /**
+	       * Initializes a step from a config object
+	       *
+	       * @param {{}} step - Step options
+	       * @param {{}} tour - The tour to which the step belongs
+	       * @returns {*} configured step
+	       */
 	    service.createStep = function (step, tour) {
 	        if (!step.element && !step.elementId && !step.selector) {
 	            throw {
@@ -3995,6 +4004,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        return step;
+	    };
+
+	    /**
+	    * Destroy a step with destroying the created popup as well
+	    *
+	    * @protected
+	    * @param step
+	    */
+	    self.destroyStep = function (step) {
+	        var index = stepList.indexOf(step);
+
+	        if (index !== -1) {
+	            TourStepService.destroyPopup(stepList[index]);
+	            self.removeStep(step);
+	        }
 	    };
 
 	    /**
