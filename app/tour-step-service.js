@@ -56,7 +56,16 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
         }
     }
 
-    /**
+  /**
+   * Destroy a step's popover
+   *
+   * @param {{}} step - Step options
+   */
+    service.destroyPopup = function (step) {
+        step.popup.remove();
+    };
+
+  /**
      * Initializes a step from a config object
      *
      * @param {{}} step - Step options
