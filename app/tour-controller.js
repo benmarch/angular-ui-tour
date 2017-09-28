@@ -589,9 +589,8 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
         var index = stepList.indexOf(step);
 
         if (index !== -1) {
-          const stepItem = stepList[index];
-          TourStepService.destroyPopup(stepItem);
-          self.removeStep(step);
+            TourStepService.destroyPopup(stepList[index]);
+            self.removeStep(step);
         }
     };
 
