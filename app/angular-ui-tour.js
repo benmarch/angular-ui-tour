@@ -37,8 +37,8 @@ export default angular.module('bm.uiTour', [
     'angular-bind-html-compile'
 ])
     .run(run)
-    .value('Tether', Tether || window.Tether)
-    .value('Hone', Hone || window.Hone)
+    .value('Tether', Tether)
+    .value('Hone', Hone)
     .constant('positionMap', require('./tether-position-map').default)
     .provider('TourConfig', require('./tour-config-provider').default)
     .factory('uiTourBackdrop', require('./backdrop-service').default)

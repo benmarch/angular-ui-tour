@@ -11,7 +11,7 @@ export default function tourStepDirective(TourHelpers, uiTourService, $sce) {
         require: '?^uiTour',
         link: function (scope, element, attrs, uiTourCtrl) {
             var ctrl,
-            //Assign required options
+                //Assign required options
                 step,
                 events = 'onShow onShown onHide onHidden onNext onPrev onBackdropClick'.split(' '),
                 options = 'content title animation placement backdrop backdropBorderRadius backdropPadding orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset scrollParentId'.split(' '),

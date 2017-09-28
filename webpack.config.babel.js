@@ -4,8 +4,6 @@
 const path = require('path'),
     webpack = require('webpack'),
     CleanPlugin = require('clean-webpack-plugin'),
-    nodeExternals = require('webpack-node-externals'),
-    bowerExternals = require('webpack-bower-externals'),
     moduleName = 'bm.uiTour',
     libraryName = 'uiTour';
 
@@ -17,65 +15,85 @@ let config = {
         path: `${__dirname}/dist`,
         filename: 'angular-ui-tour.js',
         library: libraryName,
-        libraryTarget: 'umd',
-        umdNamedDefine: true
+        libraryTarget: 'umd'
     },
-    resolve: {
-        modulesDirectories: ['node_modules', 'bower_components']
+    externals: {
+        "angular": "angular",
+        "angular-hotkeys": "angular-hotkeys",
+        "angular-sanitize": "angular-sanitize",
+        "angular-scroll": "angular-scroll",
+        "ez-ng": "ez-ng",
+        "angular-bind-html-compile": "angular-bind-html-compile",
+        "hone": {
+            commonjs: "hone",
+            commonjs2: "hone",
+            amd: "Hone",
+            root: "Hone"
+        },
+        "tether": {
+            commonjs: "tether",
+            commonjs2: "tether",
+            amd: "Tether",
+            root: "Tether"
+        }
     },
-    externals: [bowerExternals()],
     module: {
-        loaders: [
+        rules: [
             {
                 //Load all JavaScript modules except external dependencies
                 test: /\.js$/,
                 exclude: /node_modules|bower_components/,
-                loaders: [
-                    'string-replace?' + JSON.stringify({
-                        search: 'Promise\\.resolve\\(\\)',
-                        replace: '$q.resolve()',
-                        flags: 'g'
-                    }),
-                    'ng-annotate?' + JSON.stringify({
-                        add: true,
-                        map: false
-                    }),
-                    'babel?' + JSON.stringify({})
+                use: [
+                    {
+                        loader: 'string-replace-loader',
+                        options: {
+                            search: 'Promise\\.resolve\\(\\)',
+                            replace: '$q.resolve()',
+                            flags: 'g'
+                        }
+                    },
+                    {
+                        loader: 'ng-annotate-loader',
+                        options: {
+                            add: true,
+                            map: false
+                        }
+                    },
+                    {
+                        loader: 'babel-loader'
+                    }
                 ]
             },
             {
                 //Load all templates into $templateCache
                 test: /(\.html)$/,
-                loaders: [`ng-cache?module=${moduleName}`]
+                use: [`ng-cache-loader?module=${moduleName}`]
             },
             {
                 test: /(\.css)$/,
-                loaders: ['style', 'css']
-            }
-        ],
-        preLoaders: [
+                use: ['style-loader', 'css-loader']
+            },
             {
                 test: /\.js$/,
+                enforce: 'pre',
                 exclude: /node_modules|bower_components|dist/,
-                loaders: ['eslint']
+                use: [{
+                    loader: 'eslint-loader',
+                    options: {
+                        failOnError: true,
+                        emitError: true
+                    }
+                }]
             }
         ]
     },
     plugins: [
-        //allow external dependencies from Bower
-        new webpack.ResolverPlugin(
-            new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin('bower.json', ['main'])
-        ),
         //clean dist directory
         new CleanPlugin([
             `${__dirname}/dist`,
             `${__dirname}/.tmp`
         ])
-    ],
-    eslint: {
-        failOnError: true,
-        emitError: true
-    }
+    ]
 };
 
 module.exports = config;
