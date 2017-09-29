@@ -1,6 +1,6 @@
 import angular from 'angular';
 
-export default function (Tether, $compile, $document, $templateCache, $rootScope, $window, $q, $timeout, positionMap) {
+export default function (Tether, $compile, $document, $templateCache, $rootScope, $window, $q, $timeout, positionMap, uiTourBackdrop) {
     'ngInject';
 
     const service = {},
@@ -57,6 +57,44 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
     }
 
     /**
+     * Activates the popup for a given step
+     *
+     * @param step
+     */
+    function showPopup(step) {
+        //activate Tether
+        positionPopup(step);
+
+        //nudge the screen to ensure that Tether is positioned properly
+        $window.scrollTo($window.scrollX, $window.scrollY + 1);
+
+        //wait until next digest
+        $timeout(() => {
+            //show the popup
+            step.popup.css({
+                visibility: 'visible',
+                display: 'block'
+            });
+
+            //scroll to popup
+            focusPopup(step);
+
+        }, 100); //ensures size and position are correct
+    }
+
+    /**
+     * Hides the popup for a given step
+     *
+     * @param step
+     */
+    function hidePopup(step) {
+        if (step.tether) {
+            step.tether.disable();
+        }
+        step.popup[0].style.setProperty('display', 'none', 'important');
+    }
+
+    /**
      * Initializes a step from a config object
      *
      * @param {{}} step - Step options
@@ -91,48 +129,65 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
             step.enabled = true;
         }
 
-        //create the popup
-        step.popup = createPopup(step, tour);
-
         return step;
     };
 
     /**
-     * Activates the popup for a given step
+     * Shows a step for a given tour
      *
-     * @param step
+     * @param {{}} step - Step to show
+     * @param {{}} tour - The tour to which the step belongs
      */
-    service.showPopup = function (step) {
-        //activate Tether
-        positionPopup(step);
+    service.showStep = function (step, tour) {
+        //ensure there is a step target
+        if (step.elementId) {
+            step.element = angular.element($document[0].getElementById(step.elementId));
+        }
+        if (step.selector) {
+            step.element = angular.element($document[0].querySelector(step.selector));
+        }
 
-        //nudge the screen to ensure that Tether is positioned properly
-        $window.scrollTo($window.scrollX, $window.scrollY + 1);
+        if (!step.element) {
+            throw `No element found for step: '${step}'.`;
+        }
 
-        //wait until next digest
-        $timeout(() => {
-            //show the popup
-            step.popup.css({
-                visibility: 'visible',
-                display: 'block'
+        //show the backdrop
+        if (step.config('backdrop')) {
+            uiTourBackdrop.createForElement(step.element, {
+                preventScrolling: step.config('preventScrolling'),
+                fixed: step.config('fixed'),
+                borderRadius: step.config('backdropBorderRadius'),
+                padding: step.config('backdropPadding'),
+                fullScreen: step.config('orphan'),
+                events: {
+                    click: step.config('onBackdropClick')
+                }
             });
+        }
 
-            //scroll to popup
-            focusPopup(step);
+        //activate the target
+        step.element.addClass('ui-tour-active-step');
 
-        }, 100); //ensures size and position are correct
+        //create the popup
+        if (!step.popup) {
+            step.popup = createPopup(step, tour);
+        }
+
+        //show the popup
+        showPopup(step);
     };
 
     /**
-     * Hides the popup for a given step
+     * Shows a step
      *
-     * @param step
+     * @param {{}} step - Step to show
      */
-    service.hidePopup = function (step) {
-        if (step.tether) {
-            step.tether.disable();
-        }
-        step.popup[0].style.setProperty('display', 'none', 'important');
+    service.hideStep = function (step) {
+        //hide the popup
+        hidePopup(step);
+
+        //deactivate the target
+        step.element.removeClass('ui-tour-active-step');
     };
 
     return service;

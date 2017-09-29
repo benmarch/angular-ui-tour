@@ -43,7 +43,6 @@ Add the script tags:
 <!--dependencies:js-->
 <script src="bower_components/angular/angular.js"></script>
 <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
-<script src="bower_components/ez-ng/dist/ez-ng.js"></script>
 <script src="bower_components/angular-hotkeys/build/hotkeys.js"></script>
 <script src="bower_components/hone/dist/hone.js"></script>
 <script src="bower_components/tether/dist/js/tether.js"></script>

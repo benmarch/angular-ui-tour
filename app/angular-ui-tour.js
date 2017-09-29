@@ -1,7 +1,6 @@
 import angular from 'angular';
 import 'angular-sanitize';
 import 'angular-scroll';
-import 'ez-ng';
 import 'angular-hotkeys';
 import 'angular-bind-html-compile';
 import Tether from 'tether';
@@ -32,13 +31,12 @@ function run(TourConfig, uiTourService, $rootScope, $injector) {
 export default angular.module('bm.uiTour', [
     'ngSanitize',
     'duScroll',
-    'ezNg',
     'cfp.hotkeys',
     'angular-bind-html-compile'
 ])
     .run(run)
-    .value('Tether', Tether || window.Tether)
-    .value('Hone', Hone || window.Hone)
+    .value('Tether', Tether)
+    .value('Hone', Hone)
     .constant('positionMap', require('./tether-position-map').default)
     .provider('TourConfig', require('./tour-config-provider').default)
     .factory('uiTourBackdrop', require('./backdrop-service').default)

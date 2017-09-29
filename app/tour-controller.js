@@ -1,9 +1,10 @@
 import angular from 'angular';
+import EventEmitter from 'events';
 
-export default function uiTourController($timeout, $q, $filter, $document, TourConfig, uiTourBackdrop, uiTourService, TourStepService, ezEventEmitter, hotkeys) {
+export default function uiTourController($timeout, $q, $filter, $document, TourConfig, uiTourBackdrop, uiTourService, TourStepService, hotkeys) {
     'ngInject';
 
-    var self = this,
+    var self = new EventEmitter(),
         stepList = [],
         currentStep = null,
         resumeWhenFound,
@@ -16,7 +17,8 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
         tourStatus = TourStatus.OFF,
         options = TourConfig.getAll();
 
-    ezEventEmitter.mixin(self);
+    //polyfill "off"
+    self.off = self.removeListener;
 
     /**
      * Closer to $evalAsync, just resolves a promise
@@ -261,35 +263,8 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
 
         await handleEvent(step.config('onShow'));
 
-        if (!step.element) {
-            if (step.elementId) {
-                step.element = angular.element($document[0].getElementById(step.elementId));
-            }
-            if (step.selector) {
-                step.element = angular.element($document[0].querySelector(step.selector));
-            }
+        TourStepService.showStep(step);
 
-            if (!step.element) {
-                throw `No element found for step: '${step}'.`;
-            }
-        }
-
-        if (step.config('backdrop')) {
-            uiTourBackdrop.createForElement(step.element, {
-                preventScrolling: step.config('preventScrolling'),
-                fixed: step.config('fixed'),
-                borderRadius: step.config('backdropBorderRadius'),
-                padding: step.config('backdropPadding'),
-                fullScreen: step.config('orphan'),
-                events: {
-                    click: step.config('onBackdropClick')
-                }
-            });
-        }
-
-        step.element.addClass('ui-tour-active-step');
-
-        TourStepService.showPopup(step);
         await digest();
         await handleEvent(step.config('onShown'));
 
@@ -312,9 +287,8 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
 
         await handleEvent(step.config('onHide'));
 
-        step.element.removeClass('ui-tour-active-step');
+        TourStepService.hideStep(step);
 
-        TourStepService.hidePopup(step);
         await digest();
         await handleEvent(step.config('onHidden'));
 
@@ -625,4 +599,6 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
     };
     self._getCurrentStep = getCurrentStep;
     self._setCurrentStep = setCurrentStep;
+
+    return self;
 }
