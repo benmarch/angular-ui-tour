@@ -1,7 +1,6 @@
 import angular from 'angular';
 import 'angular-sanitize';
 import 'angular-scroll';
-import 'ez-ng';
 import 'angular-hotkeys';
 import 'angular-bind-html-compile';
 import Tether from 'tether';
@@ -32,7 +31,6 @@ function run(TourConfig, uiTourService, $rootScope, $injector) {
 export default angular.module('bm.uiTour', [
     'ngSanitize',
     'duScroll',
-    'ezNg',
     'cfp.hotkeys',
     'angular-bind-html-compile'
 ])

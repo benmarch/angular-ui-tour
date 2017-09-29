@@ -21,7 +21,6 @@
   "dependencies": {
     "angular": ">=1.5",
     "angular-sanitize": ">=1.5",
-    "ez-ng": "0.1.8",
     "angular-hotkeys": "chieffancypants/angular-hotkeys#1.7.0",
     "hone": "1.0.3",
     "tether": "1.4.0",

@@ -22,7 +22,6 @@ let config = {
         "angular-hotkeys": "angular-hotkeys",
         "angular-sanitize": "angular-sanitize",
         "angular-scroll": "angular-scroll",
-        "ez-ng": "ez-ng",
         "angular-bind-html-compile": "angular-bind-html-compile",
         "hone": {
             commonjs: "hone",
