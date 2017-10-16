@@ -1776,7 +1776,7 @@ function uiTourController($timeout, $q, $filter, $document, TourConfig, uiTourBa
             return handleEvent(step.config('onShow'));
         }).then(function () {
 
-            TourStepService.showStep(step);
+            TourStepService.showStep(step, self);
 
             return digest();
         }).then(function () {
