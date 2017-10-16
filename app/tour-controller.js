@@ -263,7 +263,7 @@ export default function uiTourController($timeout, $q, $filter, $document, TourC
 
         await handleEvent(step.config('onShow'));
 
-        TourStepService.showStep(step);
+        TourStepService.showStep(step, self);
 
         await digest();
         await handleEvent(step.config('onShown'));
