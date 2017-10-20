@@ -2,8 +2,8 @@
     <div class="popover-content tour-step-content" bind-html-compile="tourStep.trustedContent || tourStep.content"></div>
     <div class="popover-navigation tour-step-navigation">
         <div class="btn-group">
-            <button type="button" class="btn btn-sm btn-default" ng-if="tourStep.isPrev()" ng-click="tour.prev()">&laquo; Prev</button>
-            <button type="button" class="btn btn-sm btn-default" ng-if="tourStep.isNext()" ng-click="tour.next()">Next &raquo;</button>
+            <button type="button" class="btn btn-sm btn-default" ng-if="tourStep.isPrev()" ng-click="tour.prev()" ng-disabled="tourStep.previousDisabled">&laquo; Prev</button>
+            <button type="button" class="btn btn-sm btn-default" ng-if="tourStep.isNext()" ng-click="tour.next()" ng-disabled="tourStep.nextDisabled">Next &raquo;</button>
             <button type="button" class="btn btn-sm btn-default" ng-click="tour.pause()">Pause</button>
         </div>
         <button type="button" class="btn btn-sm btn-default" ng-click="tour.end()">End tour</button>
