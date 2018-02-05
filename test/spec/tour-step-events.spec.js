@@ -1,4 +1,5 @@
 import angular from 'angular';
+import tourWithAllEventsOverridden from '../templates/tour-step-with-all-events-overridden.html';
 
 describe('Tour Config', function () {
     var tourScope,
@@ -11,7 +12,7 @@ describe('Tour Config', function () {
 
     beforeEach(angular.mock.module('bm.uiTour'));
 
-    beforeEach(angular.mock.inject(function ($compile, $templateCache, $rootScope, $q, _$timeout_) {
+    beforeEach(angular.mock.inject(function ($compile, $rootScope, $q, _$timeout_) {
         tourScope = $rootScope.$new();
         $timeout = _$timeout_;
 
@@ -30,7 +31,7 @@ describe('Tour Config', function () {
             onHidden: jasmine.createSpy('onHidden').and.returnValue($q.resolve())
         });
 
-        $compile($templateCache.get('tour-step-with-all-events-overridden.html'))(tourScope);
+        $compile(tourWithAllEventsOverridden)(tourScope);
         tourHandle = tourScope.$$childTail.tour;
         tourHandle.emit('initialized');
     }));

@@ -1,8 +1,12 @@
 import angular from 'angular';
+import tourWithNoConfig from '../templates/tour-with-no-config.html';
+import tourWithStartFunction from '../templates/tour-with-on-start-function.html';
+import tourWithPlacementOverride from '../templates/tour-with-placement-override.html';
+import tourStepWithOnNextFunction from '../templates/tour-step-with-on-next-function.html';
+import tourStepWithPlacementOverride from '../templates/tour-step-with-placement-override.html';
 
 describe('Tour Config', function () {
     var $compile,
-        $templateCache,
         $rootScope,
         $q,
         TourConfig,
@@ -13,9 +17,8 @@ describe('Tour Config', function () {
 
     beforeEach(angular.mock.module('bm.uiTour'));
 
-    beforeEach(angular.mock.inject(function (_$compile_, _$templateCache_, _$rootScope_, _$q_, _TourConfig_) {
+    beforeEach(angular.mock.inject(function (_$compile_, _$rootScope_, _$q_, _TourConfig_) {
         $compile = _$compile_;
-        $templateCache = _$templateCache_;
         $rootScope = _$rootScope_;
         $q = _$q_;
         TourConfig = _TourConfig_;
@@ -26,7 +29,7 @@ describe('Tour Config', function () {
         var scope = $rootScope.$new(),
             config;
 
-        $compile($templateCache.get('tour-with-no-config.html'))(scope);
+        $compile(tourWithNoConfig)(scope);
 
         //when
         $rootScope.$digest();
@@ -47,7 +50,7 @@ describe('Tour Config', function () {
         scope.onStart = function () {
             started = true;
         };
-        $compile($templateCache.get('tour-with-on-start-function.html'))(scope);
+        $compile(tourWithStartFunction)(scope);
         tour = scope.$$childTail.tour;
 
         //when
@@ -62,7 +65,7 @@ describe('Tour Config', function () {
         var scope = $rootScope.$new(),
             tour;
 
-        $compile($templateCache.get('tour-with-placement-override.html'))(scope);
+        $compile(tourWithPlacementOverride)(scope);
         tour = scope.$$childTail.tour;
 
         //when
@@ -82,7 +85,7 @@ describe('Tour Config', function () {
             called = true;
             return $q.resolve();
         };
-        $compile($templateCache.get('tour-step-with-on-next-function.html'))(scope);
+        $compile(tourStepWithOnNextFunction)(scope);
         tour = scope.$$childTail.tour;
 
         //when
@@ -97,7 +100,7 @@ describe('Tour Config', function () {
         //given
         var scope = $rootScope.$new();
 
-        $compile($templateCache.get('tour-step-with-placement-override.html'))(scope);
+        $compile(tourStepWithPlacementOverride)(scope);
 
         //when
         $rootScope.$digest();

@@ -13,7 +13,7 @@ Bootstrap Tour, but plays nicely with Angular, **and does not have any dependenc
 
 Check out the live demo [here](http://benmarch.github.io/angular-ui-tour). (The demo is _not_ up-to-date documentation)
 
-## Versions 
+## Versions
 
 **Breaking changes in 0.8.0:**
 - Dependencies have changed. If you are not using NPM or Bower, please take note of the changes.
@@ -26,7 +26,7 @@ Check out the live demo [here](http://benmarch.github.io/angular-ui-tour). (The 
 
 ## Getting Started
 *It is highly recommended that you use a package manager like NPM or Bower to install Angular UI Tour in order to ensure that its dependencies are installed correctly.*
- 
+
 Get the package:
 
 ```sh
@@ -58,8 +58,8 @@ Then add the module to your app:
 
 ```js
 angular.module('myApp', ['bm.uiTour']);
-``` 
-    
+```
+
 Add some styles for the backdrop (feel free to style it however you want):
 
 ```css
@@ -82,7 +82,7 @@ module.config(function (TourConfigProvider) {
 
 That will listen for navigation events from ngRoute and UIRouter, and if the event was not caused by Angular UI Tour,
 it will end any active tours.
-    
+
 ## Tour Configuration
 
 Tours can be configured either programatically in a config block, or declaratively as part of the uiTour directive declaration.
@@ -104,7 +104,7 @@ To configure on a tour declaration, use `ui-tour-<option-name>="optionValue"`
 | backdropZIndex       | number   | 10000                     | Z-index of the backdrop. Popups will be positioned relative to this.                                                                                                                                                                         |
 | backdropBorderRadius | number   | 0                         | If your target element has a border radius, add it here so that the backdrop conforms to it.                                                                                                                                                 |
 | backdropPadding      | string   | ""                       | Adds padding around the target element on the backdrop. Same format as CSS padding rule.                                                                                                                                                 |
-| templateUrl          | string   | "tour-step-template.html" | Used as the template for the contents of the popup (see Angular UI Tooltip docs).                                                                                                                                                            |
+| template             | string   | ""                        | A string of HTML for the contents of the popup |
 | useUiRouter          | boolean  | false                     | When navigating with nextPath and prevPath (see below), use UI Router states instead of Angular paths.                                                                                                                                       |
 | useHotkeys           | boolean  | false                     | Allows the use of right/left keyboard keys to navigate through steps, and esc key to end the tour.                                                                                                                                           |
 | scrollParentId       | string   | $document                 | By default, the window will scroll to bring the tour step into view. For steps that are in a scrollable element, this option can be set to use the scrollable element instead. Note: this does not scroll the scrollable element into view.  |
@@ -155,7 +155,7 @@ To configure on a tour step declaration, use `tour-step-<option-name>="optionVal
 | prevStep         | string   | ""                        | If the previous step is on a different page, set this to declare the name of the previous step.                                                             |
 | prevPath         | string   | ""                        | If the previous step is on a different page, set this to the path of the previous page. If useUiRouter is true, this will be the state name.                |
 
-**Best practice:** always set the order so that the steps display in the expected order. Steps with the same order will 
+**Best practice:** always set the order so that the steps display in the expected order. Steps with the same order will
 display consecutively, but the order among them is unpredictable. At first, use increments of 10 so that if you need to add steps
 in the middle later you won't have to reorder everything.... Remember when code needed line numbers??? :)
 
@@ -163,7 +163,7 @@ in the middle later you won't have to reorder everything.... Remember when code 
 
 ### uiTour
 
-uiTour is the container for the tour steps; all tour steps must be declared as descendants of uiTour. 
+uiTour is the container for the tour steps; all tour steps must be declared as descendants of uiTour.
 The declaration can be as simple as adding ui-tour to an element, or can include one or more options (shown above).
 
 Examples:
@@ -178,7 +178,7 @@ Examples:
     ... <!-- page content and tour steps -->
 </div>
 ```
-    
+
 ### tourStep
 
 tourSteps declare which elements should have a popup during the tour. They can be declared on any element, but some consideration
@@ -208,7 +208,7 @@ Examples:
     <!-- page 1: included using ngView (/page1) -->
     <div tour-step="page1step1" ... tour-step-next-path="page2" tour-step-next-step="page2step1">...</div>
     <!-- /page 1 -->
-    
+
     <!-- page 2: ngView is populated when next step is requested after page1step1 -->
     <div tour-step="page2step1" ... tour-step-prev-path="page1" tour-step-prev-step="page1step1">...</div>
 </body>
@@ -355,11 +355,11 @@ angular.module('myModule', ['bm.uiTour']).run(['uiTourService', function (uiTour
     <div tour-step tour-step-title="Attached Step" tour-step-content="I belong to 'myTour' because I don't have a 'belongsTo' attribute.">
         This step belongs to it's ancestral tour, not the detached tour.
     </div>
-    
+
     <div tour-step tour-step-belongs-to="myDetachedTour" tour-step-title="Detached Step" tour-step-content="I belong to 'myDetachedTour' because I have specified my tour">
         This step belongs to "myDetachedTour" because it is specified, otherwise it would also belong to "myTour".
     </div>
- 
+
 </body>
 ```
 

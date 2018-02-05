@@ -64,9 +64,8 @@ let config = {
                 ]
             },
             {
-                //Load all templates into $templateCache
                 test: /(\.html)$/,
-                use: [`ng-cache-loader?module=${moduleName}`]
+                use: ['html-loader']
             },
             {
                 test: /(\.css)$/,
