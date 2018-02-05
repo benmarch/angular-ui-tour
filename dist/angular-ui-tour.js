@@ -137,7 +137,7 @@ function run(TourConfig, uiTourService, $rootScope, $injector) {
     }
 }
 
-exports.default = _angular2.default.module('bm.uiTour', ['ngSanitize', 'duScroll', 'cfp.hotkeys', 'angular-bind-html-compile']).run(run).value('Tether', _tether2.default).value('Hone', _hone2.default).constant('positionMap', __webpack_require__(13).default).provider('TourConfig', __webpack_require__(14).default).factory('uiTourBackdrop', __webpack_require__(15).default).factory('TourHelpers', __webpack_require__(16).default).factory('uiTourService', __webpack_require__(17).default).factory('TourStepService', __webpack_require__(18).default).controller('uiTourController', __webpack_require__(19).default).directive('uiTour', __webpack_require__(21).default).directive('tourStep', __webpack_require__(22).default).name;
+exports.default = _angular2.default.module('bm.uiTour', ['ngSanitize', 'duScroll', 'cfp.hotkeys', 'angular-bind-html-compile']).run(run).value('Tether', _tether2.default).value('Hone', _hone2.default).constant('positionMap', __webpack_require__(13).default).provider('TourConfig', __webpack_require__(14).default).factory('uiTourBackdrop', __webpack_require__(15).default).factory('TourHelpers', __webpack_require__(16).default).factory('uiTourService', __webpack_require__(17).default).factory('TourStepService', __webpack_require__(18).default).controller('uiTourController', __webpack_require__(21).default).directive('uiTour', __webpack_require__(23).default).directive('tourStep', __webpack_require__(24).default).name;
 
 /***/ }),
 /* 2 */
@@ -1301,9 +1301,10 @@ exports.default = ["Tether", "$compile", "$document", "$templateCache", "$rootSc
     function createPopup(step, tour) {
         var scope = _angular2.default.extend($rootScope.$new(), {
             tourStep: step,
-            tour: tour
+            tour: tour,
+            template: _tourStepTemplate2.default
         }),
-            popup = $compile($templateCache.get('tour-step-popup.html'))(scope),
+            popup = $compile(_tourStepPopup2.default)(scope),
             parent = step.config('appendToBody') ? _angular2.default.element($document[0].body) : step.element.parent();
 
         parent.append(popup);
@@ -1487,10 +1488,30 @@ var _angular = __webpack_require__(0);
 
 var _angular2 = _interopRequireDefault(_angular);
 
+var _tourStepPopup = __webpack_require__(19);
+
+var _tourStepPopup2 = _interopRequireDefault(_tourStepPopup);
+
+var _tourStepTemplate = __webpack_require__(20);
+
+var _tourStepTemplate2 = _interopRequireDefault(_tourStepTemplate);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ }),
 /* 19 */
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"tourStep\n            ui-tour-popup\n            popover\n            {{ tourStep.config('popupClass') }}\n            {{ tourStep.config('orphan') ? 'ui-tour-popup-orphan' : tourStep.config('placement').split('-')[0] + ' ' + tourStep.config('placement') }}\"\n     ng-style=\"{\n        visibility: 'hidden',\n        display: 'block',\n        position: tourStep.config('fixed') || tourStep.config('orphan') ? 'fixed' : 'absolute',\n        zIndex: tourStep.config('backdropZIndex') + 2\n     }\"\n     tabindex=\"0\"\n     aria-hidden=\"{{ tour._getCurrentStep() !== tourStep }}\">\n\n    <div class=\"arrow\"></div>\n    <div class=\"popover-inner tour-step-inner\">\n        <h3 class=\"popover-title tour-step-title\" ng-bind=\"tourStep.config('title')\" ng-if=\"tourStep.config('title')\"></h3>\n        <div class=\"popover-content tour-step-content\"\n             bind-html-compile=\"tourStep.template || tour.template || template\"></div>\n    </div>\n</div>\n";
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports) {
+
+module.exports = "<div>\n    <div class=\"popover-content tour-step-content\" bind-html-compile=\"tourStep.trustedContent || tourStep.content\"></div>\n    <div class=\"popover-navigation tour-step-navigation\">\n        <div class=\"btn-group\">\n            <button type=\"button\" class=\"btn btn-sm btn-default\" ng-if=\"tourStep.isPrev()\" ng-click=\"tour.prev()\">&laquo; Prev</button>\n            <button type=\"button\" class=\"btn btn-sm btn-default\" ng-if=\"tourStep.isNext()\" ng-click=\"tour.next()\">Next &raquo;</button>\n            <button type=\"button\" class=\"btn btn-sm btn-default\" ng-click=\"tour.pause()\">Pause</button>\n        </div>\n        <button type=\"button\" class=\"btn btn-sm btn-default\" ng-click=\"tour.end()\">End tour</button>\n    </div>\n</div>\n";
+
+/***/ }),
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1506,7 +1527,7 @@ var _angular = __webpack_require__(0);
 
 var _angular2 = _interopRequireDefault(_angular);
 
-var _events = __webpack_require__(20);
+var _events = __webpack_require__(22);
 
 var _events2 = _interopRequireDefault(_events);
 
@@ -2154,7 +2175,7 @@ function uiTourController($timeout, $q, $filter, $document, TourConfig, uiTourBa
 }
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, exports) {
 
 // Copyright Joyent, Inc. and other Node contributors.
@@ -2462,7 +2483,7 @@ function isUndefined(arg) {
 
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2502,9 +2523,9 @@ function uiTourDirective(TourHelpers) {
             //Attach event handlers
             TourHelpers.attachEventHandlers(scope, attrs, tour, events, 'uiTour');
 
-            //override the template url
-            if (attrs[TourHelpers.getAttrName('templateUrl', 'uiTour')]) {
-                tour.templateUrl = scope.$eval(attrs[TourHelpers.getAttrName('templateUrl', 'uiTour')]);
+            //override the template
+            if (attrs[TourHelpers.getAttrName('template', 'uiTour')]) {
+                tour.template = attrs[TourHelpers.getAttrName('template', 'uiTour')];
             }
 
             //If there is an options argument passed, just use that instead
@@ -2526,7 +2547,7 @@ function uiTourDirective(TourHelpers) {
 }
 
 /***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2541,10 +2562,6 @@ exports.default = tourStepDirective;
 var _angular = __webpack_require__(0);
 
 var _angular2 = _interopRequireDefault(_angular);
-
-__webpack_require__(23);
-
-__webpack_require__(24);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2613,8 +2630,8 @@ function tourStepDirective(TourHelpers, uiTourService, $sce) {
             //Attach event handlers
             TourHelpers.attachEventHandlers(scope, attrs, step, events);
 
-            if (attrs[TourHelpers.getAttrName('templateUrl')]) {
-                step.templateUrl = scope.$eval(attrs[TourHelpers.getAttrName('templateUrl')]);
+            if (attrs[TourHelpers.getAttrName('template')]) {
+                step.template = attrs[TourHelpers.getAttrName('template')];
             }
 
             //If there is an options argument passed, just use that instead
@@ -2661,34 +2678,6 @@ function tourStepDirective(TourHelpers, uiTourService, $sce) {
         }
     };
 }
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports) {
-
-var angular=window.angular,ngModule;
-try {ngModule=angular.module(["bm.uiTour"])}
-catch(e){ngModule=angular.module("bm.uiTour",[])}
-var v1="<div class=\"tourStep ui-tour-popup popover {{ tourStep.config('popupClass') }} {{ tourStep.config('orphan') ? 'ui-tour-popup-orphan' : tourStep.config('placement').split('-')[0] + ' ' + tourStep.config('placement') }}\" ng-style=\"{\n        visibility: 'hidden',\n        display: 'block',\n        position: tourStep.config('fixed') || tourStep.config('orphan') ? 'fixed' : 'absolute',\n        zIndex: tourStep.config('backdropZIndex') + 2\n     }\" tabindex=\"0\" aria-hidden=\"{{ tour._getCurrentStep() !== tourStep }}\">\n<div class=\"arrow\"></div>\n<div class=\"popover-inner tour-step-inner\">\n<h3 class=\"popover-title tour-step-title\" ng-bind=\"tourStep.config('title')\" ng-if=\"tourStep.config('title')\"></h3>\n<div class=\"popover-content tour-step-content\" ng-include=\"tourStep.config('templateUrl') || 'tour-step-template.html'\"></div>\n</div>\n</div>\n";
-var id1="tour-step-popup.html";
-var inj=angular.element(window.document).injector();
-if(inj){inj.get("$templateCache").put(id1,v1);}
-else{ngModule.run(["$templateCache",function(c){c.put(id1,v1)}]);}
-module.exports=v1;
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports) {
-
-var angular=window.angular,ngModule;
-try {ngModule=angular.module(["bm.uiTour"])}
-catch(e){ngModule=angular.module("bm.uiTour",[])}
-var v1="<div>\n<div class=\"popover-content tour-step-content\" bind-html-compile=\"tourStep.trustedContent || tourStep.content\"></div>\n<div class=\"popover-navigation tour-step-navigation\">\n<div class=\"btn-group\">\n<button type=\"button\" class=\"btn btn-sm btn-default\" ng-if=\"tourStep.isPrev()\" ng-click=\"tour.prev()\">&laquo; Prev</button>\n<button type=\"button\" class=\"btn btn-sm btn-default\" ng-if=\"tourStep.isNext()\" ng-click=\"tour.next()\">Next &raquo;</button>\n<button type=\"button\" class=\"btn btn-sm btn-default\" ng-click=\"tour.pause()\">Pause</button>\n</div>\n<button type=\"button\" class=\"btn btn-sm btn-default\" ng-click=\"tour.end()\">End tour</button>\n</div>\n</div>\n";
-var id1="tour-step-template.html";
-var inj=angular.element(window.document).injector();
-if(inj){inj.get("$templateCache").put(id1,v1);}
-else{ngModule.run(["$templateCache",function(c){c.put(id1,v1)}]);}
-module.exports=v1;
 
 /***/ })
 /******/ ]);

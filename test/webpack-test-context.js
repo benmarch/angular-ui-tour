@@ -3,7 +3,7 @@
  * It collects and injects all specs and templates into the test runtime.
  */
 
-var req = require.context('.', true, /(spec\.js)|(\.html)$/);
+var req = require.context('.', true, /(spec\.js)$/);
 
 require('angular-mocks'); //load angular mocks into the test suite
 

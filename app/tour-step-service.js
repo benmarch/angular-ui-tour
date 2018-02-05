@@ -1,4 +1,6 @@
 import angular from 'angular';
+import stepPopupHTML from './templates/tour-step-popup.html';
+import stepTemplateHTML from './templates/tour-step-template.html';
 
 export default function (Tether, $compile, $document, $templateCache, $rootScope, $window, $q, $timeout, positionMap, uiTourBackdrop) {
     'ngInject';
@@ -11,9 +13,10 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
     function createPopup(step, tour) {
         const scope = angular.extend($rootScope.$new(), {
                 tourStep: step,
-                tour: tour
+                tour: tour,
+                template: stepTemplateHTML
             }),
-            popup = $compile($templateCache.get('tour-step-popup.html'))(scope),
+            popup = $compile(stepPopupHTML)(scope),
             parent = step.config('appendToBody') ? angular.element($document[0].body) : step.element.parent();
 
         parent.append(popup);
