@@ -1,6 +1,4 @@
 import angular from 'angular';
-import './templates/tour-step-popup.html';
-import './templates/tour-step-template.html';
 
 export default function tourStepDirective(TourHelpers, uiTourService, $sce) {
     'ngInject';
@@ -67,7 +65,12 @@ export default function tourStepDirective(TourHelpers, uiTourService, $sce) {
             TourHelpers.attachEventHandlers(scope, attrs, step, events);
 
             if (attrs[TourHelpers.getAttrName('templateUrl')]) {
-                step.templateUrl = scope.$eval(attrs[TourHelpers.getAttrName('templateUrl')]);
+                step.templateUrl = attrs[TourHelpers.getAttrName('templateUrl')];
+            }
+
+            if (attrs[TourHelpers.getAttrName('template')]) {
+                step.template = attrs[TourHelpers.getAttrName('template')];
+                step.templateUrl = null;
             }
 
             //If there is an options argument passed, just use that instead

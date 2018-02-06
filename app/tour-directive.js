@@ -24,7 +24,13 @@ export default function uiTourDirective(TourHelpers) {
 
             //override the template url
             if (attrs[TourHelpers.getAttrName('templateUrl', 'uiTour')]) {
-                tour.templateUrl = scope.$eval(attrs[TourHelpers.getAttrName('templateUrl', 'uiTour')]);
+                tour.templateUrl = attrs[TourHelpers.getAttrName('templateUrl', 'uiTour')];
+            }
+
+            //override the template
+            if (attrs[TourHelpers.getAttrName('template', 'uiTour')]) {
+                tour.template = attrs[TourHelpers.getAttrName('template', 'uiTour')];
+                tour.templateUrl = null;
             }
 
             //If there is an options argument passed, just use that instead
