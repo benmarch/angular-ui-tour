@@ -16,6 +16,10 @@
     <div class="popover-inner tour-step-inner">
         <h3 class="popover-title tour-step-title" ng-bind="tourStep.config('title')" ng-if="tourStep.config('title')"></h3>
         <div class="popover-content tour-step-content"
-             bind-html-compile="tourStep.template || tour.template || template"></div>
+            ng-if="tourStep.config('templateUrl')"
+            ng-include="tourStep.config('templateUrl')"></div>
+        <div class="popover-content tour-step-content"
+            ng-if="!tourStep.config('templateUrl')"
+            bind-html-compile="tourStep.config('template') || template"></div>
     </div>
 </div>
