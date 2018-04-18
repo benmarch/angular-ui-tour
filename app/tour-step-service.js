@@ -75,6 +75,9 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
                 visibility: 'visible',
                 display: 'block'
             });
+            //the popup is not showing thze second time it is called on IE11, display block of previous line is not applied
+            //this line is added to ensure the display of the popup
+            step.popup.show();
 
             //scroll to popup
             focusPopup(step);
