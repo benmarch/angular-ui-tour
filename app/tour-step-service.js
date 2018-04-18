@@ -91,7 +91,8 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
         if (step.tether) {
             step.tether.disable();
         }
-        step.popup[0].style.setProperty('display', 'none', 'important');
+        //hides the popup without adding '!important'
+        step.popup.hide();
     }
 
     /**
