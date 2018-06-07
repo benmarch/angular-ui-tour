@@ -62,14 +62,8 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
      * @param step
      */
     function showPopup(step) {
-        //activate Tether
-        positionPopup(step);
-
-        //nudge the screen to ensure that Tether is positioned properly
-        $window.scrollTo($window.scrollX, $window.scrollY + 1);
-
         //wait until next digest
-        $timeout(() => {
+        $timeout(function () {
             //show the popup
             step.popup.css({
                 visibility: 'visible',
@@ -79,6 +73,8 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
             //scroll to popup
             focusPopup(step);
 
+            //activate Tether
+            positionPopup(step);
         }, 100); //ensures size and position are correct
     }
 
