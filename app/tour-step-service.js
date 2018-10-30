@@ -159,6 +159,7 @@ export default function (Tether, $compile, $document, $templateCache, $rootScope
                 borderRadius: step.config('backdropBorderRadius'),
                 padding: step.config('backdropPadding'),
                 fullScreen: step.config('orphan'),
+                disableOptimizations: step.config('disableBackdropOptimizations'),
                 events: {
                     click: step.config('onBackdropClick')
                 }

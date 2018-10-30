@@ -14,7 +14,7 @@ export default function uiTourDirective(TourHelpers) {
                     name: attrs.uiTour
                 },
                 events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume onBackdropClick'.split(' '),
-                properties = 'placement animation popupDelay closePopupDelay enable appendToBody popupClass orphan backdrop backdropBorderRadius backdropPadding scrollParentId scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
+                properties = 'placement animation popupDelay closePopupDelay enable appendToBody popupClass orphan backdrop backdropBorderRadius backdropPadding disableBackdropOptimizations scrollParentId scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
 
             //Pass interpolated values through
             TourHelpers.attachInterpolatedValues(attrs, tour, properties, 'uiTour');
