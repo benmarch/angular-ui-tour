@@ -16,6 +16,7 @@ export default function TourConfig() {
             backdrop: false,
             backdropZIndex: 10000,
             backdropPadding: '0px',
+            disableBackdropOptimizations: false,
             scrollOffset: 100,
             scrollIntoView: true,
             useUiRouter: false,

@@ -22,7 +22,7 @@
     "angular": ">=1.5",
     "angular-sanitize": ">=1.5",
     "cfp-angular-hotkeys": "1.7.0",
-    "hone": "1.0.3",
+    "hone": "1.1.0",
     "tether": "1.4.0",
     "angular-scroll": "1.0.0",
     "angular-bind-html-compile": "1.4.1"

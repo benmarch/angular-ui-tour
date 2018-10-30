@@ -851,6 +851,7 @@ function TourConfig() {
         backdrop: false,
         backdropZIndex: 10000,
         backdropPadding: '0px',
+        disableBackdropOptimizations: false,
         scrollOffset: 100,
         scrollIntoView: true,
         useUiRouter: false,
@@ -1449,6 +1450,7 @@ exports.default = ["Tether", "$compile", "$document", "$templateCache", "$rootSc
                 borderRadius: step.config('backdropBorderRadius'),
                 padding: step.config('backdropPadding'),
                 fullScreen: step.config('orphan'),
+                disableOptimizations: step.config('disableBackdropOptimizations'),
                 events: {
                     click: step.config('onBackdropClick')
                 }
@@ -2494,7 +2496,7 @@ function uiTourDirective(TourHelpers) {
                 name: attrs.uiTour
             },
                 events = 'onReady onStart onEnd onShow onShown onHide onHidden onNext onPrev onPause onResume onBackdropClick'.split(' '),
-                properties = 'placement animation popupDelay closePopupDelay enable appendToBody popupClass orphan backdrop backdropBorderRadius backdropPadding scrollParentId scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
+                properties = 'placement animation popupDelay closePopupDelay enable appendToBody popupClass orphan backdrop backdropBorderRadius backdropPadding disableBackdropOptimizations scrollParentId scrollOffset scrollIntoView useUiRouter useHotkeys'.split(' ');
 
             //Pass interpolated values through
             TourHelpers.attachInterpolatedValues(attrs, tour, properties, 'uiTour');
@@ -2561,7 +2563,7 @@ function tourStepDirective(TourHelpers, uiTourService, $sce) {
             //Assign required options
             step,
                 events = 'onShow onShown onHide onHidden onNext onPrev onBackdropClick'.split(' '),
-                options = 'content title animation placement backdrop backdropBorderRadius backdropPadding orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset scrollParentId'.split(' '),
+                options = 'content title animation placement backdrop backdropBorderRadius backdropPadding disableBackdropOptimizations orphan popupDelay popupCloseDelay popupClass fixed preventScrolling scrollIntoView nextStep prevStep nextPath prevPath scrollOffset scrollParentId'.split(' '),
                 orderWatch,
                 enabledWatch,
                 contentWatch;
