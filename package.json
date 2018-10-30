@@ -41,7 +41,7 @@
     "angular-sanitize": ">=1.5",
     "angular-hotkeys": "1.7.0",
     "angular-scroll": "1.0.2",
-    "hone": "git+https://github.com/benmarch/hone.git#optional-optimizations",
+    "hone": "1.1.0",
     "tether": "1.4.0",
     "angular-bind-html-compile": "https://github.com/incuna/angular-bind-html-compile.git#1.4.1"
   },

@@ -17,9 +17,6 @@ let config = {
         library: libraryName,
         libraryTarget: 'umd'
     },
-    resolve: {
-      mainFields: ['jsnext:main', 'main']
-    },
     externals: {
         "angular": "angular",
         "angular-hotkeys": "angular-hotkeys",
