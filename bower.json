@@ -1,6 +1,6 @@
 {
   "name": "angular-ui-tour",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "main": "dist/angular-ui-tour.js",
   "ignore": [
     ".editorconfig",
