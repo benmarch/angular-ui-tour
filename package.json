@@ -27,7 +27,7 @@
   "scripts": {
     "develop": "webpack --devtool cheap-module-source-map --watch",
     "test": "karma start",
-    "build": "webpack --progress",
+    "build": "webpack -p --progress",
     "release": "npm test && npm run build && release-it",
     "lint": "eslint app/**/*.js test/**/*.js"
   },
